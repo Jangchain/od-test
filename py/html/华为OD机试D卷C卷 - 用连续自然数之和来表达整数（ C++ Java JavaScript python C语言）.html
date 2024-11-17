@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_100_1"></a>题目描述：用连续自然数之和来表达整数 （本题分值100）</h2> 
+<p>一个整数可以由连续的自然数之和来表示。<br> 给定一个整数，计算该整数有几种连续自然数之和的表达式，且打印出每种表达式</p> 
+<h2><a id="_6"></a>输入描述</h2> 
+<p>一个目标整数T (1 &lt;=T&lt;= 1000)</p> 
+<h2><a id="_10"></a>输出描述</h2> 
+<p>该整数的所有表达式和表达式的个数。如果有多种表达式，输出要求为：<br> 自然数个数最少的表达式优先输出<br> 每个表达式中按自然数递增的顺序输出，具体的格式参见样例。<br> 在每个测试数据结束时，输出一行”Result:X”，其中X是最终的表达式个数。</p> 
+<h2><a id="ACM_17"></a>ACM输入输出模式</h2> 
+<p>如果你经常使用<strong>Leetcode</strong>,会知道<strong>letcode</strong>是不需要编写输入输出函数的。但是华为OD机考使用的是 <strong>ACM 模式</strong>，需要手动编写输入和输出。</p> 
+<p>所以最好在牛-客上提前熟悉这种模式。例如C++使用<code>cin/cout</code>,python使用<code>input()/print()</code>。JavaScript使用node的<code>readline()</code>和<code>console.log()</code>。Java 使用<code>sacnner/system.out.print()</code></p> 
+<h2><a id="1_22"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>9
+</code></pre> 
+<p>输出</p> 
+<pre><code>9=9
+9=4+5
+9=2+3+4
+Result:3
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>整数 9 有三种表示方法，第1个表达式只有1个自然数，最先输出，<br> 第2个表达式有2个自然数，第2次序输出，<br> 第3个表达式有3个自然数，最后输出。<br> 每个表达式中的自然数都是按递增次序输出的。<br> 数字与符号之间无空格</p> 
+</blockquote> 
+<h2><a id="2_43"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>10
+</code></pre> 
+<p>输出</p> 
+<pre><code>10=10
+10=1+2+3+4
+Result:2
+</code></pre> 
+<h2><a id="_57"></a>解题思路</h2> 
+<p>解题思路如下：</p> 
+<ol><li> <p>首先，直接打印出目标整数本身作为一个表达式。</p> </li><li> <p>然后，我们需要找出所有可能的连续自然数之和的表达式。我们可以通过枚举起始自然数来实现这一点。对于每一个起始自然数，我们从这个数开始，依次加上后面的自然数，直到总和超过目标整数。</p> </li><li> <p>当总和等于目标整数时，我们就找到了一个有效的表达式。我们需要将这个表达式存储下来，以便稍后打印。在存储表达式的同时，我们还需要记录表达式中自然数的个数，因为我们需要按照这个数量对表达式进行排序。</p> </li><li> <p>一旦我们找到了所有的表达式，我们就可以对它们进行排序。排序的依据是表达式中自然数的个数，自然数个数少的表达式优先输出。</p> </li><li> <p>最后，我们按照排序后的顺序打印出所有的表达式，然后打印出表达式的总数。</p> </li></ol> 
+<p>这种方法的时间复杂度是O(n^2)，其中n是目标整数。因为我们需要枚举所有可能的起始自然数，并且对于每一个起始自然数，我们可能需要加到目标整数才能确定是否可以形成有效的表达式。在实际应用中，由于目标整数的范围是1到1000，所以这种方法的效率是可以接受的。</p> 
+<h2><a id="C_73"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+   <span class="token keyword">int</span> target<span class="token punctuation">;</span>
+cin <span class="token operator">&gt;&gt;</span> target<span class="token punctuation">;</span>
+<span class="token comment">// 输出目标整数T</span>
+cout <span class="token operator">&lt;&lt;</span> target <span class="token operator">&lt;&lt;</span> <span class="token string">"="</span> <span class="token operator">&lt;&lt;</span> target <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+<span class="token comment">// 存储所有表达式的 vector</span>
+vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> expressions<span class="token punctuation">;</span>
+
+<span class="token comment">// 枚举从 1 开始的连续自然数的个数</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    stringstream ss<span class="token punctuation">;</span>
+    <span class="token comment">// 从第 i 个自然数开始累加</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i<span class="token punctuation">;</span> sum <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        sum <span class="token operator">+=</span> j<span class="token punctuation">;</span>
+        ss <span class="token operator">&lt;&lt;</span> j <span class="token operator">&lt;&lt;</span> <span class="token string">"+"</span><span class="token punctuation">;</span>
+        <span class="token comment">// 找到了一个表达式</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">==</span> target<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将表达式加入 vector</span>
+            expressions<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>target<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"="</span> <span class="token operator">+</span> ss<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> ss<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 按表达式中自然数的个数排序</span>
+<span class="token function">sort</span><span class="token punctuation">(</span>expressions<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> expressions<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> s1<span class="token punctuation">,</span> <span class="token keyword">const</span> string<span class="token operator">&amp;</span> s2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token keyword">return</span> s1<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> s2<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 输出所有表达式</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> expression <span class="token operator">:</span> expressions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    cout <span class="token operator">&lt;&lt;</span> expression <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 输出表达式的个数</span>
+cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Result:"</span> <span class="token operator">&lt;&lt;</span> expressions<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="java_127"></a>java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> target <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出目标整数T</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>target <span class="token operator">+</span> <span class="token string">"="</span> <span class="token operator">+</span> target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 存储所有表达式的 vector</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> expressions <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 枚举从 1 开始的连续自然数的个数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token class-name">StringBuilder</span> sb <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 从第 i 个自然数开始累加</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i<span class="token punctuation">;</span> sum <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                sum <span class="token operator">+=</span> j<span class="token punctuation">;</span>
+                sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">"+"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 找到了一个表达式</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">==</span> target<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 将表达式加入 vector</span>
+                    expressions<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>target <span class="token operator">+</span> <span class="token string">"="</span> <span class="token operator">+</span> sb<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 按表达式中自然数的个数排序</span>
+        <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>expressions<span class="token punctuation">,</span> <span class="token class-name">Comparator</span><span class="token punctuation">.</span><span class="token function">comparingInt</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token operator">::</span><span class="token function">length</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出所有表达式</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> expression <span class="token operator">:</span> expressions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>expression<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出表达式的个数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"Result:"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>expressions<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_177"></a>javaScript</h2> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> target<span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">answer</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  target <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>answer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>target <span class="token operator">+</span> <span class="token string">'='</span> <span class="token operator">+</span> target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> expressions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> expression <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> i<span class="token punctuation">;</span> sum <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      sum <span class="token operator">+=</span> j<span class="token punctuation">;</span>
+      expression <span class="token operator">+=</span> j <span class="token operator">+</span> <span class="token string">'+'</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">===</span> target<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        expressions<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>target <span class="token operator">+</span> <span class="token string">'='</span> <span class="token operator">+</span> expression<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  expressions<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">s1<span class="token punctuation">,</span> s2</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> s1<span class="token punctuation">.</span>length <span class="token operator">-</span> s2<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  expressions<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">expression</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>expression<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'Result:'</span> <span class="token operator">+</span> <span class="token punctuation">(</span>expressions<span class="token punctuation">.</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h2><a id="python_216"></a>python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+target <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 输出目标整数T</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>target<span class="token punctuation">,</span> <span class="token string">"="</span><span class="token punctuation">,</span> target<span class="token punctuation">,</span>sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 存储所有表达式的 list</span>
+expressions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 枚举从 1 开始的连续自然数的个数</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token builtin">sum</span> <span class="token operator">=</span> <span class="token number">0</span>
+    ss <span class="token operator">=</span> <span class="token string">""</span>
+    <span class="token comment"># 从第 i 个自然数开始累加</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">sum</span> <span class="token operator">+=</span> j
+        ss <span class="token operator">+=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"+"</span>
+        <span class="token comment"># 找到了一个表达式</span>
+        <span class="token keyword">if</span> <span class="token builtin">sum</span> <span class="token operator">==</span> target<span class="token punctuation">:</span>
+            <span class="token comment"># 将表达式加入 list</span>
+            expressions<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>target<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"="</span> <span class="token operator">+</span> ss<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token keyword">break</span>
+
+<span class="token comment"># 按表达式中自然数的个数排序</span>
+expressions<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> s<span class="token punctuation">:</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 输出所有表达式</span>
+<span class="token keyword">for</span> expression <span class="token keyword">in</span> expressions<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>expression<span class="token punctuation">,</span>sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 输出表达式的个数</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"Result:"</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>expressions<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span>sep<span class="token operator">=</span><span class="token string">''</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<h2><a id="C_254"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义一个结构体，用于存储表达式和表达式的长度</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> expression<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> length<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> Expression<span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于 qsort 函数，按照表达式的长度进行排序</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>Expression <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">)</span><span class="token operator">-&gt;</span>length <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>Expression <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">)</span><span class="token operator">-&gt;</span>length<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> target<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读入目标整数</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d=%d\n"</span><span class="token punctuation">,</span> target<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出目标整数本身的表达式</span>
+
+    Expression expressions<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储所有表达式的数组</span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 表达式的数量</span>
+
+    <span class="token comment">// 枚举从 1 开始的连续自然数的个数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span> temp<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span> <span class="token comment">// 临时存储每个表达式的字符串</span>
+
+        <span class="token comment">// 从第 i 个自然数开始累加</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i<span class="token punctuation">;</span> sum <span class="token operator">&lt;</span> target<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sum <span class="token operator">+=</span> j<span class="token punctuation">;</span>
+            <span class="token keyword">char</span> num<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token function">sprintf</span><span class="token punctuation">(</span>num<span class="token punctuation">,</span> <span class="token string">"%d+"</span><span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将数字转换为字符串，并添加"+"符号</span>
+            <span class="token function">strcat</span><span class="token punctuation">(</span>temp<span class="token punctuation">,</span> num<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将数字添加到表达式中</span>
+
+            <span class="token comment">// 找到了一个表达式</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">==</span> target<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                temp<span class="token punctuation">[</span><span class="token function">strlen</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> <span class="token comment">// 去掉最后的"+"符号</span>
+                <span class="token function">sprintf</span><span class="token punctuation">(</span>expressions<span class="token punctuation">[</span>count<span class="token punctuation">]</span><span class="token punctuation">.</span>expression<span class="token punctuation">,</span> <span class="token string">"%d=%s"</span><span class="token punctuation">,</span> target<span class="token punctuation">,</span> temp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将表达式存入数组</span>
+                expressions<span class="token punctuation">[</span>count<span class="token punctuation">]</span><span class="token punctuation">.</span>length <span class="token operator">=</span> j <span class="token operator">-</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 记录表达式的长度</span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 按表达式中自然数的个数排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>expressions<span class="token punctuation">,</span> count<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Expression<span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出所有表达式</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> count<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> expressions<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>expression<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出表达式的个数</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Result:%d\n"</span><span class="token punctuation">,</span> count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_100_1" rel="nofollow">题目描述：用连续自然数之和来表达整数 （本题分值100）</a></li><li><a href="#_6" rel="nofollow">输入描述</a></li><li><a href="#_10" rel="nofollow">输出描述</a></li><li><a href="#ACM_17" rel="nofollow">ACM输入输出模式</a></li><li><a href="#1_22" rel="nofollow">用例1</a></li><li><a href="#2_43" rel="nofollow">用例2</a></li><li><a href="#_57" rel="nofollow">解题思路</a></li><li><a href="#C_73" rel="nofollow">C++</a></li><li><a href="#java_127" rel="nofollow">java</a></li><li><a href="#javaScript_177" rel="nofollow">javaScript</a></li><li><a href="#python_216" rel="nofollow">python</a></li><li><a href="#C_254" rel="nofollow">C语言</a></li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/3cb8e2318f9657470932620a3ea3e1e8.png" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

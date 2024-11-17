@@ -1,0 +1,386 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>给定一个字符串，只包含字母和数字，按要求找出字符串中的最长（连续）子串的长度，字符串本身是其最长的子串，子串要求：<br> 1、 只包含1个字母(a~z, A~Z)，其余必须是数字；<br> 2、 字母可以在子串中的任意位置；<br> 如果找不到满足要求的子串，如全是字母或全是数字，则返回-1。</p> 
+<h2><a id="_8"></a>输入描述</h2> 
+<p>字符串(只包含字母和数字)</p> 
+<h2><a id="_12"></a>输出描述</h2> 
+<p>子串的长度</p> 
+<h2><a id="_16"></a>用例</h2> 
+<table><tbody><tr><td>输入</td><td>abC124ACb</td></tr><tr><td>输出</td><td>4</td></tr><tr><td>说明</td><td>满足条件的最长子串是C124或者124A，长度都是4</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>a5</td></tr><tr><td>输出</td><td>2</td></tr><tr><td>说明</td><td>字符串自身就是满足条件的子串，长度为2</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>aBB9</td></tr><tr><td>输出</td><td>2</td></tr><tr><td>说明</td><td>满足条件的子串为B9，长度为2</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>abcdef</td></tr><tr><td>输出</td><td>-1</td></tr><tr><td>说明</td><td>没有满足要求的子串，返回-1</td></tr></tbody></table> 
+<h2><a id="C_26"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;deque&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入的字符串</span>
+    string str<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> str<span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化最长子串长度为-1</span>
+    <span class="token keyword">int</span> maxLen <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化一个标志，表示是否找到了包含字母的子串</span>
+    bool hasLetter <span class="token operator">=</span> false<span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化双指针l和r，分别表示子串的左右边界</span>
+    <span class="token keyword">int</span> l <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> r <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 创建一个双端队列用于存储字母的索引</span>
+    deque<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> letterIdx<span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历字符串</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>r <span class="token operator">&lt;</span> str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 获取当前字符</span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> str<span class="token punctuation">[</span>r<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果当前字符是字母</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isalpha</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 设置标志为true，表示找到了包含字母的子串</span>
+            hasLetter <span class="token operator">=</span> true<span class="token punctuation">;</span>
+            <span class="token comment">// 将字母的索引添加到队列的尾部</span>
+            letterIdx<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果队列中有多于1个字母的索引</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>letterIdx<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 移除队列头部的字母索引，并将左指针l移动到该索引的下一个位置</span>
+                l <span class="token operator">=</span> letterIdx<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                letterIdx<span class="token punctuation">.</span><span class="token function">pop_front</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 如果右指针r等于左指针l，跳过当前循环</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>r <span class="token operator">==</span> l<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                r<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 更新最长子串长度</span>
+        maxLen <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">,</span> r <span class="token operator">-</span> l <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 移动右指针</span>
+        r<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果没有找到包含字母的子串，输出-1</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>hasLetter<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 否则输出最长子串长度</span>
+        cout <span class="token operator">&lt;&lt;</span> maxLen <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="java_99"></a>java</h2> 
+<pre><code class="prism language-java">
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayDeque</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Deque</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于读取输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取输入的字符串</span>
+        <span class="token class-name">String</span> str <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化最长子串长度为-1</span>
+        <span class="token keyword">int</span> maxLen <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化一个标志，表示是否找到了包含字母的子串</span>
+        <span class="token keyword">boolean</span> hasLetter <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化双指针l和r，分别表示子串的左右边界</span>
+        <span class="token keyword">int</span> l <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> r <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个双端队列用于存储字母的索引</span>
+        <span class="token class-name">Deque</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> letterIdx <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayDeque</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历字符串</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>r <span class="token operator">&lt;</span> str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 获取当前字符</span>
+            <span class="token keyword">char</span> c <span class="token operator">=</span> str<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果当前字符是字母</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Character</span><span class="token punctuation">.</span><span class="token function">isLetter</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 设置标志为true，表示找到了包含字母的子串</span>
+                hasLetter <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token comment">// 将字母的索引添加到队列的尾部</span>
+                letterIdx<span class="token punctuation">.</span><span class="token function">addLast</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 如果队列中有多于1个字母的索引</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>letterIdx<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 移除队列头部的字母索引，并将左指针l移动到该索引的下一个位置</span>
+                    l <span class="token operator">=</span> letterIdx<span class="token punctuation">.</span><span class="token function">removeFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+
+                <span class="token comment">// 如果右指针r等于左指针l，跳过当前循环</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>r <span class="token operator">==</span> l<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    r<span class="token operator">++</span><span class="token punctuation">;</span>
+                    <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 更新最长子串长度</span>
+            maxLen <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">,</span> r <span class="token operator">-</span> l <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 移动右指针</span>
+            r<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果没有找到包含字母的子串，输出-1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>hasLetter<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则输出最长子串长度</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="javaScript_168"></a>javaScript</h2> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入的字符串</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">str</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 初始化最长子串长度为-1</span>
+  <span class="token keyword">let</span> maxLen <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化一个标志，表示是否找到了包含字母的子串</span>
+  <span class="token keyword">let</span> hasLetter <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化双指针l和r，分别表示子串的左右边界</span>
+  <span class="token keyword">let</span> l <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> r <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token comment">// 创建一个双端队列用于存储字母的索引</span>
+  <span class="token keyword">let</span> letterIdx <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历字符串</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>r <span class="token operator">&lt;</span> str<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 获取当前字符</span>
+    <span class="token keyword">let</span> c <span class="token operator">=</span> str<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果当前字符是字母</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>c<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">[a-zA-Z]</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 设置标志为true，表示找到了包含字母的子串</span>
+      hasLetter <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+      <span class="token comment">// 将字母的索引添加到队列的尾部</span>
+      letterIdx<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 如果队列中有多于1个字母的索引</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>letterIdx<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 移除队列头部的字母索引，并将左指针l移动到该索引的下一个位置</span>
+        l <span class="token operator">=</span> letterIdx<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token comment">// 如果右指针r等于左指针l，跳过当前循环</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>r <span class="token operator">===</span> l<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        r<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">continue</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 更新最长子串长度</span>
+    maxLen <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">,</span> r <span class="token operator">-</span> l <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 移动右指针</span>
+    r<span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 如果没有找到包含字母的子串，输出-1</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>hasLetter<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 否则输出最长子串长度</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h2><a id="python_234"></a>python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">from</span> collections <span class="token keyword">import</span> deque
+
+<span class="token comment"># 读取输入的字符串</span>
+<span class="token builtin">str</span> <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化最长子串长度为-1</span>
+maxLen <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+<span class="token comment"># 初始化一个标志，表示是否找到了包含字母的子串</span>
+hasLetter <span class="token operator">=</span> <span class="token boolean">False</span>
+
+<span class="token comment"># 初始化双指针l和r，分别表示子串的左右边界</span>
+l<span class="token punctuation">,</span> r <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span>
+<span class="token comment"># 创建一个双端队列用于存储字母的索引</span>
+letterIdx <span class="token operator">=</span> deque<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历字符串</span>
+<span class="token keyword">while</span> r <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 获取当前字符</span>
+    c <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">[</span>r<span class="token punctuation">]</span>
+
+    <span class="token comment"># 如果当前字符是字母</span>
+    <span class="token keyword">if</span> c<span class="token punctuation">.</span>isalpha<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 设置标志为true，表示找到了包含字母的子串</span>
+        hasLetter <span class="token operator">=</span> <span class="token boolean">True</span>
+        <span class="token comment"># 将字母的索引添加到队列的尾部</span>
+        letterIdx<span class="token punctuation">.</span>append<span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+
+        <span class="token comment"># 如果队列中有多于1个字母的索引</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>letterIdx<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">:</span>
+            <span class="token comment"># 移除队列头部的字母索引，并将左指针l移动到该索引的下一个位置</span>
+            l <span class="token operator">=</span> letterIdx<span class="token punctuation">.</span>popleft<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+
+        <span class="token comment"># 如果右指针r等于左指针l，跳过当前循环</span>
+        <span class="token keyword">if</span> r <span class="token operator">==</span> l<span class="token punctuation">:</span>
+            r <span class="token operator">+=</span> <span class="token number">1</span>
+            <span class="token keyword">continue</span>
+
+    <span class="token comment"># 更新最长子串长度</span>
+    maxLen <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">,</span> r <span class="token operator">-</span> l <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token comment"># 移动右指针</span>
+    r <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 如果没有找到包含字母的子串，输出-1</span>
+<span class="token keyword">if</span> <span class="token keyword">not</span> hasLetter<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token comment"># 否则输出最长子串长度</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>maxLen<span class="token punctuation">)</span>
+
+</code></pre> 
+<h2><a id="C_290"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;ctype.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdbool.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LEN</span> <span class="token expression"><span class="token number">1000</span></span></span>
+
+<span class="token comment">// 创建一个双端队列用于存储字母的索引</span>
+<span class="token keyword">int</span> letterIdx<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> front <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> rear <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 入队操作</span>
+<span class="token keyword">void</span> <span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">int</span> idx<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    rear<span class="token operator">++</span><span class="token punctuation">;</span>
+    letterIdx<span class="token punctuation">[</span>rear<span class="token punctuation">]</span> <span class="token operator">=</span> idx<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 出队操作</span>
+<span class="token keyword">void</span> <span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    front<span class="token operator">++</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 获取队首元素</span>
+<span class="token keyword">int</span> <span class="token function">getFront</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> letterIdx<span class="token punctuation">[</span>front<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 判断队列是否为空</span>
+bool <span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> rear <span class="token operator">&lt;</span> front<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入的字符串</span>
+    <span class="token keyword">char</span> str<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化最长子串长度为-1</span>
+    <span class="token keyword">int</span> maxLen <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化一个标志，表示是否找到了包含字母的子串</span>
+    bool hasLetter <span class="token operator">=</span> false<span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化双指针l和r，分别表示子串的左右边界</span>
+    <span class="token keyword">int</span> l <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> r <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历字符串</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>r <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 获取当前字符</span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> str<span class="token punctuation">[</span>r<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果当前字符是字母</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isalpha</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 设置标志为true，表示找到了包含字母的子串</span>
+            hasLetter <span class="token operator">=</span> true<span class="token punctuation">;</span>
+            <span class="token comment">// 将字母的索引添加到队列的尾部</span>
+            <span class="token function">push</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果队列中有多于1个字母的索引</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>rear <span class="token operator">-</span> front <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&gt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 移除队列头部的字母索引，并将左指针l移动到该索引的下一个位置</span>
+                l <span class="token operator">=</span> <span class="token function">getFront</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 如果右指针r等于左指针l，跳过当前循环</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>r <span class="token operator">==</span> l<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                r<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 更新最长子串长度</span>
+        maxLen <span class="token operator">=</span> r <span class="token operator">-</span> l <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&gt;</span> maxLen <span class="token operator">?</span> r <span class="token operator">-</span> l <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">:</span> maxLen<span class="token punctuation">;</span>
+        <span class="token comment">// 移动右指针</span>
+        r<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果没有找到包含字母的子串，输出-1</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>hasLetter<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 否则输出最长子串长度</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> maxLen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_385"></a>完整用例</h2> 
+<h3><a id="1_387"></a>用例1</h3> 
+<p>abC124ACb</p> 
+<h3><a id="2_390"></a>用例2</h3> 
+<p>a5</p> 
+<h3><a id="3_393"></a>用例3</h3> 
+<p>aBB9</p> 
+<h3><a id="4_396"></a>用例4</h3> 
+<p>abcdef</p> 
+<h3><a id="5_400"></a>用例5</h3> 
+<p>123456</p> 
+<h3><a id="6_403"></a>用例6</h3> 
+<p>aBcD1234567890EFG</p> 
+<h3><a id="7_406"></a>用例7</h3> 
+<p>aBcD1234567890EFGHijklmnopqrstuvwxyZ</p> 
+<h3><a id="8_409"></a>用例8</h3> 
+<p>aBcD1234aBcD1234aBcD1234</p> 
+<h3><a id="9_412"></a>用例9</h3> 
+<p>aBcD1234aBcD1234aBcD12345</p> 
+<h3><a id="10_415"></a>用例10</h3> 
+<p>aBcD1234aBcD1234aBcD1234a</p> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_8" rel="nofollow">输入描述</a></li><li><a href="#_12" rel="nofollow">输出描述</a></li><li><a href="#_16" rel="nofollow">用例</a></li><li><a href="#C_26" rel="nofollow">C++</a></li><li><a href="#java_99" rel="nofollow">java</a></li><li><a href="#javaScript_168" rel="nofollow">javaScript</a></li><li><a href="#python_234" rel="nofollow">python</a></li><li><a href="#C_290" rel="nofollow">C语言</a></li><li><a href="#_385" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_387" rel="nofollow">用例1</a></li><li><a href="#2_390" rel="nofollow">用例2</a></li><li><a href="#3_393" rel="nofollow">用例3</a></li><li><a href="#4_396" rel="nofollow">用例4</a></li><li><a href="#5_400" rel="nofollow">用例5</a></li><li><a href="#6_403" rel="nofollow">用例6</a></li><li><a href="#7_406" rel="nofollow">用例7</a></li><li><a href="#8_409" rel="nofollow">用例8</a></li><li><a href="#9_412" rel="nofollow">用例9</a></li><li><a href="#10_415" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/47d152561190f23ffccd5330f937ea3b.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

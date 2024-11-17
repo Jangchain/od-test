@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="__3"></a>题目描述: 食堂供餐</h4> 
+<p>某公司员工食堂以盒饭方式供餐。</p> 
+<p>为将员工取餐排队时间降低为0，食堂的供餐速度必须要足够快。</p> 
+<p>现在需要根据以往员工取餐的统计信息，计算出一个刚好能达成排队时间为0的最低供餐速度。即，食堂在每个单位时间内必须至少做出多少价盒饭才能满足要求。</p> 
+<h4><a id="_11"></a>输入描述</h4> 
+<p>第1行为一个正整数N，表示食堂开餐时长。</p> 
+<ul><li>1 ≤ N ≤ 1000</li></ul> 
+<p>第2行为一个正整数M，表示开餐前食堂已经准备好的盒饭份数。</p> 
+<ul><li>P1 ≤ M ≤ 1000</li></ul> 
+<p>第3行为N个正整数，用空格分隔，依次表示开餐时间内按时间顺序每个单位时间进入食堂取餐的人数Pi。</p> 
+<ul><li>1 ≤ i ≤ N</li><li>0 ≤ Pi ≤ 100</li></ul> 
+<h4><a id="_26"></a>输出描述</h4> 
+<p>一个整数，能满足题目要求的最低供餐速度（每个单位时间需要做出多少份盒饭）。</p> 
+<h4><a id="_30"></a>备注</h4> 
+<ul><li>每人只取一份盒饭。</li><li>需要满足排队时间为0，必须保证取餐员工到达食堂时，食堂库存盒饭数量不少于本次来取餐的人数。</li><li>第一个单位时间来取餐的员工只能取开餐前食堂准备好的盒饭。</li><li>每个单位时间里制作的盒饭只能供应给后续单位时间来的取餐的员工。</li><li>食堂在每个单位时间里制作的盒饭数量是相同的。</li></ul> 
+<h5><a id="ACM_38"></a>ACM输入输出模式</h5> 
+<p>如果你经常使用<strong>Leetcode</strong>,会知道<strong>letcode</strong>是不需要编写输入输出函数的。但是华为OD机考使用的是 <strong>ACM 模式</strong>，需要手动编写输入和输出。</p> 
+<p>所以最好在牛-客上提前熟悉这种模式。例如C++使用<code>cin/cout</code>,python使用<code>input()/print()</code>。JavaScript使用node的<code>readline()</code>和<code>console.log()</code>。Java 使用<code>sacnner/system.out.print()</code></p> 
+<h4><a id="_45"></a>用例</h4> 
+<p>输入</p> 
+<pre><code>3
+14
+10 4 5
+</code></pre> 
+<p>输出</p> 
+<pre><code>3
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>本样例中，总共有3批员工就餐，每批人数分别为10、4、5。</p> 
+ <p>开餐前食堂库存14份。</p> 
+ <p>食堂每个单位时间至少要做出3份餐饭才能达成排队时间为0的目标。具体情况如下:</p> 
+ <p>第一个单位时间来的10位员工直接从库存取餐。取餐后库存剩余4份盒饭，加上第一个单位时间做出的3份，库存有7份<br> 第二个单位时间来的4员工从库存的7份中取4份。取餐后库存剩余3份盒饭，加上第二个单位时间做出的3份，库存有6份。<br> 第三个单位时间来的员工从库存的6份中取5份，库存足够。<br> 如果食堂在单位时间只能做出2份餐饭，则情况如下:</p> 
+ <p>第一个单位时间来的10位员工直接从库存取餐。取餐后库存剩余4份盒饭，加上第一个单位时间做出的2份，库存有6份<br> 第二个单位时间来的4员工从库存的6份中取4份。取餐后库存剩余2份盒饭，加上第二个单位时间做出的2份，库存有4份.<br> 第三个单位时间来的员工需要取5份，但库存只有4份，库存不够。</p> 
+</blockquote> 
+<h4><a id="_81"></a>机考代码查重</h4> 
+<p>华为OD机考完成之后，官方会进行代码查重。<strong>华为 od 机考确实有很大的概率抽到原题</strong>。如果碰到了题库中的原题，一定不要直接使用题解中的代码，尤其是变量名，一定要修改，可以改成毫无意义的单词。除了变量名之外，代码的组织结构和逻辑一定要进行改变，这就要求在日常的刷题中，提前编写好属于自己的代码。</p> 
+<h4><a id="C_85"></a>C++</h4> 
+<pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+bool calculate_minimum_speed(int m, int add, vector&lt;int&gt;&amp; pi) {
+    m -= pi[0];
+    
+    for (int i = 1; i &lt; pi.size(); i++) {
+        int make = max(0, pi[i] - m);
+        m = max(0, m - pi[i] + add);
+        if (make &gt; add) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+int main() {
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    
+    vector&lt;int&gt; pi(n);
+    int min = 0;
+    int max = 0;
+    
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; pi[i];
+        if (pi[i] &gt; max) {
+            max = pi[i];
+        }
+    }
+    
+    int ans = 0;
+    
+    while (min &lt;= max) {
+        int mid = (min + max) &gt;&gt; 1;
+        if (calculate_minimum_speed(m, mid, pi)) {
+            ans = mid;
+            max = mid - 1;
+        } else {
+            min = mid + 1;
+        }
+    }
+    
+    cout &lt;&lt; ans &lt;&lt; endl;
+    
+    return 0;
+}
+</code></pre> 
+<h4><a id="Java_143"></a>Java</h4> 
+<pre><code>import java.util.Arrays;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        // 食堂开餐时长
+        int n = sc.nextInt();
+        // 开餐前食堂已经准备好的盒饭份数
+        int m = sc.nextInt();
+        // 开餐时间内按时间顺序每个单位时间进入食堂取餐的人数
+        int[] pi = new int[n];
+        int min = 0;
+        int max = 0;
+
+        // 读取每个单位时间进入食堂取餐的人数，并找到最大值
+        for (int i = 0; i &lt; n; i++) {
+            pi[i] = sc.nextInt();
+            if (pi[i] &gt; max) {
+                max = pi[i];
+            }
+        }
+        
+        // 初始时，最低供餐速度为0
+        int ans = 0;
+        
+        // 二分查找最低供餐速度
+        while (min &lt;= max) {
+            int mid = (min + max) &gt;&gt; 1;
+            if (calculate_minimum_speed(m, mid, pi)) {
+                ans = mid;
+                max = mid - 1;
+            } else {
+                min = mid + 1;
+            }
+        }
+        
+        // 输出能满足题目要求的最低供餐速度
+        System.out.println(ans);
+    }
+
+    public static boolean calculate_minimum_speed(int m, int add, int[] pi) {
+        // 开餐前食堂已经准备好的盒饭份数
+        m -= pi[0];
+        
+        // 遍历每个单位时间
+        for (int i = 1; i &lt; pi.length; i++) {
+            // 计算每个单位时间需要制作的盒饭数量
+            int make = Math.max(0, pi[i] - m);
+            // 更新食堂库存盒饭数量
+            m = Math.max(0, m - pi[i] + add);
+            // 判断是否能满足要求
+            if (make &gt; add) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
+
+</code></pre> 
+<h4><a id="JavaScript_209"></a>JavaScript</h4> 
+<pre><code>const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+let n, m, pi;
+
+rl.on('line', (line) =&gt; {
+  if (!n) {
+    n = parseInt(line);
+  } else if (!m) {
+    m = parseInt(line);
+  } else {
+    pi = line.split(' ').map(num =&gt; parseInt(num));
+ 
+    main(n, m, pi);
+  }
+});
+
+function main(n, m, pi) {
+  let min = 0;
+  let max = 0;
+
+ 
+  for (let i = 0; i &lt; n; i++) {
+    if (pi[i] &gt; max) {
+      max = pi[i];
+    }
+  }
+
+  let ans = 0;
+
+ 
+  while (min &lt;= max) {
+    let mid = (min + max) &gt;&gt; 1;
+    if (calculate_minimum_speed(m, mid, pi)) {
+      ans = mid;
+      max = mid - 1;
+    } else {
+      min = mid + 1;
+    }
+  }
+
+  console.log(ans);
+}
+
+function calculate_minimum_speed(m, add, pi) {
+  m -= pi[0];
+
+  for (let i = 1; i &lt; pi.length; i++) {
+    let make = Math.max(0, pi[i] - m);
+    m = Math.max(0, m - pi[i] + add);
+    if (make &gt; add) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+</code></pre> 
+<h4><a id="Python_276"></a>Python</h4> 
+<pre><code>def calculate_minimum_speed(m, add, pi):
+    # 开餐前食堂已经准备好的盒饭份数
+    m -= pi[0]
+
+    # 遍历每个单位时间
+    for i in range(1, len(pi)):
+        # 计算每个单位时间需要制作的盒饭数量
+        make = max(0, pi[i] - m)
+        # 更新食堂库存盒饭数量
+        m = max(0, m - pi[i] + add)
+        # 判断是否能满足要求
+        if make &gt; add:
+            return False
+
+    return True
+
+n = int(input()) # 食堂开餐时长
+m = int(input()) # 开餐前食堂已经准备好的盒饭份数
+pi = list(map(int, input().split())) # 开餐时间内按时间顺序每个单位时间进入食堂取餐的人数
+
+ans = 0 # 最低供餐速度
+# 二分查找
+min_num = 0
+max_num = max(pi)
+while min_num &lt;= max_num:
+    mid = (min_num + max_num) &gt;&gt; 1
+    if calculate_minimum_speed(m, mid, pi):
+        ans = mid
+        max_num = mid - 1
+    else:
+        min_num = mid + 1
+
+print(ans)
+
+</code></pre> 
+<blockquote> 
+ <p></p> 
+ <div class="toc"> 
+  <h4>文章目录</h4> 
+  <ul><li><ul><li><ul><li><a href="#__3" rel="nofollow">题目描述: 食堂供餐</a></li><li><a href="#_11" rel="nofollow">输入描述</a></li><li><a href="#_26" rel="nofollow">输出描述</a></li><li><a href="#_30" rel="nofollow">备注</a></li><li><ul><li><a href="#ACM_38" rel="nofollow">ACM输入输出模式</a></li></ul> 
+     </li><li><a href="#_45" rel="nofollow">用例</a></li><li><a href="#_81" rel="nofollow">机考代码查重</a></li><li><a href="#C_85" rel="nofollow">C++</a></li><li><a href="#Java_143" rel="nofollow">Java</a></li><li><a href="#JavaScript_209" rel="nofollow">JavaScript</a></li><li><a href="#Python_276" rel="nofollow">Python</a></li><li><a href="#_323" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_324" rel="nofollow">用例1</a></li><li><a href="#2_332" rel="nofollow">用例2</a></li><li><a href="#3_340" rel="nofollow">用例3</a></li><li><a href="#4_348" rel="nofollow">用例4</a></li><li><a href="#5_356" rel="nofollow">用例5</a></li><li><a href="#6_364" rel="nofollow">用例6</a></li><li><a href="#7_372" rel="nofollow">用例7</a></li><li><a href="#8_380" rel="nofollow">用例8</a></li><li><a href="#9_388" rel="nofollow">用例9</a></li><li><a href="#10_396" rel="nofollow">用例10</a></li></ul> 
+    </li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </div> 
+ <p></p> 
+</blockquote> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p> 
+<h4><a id="_323"></a>完整用例</h4> 
+<h5><a id="1_324"></a>用例1</h5> 
+<pre><code class="prism language-input1">3
+14
+10 4 5
+</code></pre> 
+<h5><a id="2_332"></a>用例2</h5> 
+<pre><code class="prism language-input2">5
+20
+8 5 10 3 6
+</code></pre> 
+<h5><a id="3_340"></a>用例3</h5> 
+<pre><code class="prism language-input3">4
+10
+6 4 7 3
+</code></pre> 
+<h5><a id="4_348"></a>用例4</h5> 
+<pre><code class="prism language-input4">2
+5
+2 3
+</code></pre> 
+<h5><a id="5_356"></a>用例5</h5> 
+<pre><code class="prism language-input5">6
+30
+10 5 8 12 4 6
+</code></pre> 
+<h5><a id="6_364"></a>用例6</h5> 
+<pre><code class="prism language-input6">1
+5
+5
+</code></pre> 
+<h5><a id="7_372"></a>用例7</h5> 
+<pre><code class="prism language-input7">8
+15
+6 4 7 2 5 3 8 1
+</code></pre> 
+<h5><a id="8_380"></a>用例8</h5> 
+<pre><code class="prism language-input8">10
+50
+10 8 5 6 7 9 4 3 2 1
+</code></pre> 
+<h5><a id="9_388"></a>用例9</h5> 
+<pre><code class="prism language-input9">7
+20
+5 3 6 8 4 9 2
+</code></pre> 
+<h5><a id="10_396"></a>用例10</h5> 
+<pre><code class="prism language-input10">9
+25
+8 5 7 4 6 3 9 2 1
+</code></pre>
+                </div>
+</body>
+</html>

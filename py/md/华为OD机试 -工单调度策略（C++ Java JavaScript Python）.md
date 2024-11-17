@@ -1,0 +1,331 @@
+#### 题目描述
+
+当小区通信设备上报警时，系统会自动生成待处理的工单，华为工单调度系统需要根据不同的策略，调度外线工程师（[FME](https://so.csdn.net/so/search?q=FME&spm=1001.2101.3001.7020)）上站修复工单对应的问题。
+
+根据与运营商签订的合同，不同严重程度的工单被处理并修复的时长要求不同，这个要求被修复的时长我们称之为[SLA](https://so.csdn.net/so/search?q=SLA&spm=1001.2101.3001.7020)时间。
+
+假设华为和运营商A签订了运维合同，部署了一套调度系统，只有1个外线工程师（FME），每个工单根据问题严重程度会给一个评分，在SLA时间内完成修复的工单，华为获得工单评分对应的积分，超过SLA完成的工单不获得积分，但必须完成该工单。运营商最终会根据积分进行付款。
+
+请设计一种调度策略，根据现状得到调度结果完成所有工单，让这个外线工程师处理的工单获得的总积分最多。
+
+假设从某个调度时刻开始，当前工单数量为N，不会产生新的工单，每个工单处理修复耗时为1小时，请设计你的调度策略，完成业务目标。
+
+不考虑外线工程师在小区之间行驶的耗时。
+
+#### 输入描述
+
+第一行为一个整数N，表示工单的数量。
+
+接下来N行，每行包括两个整数。第一个整数表示工单的SLA时间（小时），第二个数表示该工单的积分。
+
+#### 输出描述
+
+输出一个整数表示可以获得的最大积分。
+
+##### 备注
+
+>   * 工单数量N ≤ 10^6
+>   * SLA时间 ≤ 7 * 10^5
+>   * 答案的最大积分不会超过2147483647
+>
+
+##### ACM输入输出模式
+
+如果你经常使用**Leetcode** ,会知道**letcode** 是不需要编写输入输出函数的。但是华为OD机考使用的是 **ACM 模式**
+，需要手动编写输入和输出。
+
+所以最好在牛-
+客上提前熟悉这种模式。例如C++使用`cin/cout`,python使用`input()/print()`。JavaScript使用node的`readline()`和`console.log()`。Java
+使用`sacnner/system.out.print()`
+
+#### 用例
+
+假设有7个工单的SLA时间（小时）和积分如下：
+
+工单编号| SLA| 积分  
+---|---|---  
+1| 1| 6  
+2| 1| 7  
+3| 3| 2  
+4| 3| 1  
+5| 2| 4  
+6| 2| 5  
+7| 6| 1  
+输入| 7  
+1 6  
+1 7  
+3 2  
+3 1  
+2 4  
+2 5  
+6 1  
+---|---  
+输出| 15  
+说明| 最多可获得15积分，其中一个调度结果完成工单顺序为2，6，3，1，7，5，4（可能还有其他顺序）  
+  
+#### 题目解析
+
+首先，按照工单的截止时间将所有工单按升序排列，即最紧急的工单排在最前面。
+
+然后，创建一个优先队列pq，按积分升序排列，即积分少的工单在队列的顶部。定义当前时间curTime =
+0，定义一个ans记录拿到的积分。然后遍历升序后的工单列表，对于每一个工单wo，尝试将其加入pq中，此时会出现两种情况：
+
+  1. 如果要加入pq的工单wo的截止时间endTime >= curTime + 1，则表示修复该工单花费一小时后，仍在该工单的有效期内。此时，我们可以直接将该工单加入pq，并获得该工单的积分ans += score，然后将curTime加1。
+  2. 如果要加入pq的工单wo的截止时间endTime < curTime + 1，则表示修复该工单花费一小时后，超出了该工单的有效期。此时，我们需要比较优先队列堆顶的工单A的积分（优先队列中积分最小）和要加入的工单B的积分：
+
+  * 如果B > A，则说明工单B更有价值，因此我们应该用原本用于修复工单A的一小时来修复工单B。我们弹出队列顶部的工单A，并加入工单B。此时，ans += B.score - A.score，而curTime保持不变，因为我们只是将原本用于修复工单A的一小时用于修复工单B。
+  * 如果B <= A，则说明工单B不比A更有价值。此时，我们不将工单B加入队列中，而直接跳过该工单继续遍历。
+
+#### 机考代码查重
+
+华为OD机考完成之后，官方会进行代码查重。**华为 od 机考确实有很大的概率抽到原题**
+。如果碰到了题库中的原题，一定不要直接使用题解中的代码，尤其是变量名，一定要修改，可以改成毫无意义的单词。除了变量名之外，代码的组织结构和逻辑一定要进行改变，这就要求在日常的刷题中，提前编写好属于自己的代码。
+
+#### C++
+
+    
+    
+    // 1. 首先输入工单数量n和每个工单的SLA时间和积分，存储在一个二维vector tasks 中。
+    // 2. 排序tasks，按照每个工单的积分从大到小排序。
+    // 3. 创建一个长度为n+1的vector maxScore，记录每个SLA时间的最大积分。初始化为0。
+    // 4. 遍历排序后的tasks，对于每个工单task，如果当前SLA时间没有工单，则直接记录该工单的积分；否则向前查找最近的一个没有工单的时间，如果找到了没有工单的时间，则记录该工单的积分。
+    // 5. 计算所有SLA时间的最大积分之和，存储在变量res中。
+    // 6. 输出结果res。
+    
+    // 该代码的主要思路是贪心算法，按照每个工单的积分从大到小排序，
+    // 然后尽可能地安排每个工单，使得每个SLA时间的积分最大。
+    // 具体实现中，使用一个maxScore数组记录每个SLA时间的最大积分，
+    // 如果当前SLA时间有工单，则向前查找最近的一个没有工单的时间，然后记录该工单的积分。
+    // 最后计算所有SLA时间的最大积分之和即可。
+    #include <iostream>
+    #include <vector>
+    #include <algorithm>
+    using namespace std;
+    
+    int main() {
+        // 输入工单数量
+        int n;
+        cin >> n;
+    
+        // 输入每个工单的SLA时间和积分
+        vector<vector<int>> tasks(n, vector<int>(2)); 
+        for (int i = 0; i < n; i++) {
+            cin >> tasks[i][0] >> tasks[i][1]; 
+        }
+    
+        // 将工单按积分从大到小排序
+        sort(tasks.begin(), tasks.end(), [](vector<int> a, vector<int> b) { 
+            return a[1] > b[1];
+        });
+    
+        // 记录每个SLA时间的最大积分
+        vector<int> maxScore(n + 1, 0);
+        for (auto task : tasks) {
+            // 如果当前SLA时间没有工单，则直接记录该工单的积分
+            if (maxScore[task[0]] == 0) {
+                maxScore[task[0]] = task[1];
+            } else {
+                // 如果当前SLA时间有工单，则向前查找最近的一个没有工单的时间
+                int t = task[0] - 1;
+                while (t > 0 && maxScore[t] != 0) {
+                    t--;
+                }
+                // 如果找到了没有工单的时间，则记录该工单的积分
+                if (t > 0) {
+                    maxScore[t] = task[1];
+                }
+            }
+        }
+    
+        // 计算所有SLA时间的最大积分之和
+        int res = 0;
+        for (int score : maxScore) { 
+            res += score;
+        }
+    
+        // 输出结果
+        cout << res;
+        return 0;
+    }
+    
+
+#### JavaScript
+
+    
+    
+    const readline = require('readline');
+    
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    
+    let n = 0;
+    let tasks = [];
+    let maxScore = [];
+    
+    rl.on('line', (line) => {
+      if (n === 0) {
+        n = parseInt(line);
+      } else {
+        const [sla, score] = line.split(' ').map(x => parseInt(x));
+        tasks.push([sla, score]);
+        if (tasks.length === n) {
+          solve();
+          rl.close();
+        }
+      }
+    });
+    
+    function solve() {
+      // 将工单按积分从大到小排序
+      tasks.sort((a, b) => b[1] - a[1]);
+    
+      // 记录每个SLA时间的最大积分
+      maxScore = Array(n + 1).fill(0);
+      for (const task of tasks) {
+        // 如果当前SLA时间没有工单，则直接记录该工单的积分
+        if (maxScore[task[0]] === 0) {
+          maxScore[task[0]] = task[1];
+        } else {
+          // 如果当前SLA时间有工单，则向前查找最近的一个没有工单的时间
+          let t = task[0] - 1;
+          while (t > 0 && maxScore[t] !== 0) {
+            t--;
+          }
+          // 如果找到了没有工单的时间，则记录该工单的积分
+          if (t > 0) {
+            maxScore[t] = task[1];
+          }
+        }
+      }
+    
+      // 计算所有SLA时间的最大积分之和
+      let res = 0;
+      for (const score of maxScore) {
+        res += score;
+      }
+    
+      // 输出结果
+      console.log(res);
+    }
+    
+
+#### Java
+
+    
+    
+    import java.util.*;
+    
+    public class Main {
+        public static void main(String[] args) {
+            Scanner sc = new Scanner(System.in);
+    
+            // 输入工单数量
+            int n = sc.nextInt();
+    
+            // 输入每个工单的SLA时间和积分
+            List<List<Integer>> tasks = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                List<Integer> task = new ArrayList<>();
+                task.add(sc.nextInt());
+                task.add(sc.nextInt());
+                tasks.add(task);
+            }
+    
+            // 将工单按积分从大到小排序
+            Collections.sort(tasks, new Comparator<List<Integer>>() {
+                @Override
+                public int compare(List<Integer> a, List<Integer> b) {
+                    return b.get(1) - a.get(1);
+                }
+            });
+    
+            // 记录每个SLA时间的最大积分
+            List<Integer> maxScore = new ArrayList<>(Collections.nCopies(n + 1, 0));
+            for (List<Integer> task : tasks) {
+                // 如果当前SLA时间没有工单，则直接记录该工单的积分
+                if (maxScore.get(task.get(0)) == 0) {
+                    maxScore.set(task.get(0), task.get(1));
+                } else {
+                    // 如果当前SLA时间有工单，则向前查找最近的一个没有工单的时间
+                    int t = task.get(0) - 1;
+                    while (t > 0 && maxScore.get(t) != 0) {
+                        t--;
+                    }
+                    // 如果找到了没有工单的时间，则记录该工单的积分
+                    if (t > 0) {
+                        maxScore.set(t, task.get(1));
+                    }
+                }
+            }
+    
+            // 计算所有SLA时间的最大积分之和
+            int res = 0;
+            for (int score : maxScore) {
+                res += score;
+            }
+    
+            // 输出结果
+            System.out.println(res);
+        }
+    }
+    
+
+#### Python
+
+    
+    
+    # 输入工单数量
+    n = int(input())
+    
+    # 输入每个工单的SLA时间和积分
+    tasks = []
+    for i in range(n):
+        task = list(map(int, input().split()))
+        tasks.append(task)
+    
+    # 将工单按积分从大到小排序
+    tasks.sort(key=lambda x: x[1], reverse=True)
+    
+    # 记录每个SLA时间的最大积分
+    maxScore = [0] * (n + 1)
+    for task in tasks:
+        # 如果当前SLA时间没有工单，则直接记录该工单的积分
+        if maxScore[task[0]] == 0:
+            maxScore[task[0]] = task[1]
+        else:
+            # 如果当前SLA时间有工单，则向前查找最近的一个没有工单的时间
+            t = task[0] - 1
+            while t > 0 and maxScore[t] != 0:
+                t -= 1
+            # 如果找到了没有工单的时间，则记录该工单的积分
+            if t > 0:
+                maxScore[t] = task[1]
+    
+    # 计算所有SLA时间的最大积分之和
+    res = sum(maxScore)
+    
+    # 输出结果
+    print(res)
+    
+    
+
+#### 文章目录
+
+  *     *       * 题目描述
+      * 输入描述
+      * 输出描述
+      *         * 备注
+        * ACM输入输出模式
+      * 用例
+      * 题目解析
+      * 机考代码查重
+      * C++
+      * JavaScript
+      * Java
+      * Python
+
+![fengmian](https://img-
+blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png)
+

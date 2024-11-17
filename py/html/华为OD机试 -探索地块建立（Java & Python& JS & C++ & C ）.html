@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_6"></a>题目描述</h2> 
+<p>给一块n*m的地块，相当于n*m的二维数组，每个元素的值表示这个小地块的发电量；</p> 
+<p>求在这块地上建立正方形的边长为c的发电站，发电量满足目标电量k的地块数量。</p> 
+<h2><a id="_12"></a></h2> 
+<h2><a id="_16"></a>输入描述</h2> 
+<p>第一行为四个按空格分隔的正整数，分别表示n, m , c k</p> 
+<p>后面n行整数，表示每个地块的发电量</p> 
+<h2><a id="_22"></a>输出描述</h2> 
+<p>出满足条件的地块数量</p> 
+<h2><a id="1_28"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>2 5 2 6
+1 3 4 5 8
+2 3 6 7 1
+</code></pre> 
+<p>输出</p> 
+<pre><code>4
+</code></pre> 
+<h2><a id="_47"></a>解题思路</h2> 
+<p>本题可以使用动态规划前缀和思想解题。</p> 
+<p>解题思路如下：</p> 
+<p>首先，将每一行在水平方向上选取c个相邻地块进行发电量合并，用例中是2块相邻的地合并</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/43e6e3eaa96d54b65fbd8924437968e9.png" alt="image-20230305111354484"></p> 
+<p>行合并完后，接下来对列进行合并</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/48cad2abf74ff2ab0eef0d75b2021435.png" alt="image-20230305111520836"></p> 
+<p>这样的话，最终得到【9，16，22，21】</p> 
+<p>其中9，起始就是下图中绿色部分，是一个c*c的区域，9是这个区域的发电量总和。其他的16，22，21也同理。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/4eb6d2d4287771051c5dc62d9ed256d5.png" alt="image-20230305111558836"></p> 
+<p>因此，9，16，22，21每一个都是符合要求发电站发电量&gt;6的区域，因此结果输出4个</p> 
+<h2><a id="Java_72"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 读取第一行输入，并使用 split 分割</span>
+        <span class="token comment">// numRows: 地块的行数</span>
+        <span class="token comment">// numCols: 地块的列数</span>
+        <span class="token comment">// squareSize: 正方形边长</span>
+        <span class="token comment">// minRequiredPower: 目标电量</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> initialInput <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> numRows <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInput<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> numCols <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInput<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> squareSize <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInput<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> minRequiredPower <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInput<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 定义地块发电量矩阵 field</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> field <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>numRows<span class="token punctuation">]</span><span class="token punctuation">[</span>numCols<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取地块发电量</span>
+        <span class="token comment">// 每一行用空格分隔，并将值转换为整数存储在 field 矩阵中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> row <span class="token operator">&lt;</span> numRows<span class="token punctuation">;</span> row<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> powerData <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> col <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> col <span class="token operator">&lt;</span> numCols<span class="token punctuation">;</span> col<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                field<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>powerData<span class="token punctuation">[</span>col<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 定义前缀和矩阵 prefixSum，用于快速计算正方形区域的发电量总和</span>
+        <span class="token comment">// prefixSum[i][j] 表示从 (0,0) 到 (i-1,j-1) 的矩形区域的电量和</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> prefixSum <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>numRows <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>numCols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算前缀和矩阵</span>
+        <span class="token comment">// 前缀和公式: prefixSum[i][j] = 上 + 左 - 左上 + 当前</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> row <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> row<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> col <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> col <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> col<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> 
+                                      <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> 
+                                      <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> 
+                                      <span class="token operator">+</span> field<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 统计满足条件的正方形区域数量</span>
+        <span class="token keyword">int</span> validSquareCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历所有可能的正方形区域的右下角坐标</span>
+        <span class="token comment">// i 和 j 分别表示正方形的右下角位置</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> bottomRow <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> bottomRow <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> bottomRow<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> rightCol <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> rightCol <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> rightCol<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算以 (bottomRow, rightCol) 为右下角的正方形区域的发电量总和</span>
+                <span class="token keyword">int</span> totalPower <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span> 
+                               <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span> 
+                               <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span> 
+                               <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                
+                <span class="token comment">// 判断是否满足目标电量</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>totalPower <span class="token operator">&gt;=</span> minRequiredPower<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    validSquareCount<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出满足条件的正方形区域数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>validSquareCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="Python_146"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># Python 代码实现</span>
+
+<span class="token comment"># 读取输入并初始化数据</span>
+<span class="token comment"># 第一行输入包括: numRows, numCols, squareSize, minRequiredPower</span>
+initial_input <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+num_rows <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>initial_input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 地块行数</span>
+num_cols <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>initial_input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 地块列数</span>
+square_size <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>initial_input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 正方形边长</span>
+min_required_power <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>initial_input<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 最小目标电量</span>
+
+<span class="token comment"># 定义地块发电量矩阵</span>
+field <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_rows<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    field<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 定义前缀和矩阵</span>
+prefix_sum <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>num_cols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_rows <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 计算前缀和矩阵</span>
+<span class="token comment"># prefix_sum[i][j] 表示从 (0,0) 到 (i-1,j-1) 的区域电量总和</span>
+<span class="token keyword">for</span> row <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> num_rows <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> col <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> num_cols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        prefix_sum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>
+            prefix_sum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">+</span>
+            prefix_sum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span>
+            prefix_sum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span>
+            field<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token punctuation">)</span>
+
+<span class="token comment"># 统计满足条件的正方形区域数量</span>
+valid_square_count <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 遍历所有可能的正方形区域的右下角坐标</span>
+<span class="token keyword">for</span> bottom_row <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>square_size<span class="token punctuation">,</span> num_rows <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> right_col <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>square_size<span class="token punctuation">,</span> num_cols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        total_power <span class="token operator">=</span> <span class="token punctuation">(</span>
+            prefix_sum<span class="token punctuation">[</span>bottom_row<span class="token punctuation">]</span><span class="token punctuation">[</span>right_col<span class="token punctuation">]</span>
+            <span class="token operator">-</span> prefix_sum<span class="token punctuation">[</span>bottom_row <span class="token operator">-</span> square_size<span class="token punctuation">]</span><span class="token punctuation">[</span>right_col<span class="token punctuation">]</span>
+            <span class="token operator">-</span> prefix_sum<span class="token punctuation">[</span>bottom_row<span class="token punctuation">]</span><span class="token punctuation">[</span>right_col <span class="token operator">-</span> square_size<span class="token punctuation">]</span>
+            <span class="token operator">+</span> prefix_sum<span class="token punctuation">[</span>bottom_row <span class="token operator">-</span> square_size<span class="token punctuation">]</span><span class="token punctuation">[</span>right_col <span class="token operator">-</span> square_size<span class="token punctuation">]</span>
+        <span class="token punctuation">)</span>
+        <span class="token comment"># 判断是否满足目标电量</span>
+        <span class="token keyword">if</span> total_power <span class="token operator">&gt;=</span> min_required_power<span class="token punctuation">:</span>
+            valid_square_count <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 输出结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>valid_square_count<span class="token punctuation">)</span>
+
+</code></pre> 
+<h2><a id="JavaScript_198"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// Node.js 代码实现</span>
+
+<span class="token comment">// 读取输入数据</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 解析第一行输入数据</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>numRows<span class="token punctuation">,</span> numCols<span class="token punctuation">,</span> squareSize<span class="token punctuation">,</span> minRequiredPower<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化地块发电量矩阵</span>
+    <span class="token keyword">const</span> field <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        field<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 定义前缀和矩阵</span>
+    <span class="token keyword">const</span> prefixSum <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> length<span class="token operator">:</span> numRows <span class="token operator">+</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token function">Array</span><span class="token punctuation">(</span>numCols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算前缀和矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> row <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> row <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> row<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> col <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> col <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> col<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span>
+                                <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+                                <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+                                <span class="token operator">+</span> field<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 统计满足条件的正方形区域数量</span>
+    <span class="token keyword">let</span> validSquareCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有可能的正方形区域的右下角坐标</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> bottomRow <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> bottomRow <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> bottomRow<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> rightCol <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> rightCol <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> rightCol<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">const</span> totalPower <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span>
+                             <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span>
+                             <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span>
+                             <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>totalPower <span class="token operator">&gt;=</span> minRequiredPower<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                validSquareCount<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>validSquareCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h2><a id="C_259"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入</span>
+    <span class="token keyword">int</span> numRows<span class="token punctuation">,</span> numCols<span class="token punctuation">,</span> squareSize<span class="token punctuation">,</span> minRequiredPower<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> numRows <span class="token operator">&gt;&gt;</span> numCols <span class="token operator">&gt;&gt;</span> squareSize <span class="token operator">&gt;&gt;</span> minRequiredPower<span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义地块发电量矩阵</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">field</span><span class="token punctuation">(</span>numRows<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>numCols<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numRows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> numCols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cin <span class="token operator">&gt;&gt;</span> field<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 定义前缀和矩阵</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">prefixSum</span><span class="token punctuation">(</span>numRows <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>numCols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算前缀和矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> row <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> row<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> col <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> col <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> col<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span>
+                                <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+                                <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+                                <span class="token operator">+</span> field<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 统计满足条件的正方形区域数量</span>
+    <span class="token keyword">int</span> validSquareCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> bottomRow <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> bottomRow <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> bottomRow<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> rightCol <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> rightCol <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> rightCol<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> totalPower <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span>
+                           <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span>
+                           <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span>
+                           <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>totalPower <span class="token operator">&gt;=</span> minRequiredPower<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                validSquareCount<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    cout <span class="token operator">&lt;&lt;</span> validSquareCount <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="C_314"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> numRows<span class="token punctuation">,</span> numCols<span class="token punctuation">,</span> squareSize<span class="token punctuation">,</span> minRequiredPower<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取第一行输入</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>numRows<span class="token punctuation">,</span> <span class="token operator">&amp;</span>numCols<span class="token punctuation">,</span> <span class="token operator">&amp;</span>squareSize<span class="token punctuation">,</span> <span class="token operator">&amp;</span>minRequiredPower<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义地块发电量矩阵</span>
+    <span class="token keyword">int</span> field<span class="token punctuation">[</span>numRows<span class="token punctuation">]</span><span class="token punctuation">[</span>numCols<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numRows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> numCols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>field<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 定义前缀和矩阵</span>
+    <span class="token keyword">int</span> prefixSum<span class="token punctuation">[</span>numRows <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>numCols <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            prefixSum<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算前缀和矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> row <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> row<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> col <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> col <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> col<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span>
+                                <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+                                <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+                                <span class="token operator">+</span> field<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 统计满足条件的正方形区域数量</span>
+    <span class="token keyword">int</span> validSquareCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> bottomRow <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> bottomRow <span class="token operator">&lt;=</span> numRows<span class="token punctuation">;</span> bottomRow<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> rightCol <span class="token operator">=</span> squareSize<span class="token punctuation">;</span> rightCol <span class="token operator">&lt;=</span> numCols<span class="token punctuation">;</span> rightCol<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> totalPower <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span>
+                           <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol<span class="token punctuation">]</span>
+                           <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>bottomRow<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span>
+                           <span class="token operator">+</span> prefixSum<span class="token punctuation">[</span>bottomRow <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">[</span>rightCol <span class="token operator">-</span> squareSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>totalPower <span class="token operator">&gt;=</span> minRequiredPower<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                validSquareCount<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> validSquareCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

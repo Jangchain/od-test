@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>有一堆长方体积木，它们的高度和宽度都相同，但长度不一。</p> 
+<p>小橙想把这堆积木叠成一面墙，墙的每层可以放一个积木，也可以将两个积木拼接起来，要求每层的长度相同。</p> 
+<p>若必须用完这些积木，叠成的墙最多为多少层？</p> 
+<p>如下是叠成的一面墙的图示，积木仅按宽和高所在的面进行拼接。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/ae9f6a7a8f60a2cc25d19944bb57deb1.png" alt="35b527e2c0a6887b4c5b6d3c95383a7a.png"></p> 
+<h4><a id="_13"></a>输入描述</h4> 
+<p>输入为一行，为各个积木的长度，数字为正整数，并由空格分隔。积木的数量和长度都不超过5000。</p> 
+<h4><a id="_17"></a>输出描述</h4> 
+<p>输出一个数字，为墙的最大层数，如果无法按要求叠成每层长度一致的墙，则输出-1。</p> 
+<h5><a id="ACM_20"></a>ACM输入输出模式</h5> 
+<p>如果你经常使用<strong>Leetcode</strong>,会知道<strong>letcode</strong>是不需要编写输入输出函数的。但是华为OD机考使用的是 <strong>ACM 模式</strong>，需要手动编写输入和输出。</p> 
+<p>所以最好在牛-客上提前熟悉这种模式。例如C++使用<code>cin/cout</code>,python使用<code>input()/print()</code>。JavaScript使用node的<code>readline()</code>和<code>console.log()</code>。Java 使用<code>sacnner/system.out.print()</code></p> 
+<h4><a id="_26"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>3 6 3 3 3</td></tr><tr><td>输出</td><td>3</td></tr><tr><td>说明</td><td>以 6 为底的墙，第一层为 6 ，第二层为 3 + 3，第三层 3 + 3。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>9 9 9 5 3 2 2 2 2 2</td></tr><tr><td>输出</td><td>5</td></tr><tr><td>说明</td><td><p>5+2+2=9</p><p>3+2+2+2=9</p><p>9,9,9</p><p>共五层</p></td></tr></tbody></table> 
+<h4><a id="_32"></a>注意</h4> 
+<p>请注意本题题意和用例有冲突！！！</p> 
+<ol><li>题目中写着: 小橙想把这堆积木叠成一面墙，墙的每层可以放一个积木，也可以将两个积木拼接起来，要求每层的长度相同。<br> 也就是说，每一层最少一个最多两个<br> 但是用例2中却出现了一层三个，本题题解是按照一层可以放置多个来解答的。</li><li>按照题目：如果无法按要求叠成每层长度一致的墙，则输出-1。这里应该是不允许只有一层墙，不然把所有的都放在第一层，这样永远不会出现-1。题解是按照至少两层来解答的</li></ol> 
+<h4><a id="_39"></a>解题思路</h4> 
+<p>题目要求我们找到最多可以叠成多少层的墙，每层长度相同，且必须用完所有积木。</p> 
+<ol><li>首先，读取输入数据，将积木的长度存储在一个列表中，并计算所有积木的总长度。</li><li>对积木长度进行排序，这样我们可以从最长的积木开始尝试放置。</li><li>遍历所有可能的层数，从 2 到总长度。对于每个可能的层数，我们需要检查总长度是否可以被当前层数整除。如果不能整除，说明当前层数不满足条件，继续尝试下一个层数。</li><li>对于满足条件的层数，计算每层的目标长度（总长度除以层数）。如果最长的积木长度大于目标长度，说明当前层数无法满足条件，继续尝试下一个层数。</li><li>对于可能满足条件的层数，我们使用深度优先搜索（DFS）来尝试放置积木。DFS 函数的目的是检查当前状态下是否可以成功放置所有积木。我们从最长的积木开始尝试放置，逐个尝试将积木放入每一层，直到找到一个满足条件的放置方式或尝试完所有可能的放置方式。</li><li>在 DFS 函数中，我们需要记录当前正在处理的积木索引、已使用的层数、每层的当前长度、最大层数和目标长度。我们首先尝试将当前积木放入新的一层，然后递归调用 DFS 函数处理下一个积木。如果放入新层后，DFS 函数返回 true，说明找到了一个满足条件的放置方式，我们可以结束搜索。如果放入新层后，DFS 函数返回 false，说明当前放置方式不满足条件，我们需要将当前积木从新层中移除，然后尝试将当前积木放入已有的层中。</li><li>当 DFS 函数返回 true 时，说明找到了一个满足条件的放置方式，我们更新最大层数为当前层数和已找到的最大层数中的较大值。</li><li>遍历完所有可能的层数后，输出最大层数。如果没有找到满足条件的放置方式，输出 -1。</li></ol> 
+<h4><a id="C_53"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 深度优先搜索函数</span>
+bool <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> bricks<span class="token punctuation">,</span> <span class="token keyword">int</span> currentIndex<span class="token punctuation">,</span> <span class="token keyword">int</span> usedLayers<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> layerLengths<span class="token punctuation">,</span> <span class="token keyword">int</span> maxLayers<span class="token punctuation">,</span> <span class="token keyword">int</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 当所有积木都已使用完时，返回 true</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 当前层还未堆满，继续往上堆</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>usedLayers <span class="token operator">&lt;</span> maxLayers<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        layerLengths<span class="token punctuation">[</span>usedLayers<span class="token punctuation">]</span> <span class="token operator">=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        layerLengths<span class="token punctuation">[</span>usedLayers<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 把当前积木加入已有的每一层中，看是否能够满足条件</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> usedLayers<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前层和上一层积木长度相同，则不需要重复计算</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> layerLengths<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果当前积木可以放入当前层，则把当前积木放入当前层</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers<span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入</span>
+    string inputStr<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> inputStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> bricks<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> brick<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> brick<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        bricks<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>brick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算所有积木的总长度</span>
+    <span class="token keyword">int</span> totalLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> brick <span class="token operator">:</span> bricks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        totalLength <span class="token operator">+=</span> brick<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对积木长度进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>bricks<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> bricks<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> maxLayers <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历所有可能的层数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> totalLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果所有数字的和除不尽层数，自然肯定不满足条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>totalLength <span class="token operator">%</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 计算每一层的目标长度</span>
+        <span class="token keyword">int</span> targetLength <span class="token operator">=</span> totalLength <span class="token operator">/</span> i<span class="token punctuation">;</span>
+        <span class="token comment">// 如果最大的积木长度大于当前层的长度，则无法满足条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>bricks<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 初始化每层的长度列表</span>
+        vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">layerLengths</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 使用深度优先搜索判断是否可以堆成满足条件的墙</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> bricks<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> i<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            maxLayers <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最大层数</span>
+    cout <span class="token operator">&lt;&lt;</span> maxLayers <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JavaScript_145"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数，用于递归地尝试将积木放入不同的层</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">bricks<span class="token punctuation">,</span> currentIndex<span class="token punctuation">,</span> usedLayers<span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 当所有积木都已使用完时，返回true</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 当前层还未堆满，继续往上堆</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>usedLayers <span class="token operator">&lt;</span> maxLayers<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    layerLengths<span class="token punctuation">[</span>usedLayers<span class="token punctuation">]</span> <span class="token operator">=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    layerLengths<span class="token punctuation">[</span>usedLayers<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 把当前积木加入已有的每一层中，看是否能够满足条件</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> usedLayers<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前层和上一层积木长度相同，则不需要重复计算</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> layerLengths<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">continue</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果当前积木可以放入当前层，则把当前积木放入当前层</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers<span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 从标准输入读取数据</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将输入的积木长度转换为数字数组</span>
+  <span class="token keyword">const</span> bricks <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 计算所有积木的总长度</span>
+  <span class="token keyword">const</span> totalLength <span class="token operator">=</span> bricks<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">+</span> b<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 对积木长度进行排序</span>
+  bricks<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">-</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化最大层数为-1</span>
+  <span class="token keyword">let</span> maxLayers <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token comment">// 遍历所有可能的层数</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> totalLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果所有数字的和除不尽层数，自然肯定不满足条件</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>totalLength <span class="token operator">%</span> i <span class="token operator">!==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">continue</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 计算每一层的目标长度</span>
+    <span class="token keyword">const</span> targetLength <span class="token operator">=</span> totalLength <span class="token operator">/</span> i<span class="token punctuation">;</span>
+    <span class="token comment">// 如果最大的积木长度大于当前层的长度，则无法满足条件</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>bricks<span class="token punctuation">[</span>bricks<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">continue</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 初始化每层的长度列表</span>
+    <span class="token keyword">const</span> layerLengths <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 使用深度优先搜索判断是否可以堆成满足条件的墙</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> bricks<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> i<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      maxLayers <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 输出最大层数</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h4><a id="Java_222"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 深度优先搜索函数</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> bricks<span class="token punctuation">,</span> <span class="token keyword">int</span> currentIndex<span class="token punctuation">,</span> <span class="token keyword">int</span> usedLayers<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> layerLengths<span class="token punctuation">,</span> <span class="token keyword">int</span> maxLayers<span class="token punctuation">,</span> <span class="token keyword">int</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 当所有积木都已使用完时，返回true</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 当前层还未堆满，继续往上堆</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>usedLayers <span class="token operator">&lt;</span> maxLayers<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            layerLengths<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>usedLayers<span class="token punctuation">,</span> bricks<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>currentIndex<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            layerLengths<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>usedLayers<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 把当前积木加入已有的每一层中，看是否能够满足条件</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> usedLayers<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前层和上一层积木长度相同，则不需要重复计算</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> layerLengths<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>layerLengths<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 如果当前积木可以放入当前层，则把当前积木放入当前层</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>layerLengths<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> bricks<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>currentIndex<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                layerLengths<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> layerLengths<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> bricks<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>currentIndex<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers<span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                layerLengths<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> layerLengths<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">-</span> bricks<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>currentIndex<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> inputStr <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> bricks <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> str <span class="token operator">:</span> inputStr<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            bricks<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 计算所有积木的总长度</span>
+        <span class="token keyword">int</span> totalLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> brick <span class="token operator">:</span> bricks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            totalLength <span class="token operator">+=</span> brick<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 对积木长度进行排序</span>
+        <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>bricks<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> maxLayers <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历所有可能的层数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> totalLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果所有数字的和除不尽层数，自然肯定不满足条件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>totalLength <span class="token operator">%</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 计算每一层的目标长度</span>
+            <span class="token keyword">int</span> targetLength <span class="token operator">=</span> totalLength <span class="token operator">/</span> i<span class="token punctuation">;</span>
+            <span class="token comment">// 如果最大的积木长度大于当前层的长度，则无法满足条件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>bricks<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>bricks<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> targetLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 初始化每层的长度列表</span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> layerLengths <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">nCopies</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 使用深度优先搜索判断是否可以堆成满足条件的墙</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> bricks<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> i<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                maxLayers <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 输出最大层数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="Python_303"></a>Python算法源码</h4> 
+<pre><code class="prism language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List
+
+<span class="token comment"># 深度优先搜索函数</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>bricks<span class="token punctuation">:</span> List<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">]</span><span class="token punctuation">,</span> currentIndex<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> usedLayers<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">:</span> List<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">]</span><span class="token punctuation">,</span> maxLayers<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> targetLength<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token builtin">bool</span><span class="token punctuation">:</span>
+    <span class="token comment"># 当所有积木都已使用完时，返回 True</span>
+    <span class="token keyword">if</span> currentIndex <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token comment"># 当前层还未堆满，继续往上堆</span>
+    <span class="token keyword">if</span> usedLayers <span class="token operator">&lt;</span> maxLayers<span class="token punctuation">:</span>
+        layerLengths<span class="token punctuation">[</span>usedLayers<span class="token punctuation">]</span> <span class="token operator">=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span>
+        <span class="token keyword">if</span> dfs<span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+        layerLengths<span class="token punctuation">[</span>usedLayers<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token comment"># 把当前积木加入已有的每一层中，看是否能够满足条件</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>usedLayers<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前层和上一层积木长度相同，则不需要重复计算</span>
+        <span class="token keyword">if</span> i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token keyword">and</span> layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> layerLengths<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">continue</span>
+        <span class="token comment"># 如果当前积木可以放入当前层，则把当前积木放入当前层</span>
+        <span class="token keyword">if</span> layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> targetLength<span class="token punctuation">:</span>
+            layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span>
+            <span class="token keyword">if</span> dfs<span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> currentIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> usedLayers<span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> maxLayers<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">True</span>
+            layerLengths<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> bricks<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span>
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token comment"># 读取输入</span>
+inputStr <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+bricks <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> inputStr<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 计算所有积木的总长度</span>
+totalLength <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>bricks<span class="token punctuation">)</span>
+
+<span class="token comment"># 对积木长度进行排序</span>
+bricks<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+maxLayers <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+<span class="token comment"># 遍历所有可能的层数</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> totalLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果所有数字的和除不尽层数，自然肯定不满足条件</span>
+    <span class="token keyword">if</span> totalLength <span class="token operator">%</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">continue</span>
+    <span class="token comment"># 计算每一层的目标长度</span>
+    targetLength <span class="token operator">=</span> totalLength <span class="token operator">//</span> i
+    <span class="token comment"># 如果最大的积木长度大于当前层的长度，则无法满足条件</span>
+    <span class="token keyword">if</span> bricks<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> targetLength<span class="token punctuation">:</span>
+        <span class="token keyword">continue</span>
+    <span class="token comment"># 初始化每层的长度列表</span>
+    layerLengths <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> i
+    <span class="token comment"># 使用深度优先搜索判断是否可以堆成满足条件的墙</span>
+    <span class="token keyword">if</span> dfs<span class="token punctuation">(</span>bricks<span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>bricks<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> layerLengths<span class="token punctuation">,</span> i<span class="token punctuation">,</span> targetLength<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        maxLayers <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">,</span> i<span class="token punctuation">)</span>
+
+<span class="token comment"># 输出最大层数</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>maxLayers<span class="token punctuation">)</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_13" rel="nofollow">输入描述</a></li><li><a href="#_17" rel="nofollow">输出描述</a></li><li><ul><li><a href="#ACM_20" rel="nofollow">ACM输入输出模式</a></li></ul> 
+    </li><li><a href="#_26" rel="nofollow">用例</a></li><li><a href="#_32" rel="nofollow">注意</a></li><li><a href="#_39" rel="nofollow">解题思路</a></li><li><a href="#C_53" rel="nofollow">C++</a></li><li><a href="#JavaScript_145" rel="nofollow">JavaScript</a></li><li><a href="#Java_222" rel="nofollow">Java</a></li><li><a href="#Python_303" rel="nofollow">Python算法源码</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

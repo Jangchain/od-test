@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>某个开源社区希望将最近热度比较高的开源项目出一个榜单，推荐给社区里面的开发者。对于每个开源项目，开发者可以进行关注(watch)、收藏(star)、fork、提issue、提交合并请求(MR)等。</p> 
+<p>数据库里面统计了每个开源项目关注、收藏、fork、issue、MR的数量，开源项目的热度根据这5个维度的加权求和进行排序。</p> 
+<pre><code>H = (Wwatch * #watch) + (Wstar * #star) + (Wfork * #fork) +  (Wissue * #issue) + (Wmr * #mr)
+</code></pre> 
+<p>H表示热度值</p> 
+<p>Wwatch、Wstar、Wfork、Wissue、Wmr分别表示5个统计维度的权重。</p> 
+<p>#watch、#star、#fork、#issue、#mr分别表示5个统计维度的统计值。</p> 
+<p>榜单按照热度值降序排序，对于热度值相等的，按照项目名字转换为全小写字母后的字典序排序（‘a’,‘b’,‘c’,…,‘x’,‘y’,‘z’)。</p> 
+<h2><a id="_21"></a>输入描述</h2> 
+<p>第一行输入为N，表示开源项目的个数，0 ＜ N ＜100。</p> 
+<p>第二行输入为权重值列表，一共 5 个整型值，分别对应关注、收藏、fork、issue、MR的权重，权重取值 0 &lt; W ≤ 50。</p> 
+<p>第三行开始接下来的 N 行为开源项目的统计维度，每一行的格式为：</p> 
+<pre><code>name nr_watch nr_start nr_fork nr_issue nr_mr
+</code></pre> 
+<p>其中 name 为开源项目的名字，由英文字母组成，长度 ≤ 50，其余 5 个整型值分别为该开源项目关注、收藏、fork、issue、MR的数量，数量取值 0 &lt; nr ≤ 1000。</p> 
+<h2><a id="_36"></a>输出描述</h2> 
+<p>按照热度降序，输出开源项目的名字，对于热度值相等的，按照项目名字转换为全小写后的字典序排序（‘a’ &gt; ‘b’ &gt; ‘c’ &gt; … &gt; ‘x’ &gt; ‘y’ &gt; ‘z’）。</p> 
+<h2><a id="1_40"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>4
+8 6 2 8 6
+camila 66 70 46 158 80
+victoria 94 76 86 189 211
+anthony 29 17 83 21 48
+emily 53 97 1 19 218
+</code></pre> 
+<p>输出</p> 
+<pre><code>victoria
+camila
+emily
+anthony
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>排序热度值计算：<br> camila: 66*8 + 70*6 + 46*2 + 158*8 + 80*6 = 2784<br> victoria: 94*8 + 76*6 + 86*2 + 189*8 + 211*6 = 4158<br> anthony: 29*8 + 17*6 + 83*2 + 21*8 + 48*6 = 956<br> emily: 53*8 + 97*6 + 1*2 + 19*8 + 218*6 = 2468</p> 
+</blockquote> 
+<h2><a id="2_70"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>5
+5 6 6 1 2
+camila 13 88 46 26 169
+grace 64 38 87 23 103
+lucas 91 79 98 154 79
+leo 29 27 36 43 178
+ava 29 27 36 43 178
+</code></pre> 
+<p>输出</p> 
+<pre><code>lucas
+grace
+camila
+ava
+leo
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>排序热度值计算：<br> camila: 13*5 + 88*6 + 46*6 + 26*1 + 169*2 = 1233<br> grace: 64*5 + 38*6 + 87*6 + 23*1 + 103*2 = 1299<br> lucas: 91*5 + 79*6 + 98*6 + 154*1 + 79*2 = 1829<br> leo: 29*5 + 27*6 + 36*6 + 43*1 + 178*2 = 922<br> ava: 29*5 + 27*6 + 36*6 + 43*1 + 178*2 = 922</p> 
+</blockquote> 
+<h2><a id="_104"></a>解题思路</h2> 
+<ol start="2"><li> <p>读取其名称和评分。然后，我们使用权重和评分来计算项目的"热度"。这是通过将每个评分与其对应的权重相乘，然后将所有的乘积相加来完成的。</p> </li><li> <p>排序首先是根据热度进行的，热度高的项目排在前面。如果两个项目的热度相同，那么我们就根据项目名称进行排序，名称按字母顺序排列。</p> </li></ol> 
+<h2><a id="C_114"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义一个结构体来存储项目的名称和热度</span>
+<span class="token keyword">struct</span> <span class="token class-name">Project</span> <span class="token punctuation">{<!-- --></span>
+    string name<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> hotness<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 自定义比较函数，用于排序</span>
+bool <span class="token function">compare</span><span class="token punctuation">(</span>Project a<span class="token punctuation">,</span> Project b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">.</span>hotness <span class="token operator">!=</span> b<span class="token punctuation">.</span>hotness<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span>hotness <span class="token operator">&gt;</span> b<span class="token punctuation">.</span>hotness<span class="token punctuation">;</span> <span class="token comment">// 热度高的项目排在前面</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span>name <span class="token operator">&lt;</span> b<span class="token punctuation">.</span>name<span class="token punctuation">;</span> <span class="token comment">// 名称相同的项目按字母顺序排列</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">weights</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> weights<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 读取每个权重并存储到数组中</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>Project<span class="token operator">&gt;</span> <span class="token function">projects</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">;</span> <span class="token comment">// 存储项目名称</span>
+
+        <span class="token keyword">int</span> hot <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> score<span class="token punctuation">;</span>
+            cin <span class="token operator">&gt;&gt;</span> score<span class="token punctuation">;</span>
+            hot <span class="token operator">+=</span> score <span class="token operator">*</span> weights<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 计算热度</span>
+        <span class="token punctuation">}</span>
+        projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>hotness <span class="token operator">=</span> hot<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">sort</span><span class="token punctuation">(</span>projects<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> projects<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 使用自定义比较函数进行排序</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>Project project <span class="token operator">:</span> projects<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> project<span class="token punctuation">.</span>name <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 打印项目名称</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_171"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Comparator</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于获取用户输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取项目数量n</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建并填充权重数组weights</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> weights <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            weights<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取每个权重并存储到数组中</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 创建一个二维数组projects来存储项目的名称和热度值</span>
+        <span class="token comment">// 其中projects[i][0]存储项目名称，projects[i][1]存储项目热度</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> projects <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">String</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取项目信息并计算每个项目的热度</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储项目名称</span>
+
+            <span class="token keyword">int</span> hot <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化项目热度为0</span>
+            <span class="token comment">// 读取项目的5个评分并计算热度</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                hot <span class="token operator">+=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> weights<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 计算热度</span>
+            <span class="token punctuation">}</span>
+            projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>hot<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将热度值转换为字符串并存储</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 使用自定义比较器对项目数组进行排序</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>projects<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">Comparator</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token annotation punctuation">@Override</span>
+            <span class="token keyword">public</span> <span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> a<span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 解析字符串热度为整数</span>
+                <span class="token keyword">int</span> hotA <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">int</span> hotB <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>b<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 首先根据热度值降序排序</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>hotA <span class="token operator">!=</span> hotB<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">return</span> hotB <span class="token operator">-</span> hotA<span class="token punctuation">;</span> <span class="token comment">// 热度高的项目排在前面</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果热度相同，则根据项目名称字母顺序升序排序</span>
+                    <span class="token keyword">return</span> a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">compareTo</span><span class="token punctuation">(</span>b<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 名称相同的项目按字母顺序排列</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历排序后的项目数组并打印项目名称</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> project <span class="token operator">:</span> projects<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>project<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印项目名称</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 关闭Scanner对象，释放资源</span>
+        sc<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_236"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建一个数组用于存储用户的输入</span>
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token comment">// 当接收到一行输入时，将其去除首尾空格后添加到input数组中</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当输入结束时，执行以下代码</span>
+    <span class="token comment">// 读取项目数量n</span>
+    <span class="token keyword">const</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取权重数组，将其转换为数字数组</span>
+    <span class="token keyword">const</span> weights <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个数组用于存储项目信息</span>
+    <span class="token keyword">let</span> projects <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取每个项目的信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">2</span> <span class="token operator">+</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将项目信息分割为名称和评分数组</span>
+        <span class="token keyword">const</span> project <span class="token operator">=</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> name <span class="token operator">=</span> project<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> scores <span class="token operator">=</span> project<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算项目的热度</span>
+        <span class="token keyword">let</span> hotness <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            hotness <span class="token operator">+=</span> scores<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">*</span> weights<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 将项目的名称和热度添加到projects数组中</span>
+        projects<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> name<span class="token punctuation">,</span> hotness <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对项目数组进行排序，首先根据热度降序排序，如果热度相同则根据名称升序排序</span>
+    projects<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">.</span>hotness <span class="token operator">!==</span> b<span class="token punctuation">.</span>hotness<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> b<span class="token punctuation">.</span>hotness <span class="token operator">-</span> a<span class="token punctuation">.</span>hotness<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> a<span class="token punctuation">.</span>name<span class="token punctuation">.</span><span class="token function">localeCompare</span><span class="token punctuation">(</span>b<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历排序后的项目数组并打印项目名称</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> project <span class="token keyword">of</span> projects<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>project<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_294"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 读取第一行输入，转换为整数，表示项目的数量</span>
+n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取第二行输入，分割字符串并将每个元素转换为整数，得到权重列表</span>
+weights <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化一个空列表，用于存储项目的名称和计算出的热度</span>
+projects <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token comment"># 循环n次，对应于n个项目</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取每个项目的输入，分割字符串得到项目名称和评分</span>
+    project <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    name <span class="token operator">=</span> project<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>  <span class="token comment"># 第一个元素是项目名称</span>
+    scores <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> project<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 剩余元素是项目的评分，转换为整数列表</span>
+
+    <span class="token comment"># 使用列表推导式和zip函数计算项目的热度</span>
+    <span class="token comment"># zip函数将评分和权重配对，列表推导式计算乘积并求和</span>
+    hotness <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>score <span class="token operator">*</span> weight <span class="token keyword">for</span> score<span class="token punctuation">,</span> weight <span class="token keyword">in</span> <span class="token builtin">zip</span><span class="token punctuation">(</span>scores<span class="token punctuation">,</span> weights<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 将项目名称和热度作为元组添加到projects列表中</span>
+    projects<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> hotness<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 对projects列表进行排序</span>
+<span class="token comment"># 使用lambda函数作为排序的关键字，首先根据热度降序(-x[1])排序，</span>
+<span class="token comment"># 如果热度相同，则根据项目名称升序(x[0])排序</span>
+projects<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token operator">-</span>x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> x<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历排序后的项目列表</span>
+<span class="token keyword">for</span> project <span class="token keyword">in</span> projects<span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>project<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 打印每个项目的名称</span>
+</code></pre> 
+<h2><a id="C_328"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义一个结构体来存储项目的名称和热度</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> name<span class="token punctuation">[</span><span class="token number">51</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  
+    <span class="token keyword">int</span> hotness<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> Project<span class="token punctuation">;</span>
+
+<span class="token comment">// 自定义比较函数，用于排序</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Project <span class="token operator">*</span>projectA <span class="token operator">=</span> <span class="token punctuation">(</span>Project <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    Project <span class="token operator">*</span>projectB <span class="token operator">=</span> <span class="token punctuation">(</span>Project <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>projectA<span class="token operator">-&gt;</span>hotness <span class="token operator">!=</span> projectB<span class="token operator">-&gt;</span>hotness<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> projectB<span class="token operator">-&gt;</span>hotness <span class="token operator">-</span> projectA<span class="token operator">-&gt;</span>hotness<span class="token punctuation">;</span> <span class="token comment">// 热度高的项目排在前面</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>projectA<span class="token operator">-&gt;</span>name<span class="token punctuation">,</span> projectB<span class="token operator">-&gt;</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 名称相同的项目按字母顺序排列</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> weights<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>weights<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取每个权重</span>
+    <span class="token punctuation">}</span>
+
+    Project projects<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储项目名称</span>
+
+        <span class="token keyword">int</span> hot <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> score<span class="token punctuation">;</span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>score<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            hot <span class="token operator">+=</span> score <span class="token operator">*</span> weights<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 计算热度</span>
+        <span class="token punctuation">}</span>
+        projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>hotness <span class="token operator">=</span> hot<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">qsort</span><span class="token punctuation">(</span>projects<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Project<span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 使用自定义比较函数进行排序</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> projects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印项目名称</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_382"></a>完整用例</h2> 
+<h3><a id="1_383"></a>用例1</h3> 
+<pre><code class="prism language-input1">3
+10 20 30 40 50
+Alpha 10 20 30 40 50
+Beta 20 30 10 50 40
+Gamma 20 10 40 30 50
+</code></pre> 
+<h3><a id="2_393"></a>用例2</h3> 
+<pre><code class="prism language-input2">4
+5 5 5 5 5
+ProjectX 100 200 300 400 500
+ProjectY 500 400 300 200 100
+ProjectZ 250 250 250 250 250
+Delta 300 400 200 100 500
+</code></pre> 
+<h3><a id="3_404"></a>用例3</h3> 
+<pre><code class="prism language-input3">6
+1 1 1 1 1
+RepoA 1 2 3 4 5
+RepoB 5 4 3 2 1
+RepoC 2 3 4 5 6
+RepoD 6 5 4 3 2
+RepoE 3 3 3 3 3
+RepoF 4 4 4 4 4
+</code></pre> 
+<h3><a id="4_417"></a>用例4</h3> 
+<pre><code class="prism language-input4">5
+15 25 35 20 10
+LibOne 10 10 10 10 10
+LibTwo 20 20 20 20 20
+LibThree 5 5 5 5 5
+LibFour 15 15 15 15 15
+LibFive 25 25 25 25 25
+</code></pre> 
+<h3><a id="5_429"></a>用例5</h3> 
+<pre><code class="prism language-input5">3
+50 40 30 20 10
+ModuleA 50 40 30 20 10
+ModuleB 40 30 20 10 50
+ModuleC 10 20 30 40 50
+</code></pre> 
+<h3><a id="6_439"></a>用例6</h3> 
+<pre><code class="prism language-input6">4
+7 8 9 10 11
+ToolX 9 8 7 6 5
+ToolY 5 6 7 8 9
+ToolZ 8 9 10 11 12
+ToolA 12 11 10 9 8
+</code></pre> 
+<h3><a id="7_450"></a>用例7</h3> 
+<pre><code class="prism language-input7">2
+50 1 50 1 50
+CodeBase 100 100 100 100 100
+CodePeak 100 100 100 100 100
+</code></pre> 
+<h3><a id="8_459"></a>用例8</h3> 
+<pre><code class="prism language-input8">7
+10 20 30 40 50
+Query 1 2 3 4 5
+Search 2 3 4 5 1
+Find 3 4 5 1 2
+Locate 4 5 1 2 3
+Discover 5 1 2 3 4
+Explore 1 3 5 2 4
+Investigate 2 4 1 3 5
+</code></pre> 
+<h3><a id="9_473"></a>用例9</h3> 
+<pre><code class="prism language-input9">5
+8 6 4 2 1
+FrameworkA 88 77 66 55 44
+FrameworkB 77 88 99 11 22
+FrameworkC 66 55 44 33 11
+FrameworkD 55 44 33 22 11
+FrameworkE 44 33 22 11 99
+</code></pre> 
+<h3><a id="10_485"></a>用例10</h3> 
+<pre><code class="prism language-input10">6
+45 35 25 15 5
+PackageOne 10 9 8 7 6
+PackageTwo 9 8 7 6 5
+PackageThree 8 7 6 5 4
+PackageFour 7 6 5 4 3
+PackageFive 6 5 4 3 2
+PackageSix 5 4 3 2 1
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_21" rel="nofollow">输入描述</a></li><li><a href="#_36" rel="nofollow">输出描述</a></li><li><a href="#1_40" rel="nofollow">用例1</a></li><li><a href="#2_70" rel="nofollow">用例2</a></li><li><a href="#_104" rel="nofollow">解题思路</a></li><li><a href="#C_114" rel="nofollow">C++</a></li><li><a href="#Java_171" rel="nofollow">Java</a></li><li><a href="#javaScript_236" rel="nofollow">javaScript</a></li><li><a href="#Python_294" rel="nofollow">Python</a></li><li><a href="#C_328" rel="nofollow">C语言</a></li><li><a href="#_382" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_383" rel="nofollow">用例1</a></li><li><a href="#2_393" rel="nofollow">用例2</a></li><li><a href="#3_404" rel="nofollow">用例3</a></li><li><a href="#4_417" rel="nofollow">用例4</a></li><li><a href="#5_429" rel="nofollow">用例5</a></li><li><a href="#6_439" rel="nofollow">用例6</a></li><li><a href="#7_450" rel="nofollow">用例7</a></li><li><a href="#8_459" rel="nofollow">用例8</a></li><li><a href="#9_473" rel="nofollow">用例9</a></li><li><a href="#10_485" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/822aedfb7d6c1ab842a4bae2cd6cf4cb.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

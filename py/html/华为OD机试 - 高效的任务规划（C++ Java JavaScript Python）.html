@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>你有 n 台机器，编号为 1~n，每台都需要完成一项工作，机器经过配置后都能完成独立完成一项工作。</p> 
+<p>假设第 i 台机器你需要花 B 分钟进行设置，然后开始运行，J 分钟后完成任务。</p> 
+<p>现在，你需要选择布置工作的顺序，使得用最短的时间完成所有工作。</p> 
+<p>注意，不能同时对两台进行配置，但配置完成的机器们可以同时执行他们各自的工作。</p> 
+<h2><a id="_17"></a>输入描述</h2> 
+<p>第一行输入代表总共有 M 组任务数据（1&lt;M&lt;=10）。</p> 
+<p>每组数第一行为一个整数指定机器的数量 N（0&lt;N&lt;=1000）。</p> 
+<p>随后的 N 行每行两个整数，第一个表示 B（0&lt;=B&lt;=10000），第二个表示 J（0&lt;=J&lt;=10000）。</p> 
+<p>每组数据连续输入，不会用空行分隔。各组任务单独计时。</p> 
+<h2><a id="_30"></a>输出描述</h2> 
+<p>对于每组任务，输出最短完成时间，且每组的结果独占一行。例如，两组任务就应该有两行输出。</p> 
+<h2><a id="1_34"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>1
+1
+2 2
+</code></pre> 
+<p>输出</p> 
+<pre><code>4
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>输入共3行数据，<br> 第一行代表只有1组任务；<br> 第二行代表本组任务只有1台机器；<br> 第三行代表本机器：配置需要2分钟，执行任务需要2分钟，<br> 输出共一行数据，代表执行结果为4分钟</p> 
+</blockquote> 
+<h2><a id="2_58"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>2
+2
+1 1
+2 2
+3
+1 1
+2 2
+3 3
+</code></pre> 
+<p>输出</p> 
+<pre><code>4
+7
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>第1行 2代表有2组任务；<br> 2~4行代表第1组数据，为2台机器的配置、执行信息<br> 第1台：配置1分钟，执行1分钟<br> 第2台：配置2分钟，执行2分钟<br> 5~8行代表第2组数据，为3台机器的配置、执行信息<br> 第1台：配置1分钟，执行1分钟<br> 第2台：配置2分钟，执行2分钟<br> 第3台：配置3分钟，执行3分钟</p> 
+ <p>输出共2行，分别代表第1组任务共需要4分钟和第2组任务共需要7分钟<br> 先配置3，再配置2，再配置1，执行1分钟，共7分钟</p> 
+</blockquote> 
+<h2><a id="_94"></a>解题思路</h2> 
+<ol><li> <p><strong>机器的配置和执行</strong>：</p> 
+  <ul><li>每台机器需要先花费 B 分钟配置，配置完成后再花费 J 分钟执行任务。</li><li>机器的配置是串行的，即在某一时刻只能配置一台机器，但已配置完成的机器可以同时执行任务。</li></ul> </li><li> <p><strong>求最短完成时间</strong>：</p> 
+  <ul><li>需要找到一个机器的配置顺序，使得所有机器完成任务的总时间最短。</li></ul> </li><li> <p><strong>优化策略</strong>：</p> 
+  <ul><li>将执行时间较长的机器优先配置。这样可以尽早开始长时间的任务执行，从而减少整体的等待时间。</li><li>具体操作：将机器按执行时间（J）从高到低排序，再按顺序配置每台机器。</li></ul> </li></ol> 
+<h2><a id="Java_113"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取测试用例数量</span>
+        <span class="token keyword">int</span> testCases <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">StringBuilder</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历每组任务</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> t <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> t <span class="token operator">&lt;</span> testCases<span class="token punctuation">;</span> t<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 读取当前任务组的机器数量</span>
+            <span class="token keyword">int</span> machineCount <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>machineCount <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果没有机器，直接输出 0</span>
+                result<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 初始化机器任务数组</span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> machineTasks <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>machineCount<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> machineCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 配置时间</span>
+                machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 运行时间</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 根据运行时间降序排序</span>
+            <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>machineTasks<span class="token punctuation">,</span> <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span>b<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> a<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 初始化时间变量</span>
+            <span class="token keyword">int</span> configEndTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前配置结束时间</span>
+            <span class="token keyword">int</span> minCompletionTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最短完成时间</span>
+
+            <span class="token comment">// 遍历每台机器，计算完成时间</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> task <span class="token operator">:</span> machineTasks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                configEndTime <span class="token operator">+=</span> task<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 配置结束时间累加配置时间</span>
+                minCompletionTime <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>minCompletionTime<span class="token punctuation">,</span> configEndTime <span class="token operator">+</span> task<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 记录结果</span>
+            result<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>minCompletionTime<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出所有结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_168"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入系统模块</span>
+<span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取输入</span>
+<span class="token builtin">input</span> <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>read
+data <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 读取测试用例数量</span>
+test_cases <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>data<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+index <span class="token operator">=</span> <span class="token number">1</span>
+results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 遍历每组任务</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>test_cases<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取当前任务组的机器数量</span>
+    machine_count <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>data<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    index <span class="token operator">+=</span> <span class="token number">1</span>
+
+    <span class="token keyword">if</span> machine_count <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果没有机器，直接记录结果 0</span>
+        results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">"0"</span><span class="token punctuation">)</span>
+        <span class="token keyword">continue</span>
+
+    <span class="token comment"># 初始化机器任务列表</span>
+    machine_tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>machine_count<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        config_time <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>data<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 配置时间</span>
+        run_time <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>data<span class="token punctuation">[</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># 运行时间</span>
+        machine_tasks<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>config_time<span class="token punctuation">,</span> run_time<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        index <span class="token operator">+=</span> <span class="token number">2</span>
+
+    <span class="token comment"># 根据运行时间降序排序</span>
+    machine_tasks<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 初始化时间变量</span>
+    config_end_time <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 当前配置结束时间</span>
+    min_completion_time <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 最短完成时间</span>
+
+    <span class="token comment"># 遍历每台机器，计算完成时间</span>
+    <span class="token keyword">for</span> config_time<span class="token punctuation">,</span> run_time <span class="token keyword">in</span> machine_tasks<span class="token punctuation">:</span>
+        config_end_time <span class="token operator">+=</span> config_time  <span class="token comment"># 配置结束时间累加配置时间</span>
+        min_completion_time <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>min_completion_time<span class="token punctuation">,</span> config_end_time <span class="token operator">+</span> run_time<span class="token punctuation">)</span>
+
+    <span class="token comment"># 记录结果</span>
+    results<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>min_completion_time<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 输出所有结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>results<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="JavaScript_220"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的每一行添加到输入数组中</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> testCases <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取测试用例数量</span>
+    <span class="token keyword">const</span> results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每个测试用例</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> testCases<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> machines <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取机器数量</span>
+        <span class="token keyword">const</span> tasks <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 收集每台机器的配置时间和运行时间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> machines<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">const</span> <span class="token punctuation">[</span>configTime<span class="token punctuation">,</span> runTime<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            tasks<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">[</span>configTime<span class="token punctuation">,</span> runTime<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 根据运行时间降序排序</span>
+        tasks<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> b<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> a<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">let</span> configEndTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前配置结束时间</span>
+        <span class="token keyword">let</span> minCompletionTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最短完成时间</span>
+
+        <span class="token comment">// 遍历每台机器，计算完成时间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token punctuation">[</span>configTime<span class="token punctuation">,</span> runTime<span class="token punctuation">]</span> <span class="token keyword">of</span> tasks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            configEndTime <span class="token operator">+=</span> configTime<span class="token punctuation">;</span> <span class="token comment">// 累加配置时间</span>
+            minCompletionTime <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>minCompletionTime<span class="token punctuation">,</span> configEndTime <span class="token operator">+</span> runTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 存储结果</span>
+        results<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>minCompletionTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出所有结果</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>results<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="C_272"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> testCases<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> testCases<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> results<span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每组任务</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> t <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> t <span class="token operator">&lt;</span> testCases<span class="token punctuation">;</span> <span class="token operator">++</span>t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> machineCount<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> machineCount<span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>machineCount <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果没有机器，直接记录结果 0</span>
+            results<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化机器任务数组</span>
+        vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">machineTasks</span><span class="token punctuation">(</span>machineCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> machineCount<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> configTime<span class="token punctuation">,</span> runTime<span class="token punctuation">;</span>
+            cin <span class="token operator">&gt;&gt;</span> configTime <span class="token operator">&gt;&gt;</span> runTime<span class="token punctuation">;</span>
+            machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>configTime<span class="token punctuation">,</span> runTime<span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 根据运行时间降序排序</span>
+        <span class="token function">sort</span><span class="token punctuation">(</span>machineTasks<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> machineTasks<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">auto</span> <span class="token operator">&amp;</span>a<span class="token punctuation">,</span> <span class="token keyword">auto</span> <span class="token operator">&amp;</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> b<span class="token punctuation">.</span>second <span class="token operator">&lt;</span> a<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化时间变量</span>
+        <span class="token keyword">int</span> configEndTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 当前配置结束时间</span>
+        <span class="token keyword">int</span> minCompletionTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 最短完成时间</span>
+
+        <span class="token comment">// 遍历每台机器，计算完成时间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> <span class="token operator">&amp;</span>task <span class="token operator">:</span> machineTasks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            configEndTime <span class="token operator">+=</span> task<span class="token punctuation">.</span>first<span class="token punctuation">;</span>  <span class="token comment">// 配置结束时间累加配置时间</span>
+            minCompletionTime <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>minCompletionTime<span class="token punctuation">,</span> configEndTime <span class="token operator">+</span> task<span class="token punctuation">.</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 记录结果</span>
+        results<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>minCompletionTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出所有结果</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> result <span class="token operator">:</span> results<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span> <span class="token string">"\n"</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_334"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 比较函数，用于根据运行时间降序排序</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> runTimeA <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> runTimeB <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> runTimeA <span class="token operator">-</span> runTimeB<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> testCases<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>testCases<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> results<span class="token punctuation">[</span>testCases<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> resultIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每组任务</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> t <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> t <span class="token operator">&lt;</span> testCases<span class="token punctuation">;</span> t<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> machineCount<span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>machineCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>machineCount <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果没有机器，直接记录结果 0</span>
+            results<span class="token punctuation">[</span>resultIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化机器任务数组</span>
+        <span class="token keyword">int</span> machineTasks<span class="token punctuation">[</span>machineCount<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> machineCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 配置时间和运行时间</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 根据运行时间降序排序</span>
+        <span class="token function">qsort</span><span class="token punctuation">(</span>machineTasks<span class="token punctuation">,</span> machineCount<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>machineTasks<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化时间变量</span>
+        <span class="token keyword">int</span> configEndTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 当前配置结束时间</span>
+        <span class="token keyword">int</span> minCompletionTime <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 最短完成时间</span>
+
+        <span class="token comment">// 遍历每台机器，计算完成时间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> machineCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            configEndTime <span class="token operator">+=</span> machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 配置结束时间累加配置时间</span>
+            <span class="token keyword">int</span> completionTime <span class="token operator">=</span> configEndTime <span class="token operator">+</span> machineTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>completionTime <span class="token operator">&gt;</span> minCompletionTime<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                minCompletionTime <span class="token operator">=</span> completionTime<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 记录结果</span>
+        results<span class="token punctuation">[</span>resultIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> minCompletionTime<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出所有结果</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> resultIndex<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b37b85819e80cc269f260e8ea13882f5.png" alt="fengmian"></p> 
+<h4><a id="_406"></a>完整用例</h4> 
+<h5><a id="1_408"></a>用例1</h5> 
+<pre><code>1
+1
+2 2
+</code></pre> 
+<h5><a id="2_414"></a>用例2</h5> 
+<pre><code>2
+2
+1 1
+2 2
+3
+1 1
+2 2
+3 3
+</code></pre> 
+<h5><a id="3_425"></a>用例3</h5> 
+<pre><code>1
+3
+1 6
+2 5
+3 4
+</code></pre> 
+<h5><a id="4_433"></a>用例4</h5> 
+<pre><code>1
+4
+4 8
+3 7
+2 6
+1 5
+</code></pre> 
+<h5><a id="5_442"></a>用例5</h5> 
+<pre><code>1
+3
+5 10
+4 8
+3 6
+</code></pre> 
+<h5><a id="6_450"></a>用例6</h5> 
+<pre><code>1
+5
+1 10
+2 9
+3 8
+4 7
+5 6
+</code></pre> 
+<h5><a id="7_460"></a>用例7</h5> 
+<pre><code>1
+2
+10 20
+5 15
+</code></pre> 
+<h5><a id="8_467"></a>用例8</h5> 
+<pre><code>1
+3
+6 12
+4 8
+2 4
+</code></pre> 
+<h5><a id="9_475"></a>用例9</h5> 
+<pre><code>1
+4
+8 16
+6 12
+4 8
+2 4
+</code></pre> 
+<h5><a id="10_485"></a>用例10</h5> 
+<pre><code>1
+5
+10 20
+8 16
+6 12
+4 8
+2 4
+</code></pre>
+                </div>
+</body>
+</html>

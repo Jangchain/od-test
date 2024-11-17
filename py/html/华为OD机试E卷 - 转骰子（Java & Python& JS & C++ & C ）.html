@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_0"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_4"></a>题目描述</h2> 
+<p>骰子是一个立方体，每个面一个数字，初始为左1，右2，前3(观察者方向)，后4，上5，下6，用123456表示这个状态，放置在平面上，</p> 
+<ul><li>可以向左翻转(用L表示向左翻转1次)，</li><li>可以向右翻转(用R表示向右翻转1次)，</li><li>可以向前翻转(用F表示向前翻转1次)，</li><li>可以向后翻转(用B表示向后翻转1次)，</li><li>可以逆时针旋转(用A表示逆时针旋转90度)，</li><li>可以顺时针旋转(用C表示顺时针旋转90度)，</li></ul> 
+<p>现从123456这个初始状态开始，根据输入的动作序列，计算得到最终的状态。</p> 
+<p>骰子的初始状态和初始状态转动后的状态如图所示。</p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/16785f19020b5883cd9494181734af83.png" alt="image-20240930174308543"></p> 
+<h2><a id="_21"></a>输入描述</h2> 
+<p>输入一行，为只包含LRFBAC的字母序列，最大长度为50，字母可重复。</p> 
+<h2><a id="_26"></a>输出描述</h2> 
+<p>输出最终状态</p> 
+<h2><a id="1_30"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>LR
+</code></pre> 
+<p>输出</p> 
+<pre><code>123456
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>骰子先向左翻转，再向右翻转回来，故还是原来的状态123456</p> 
+</blockquote> 
+<h2><a id="2_48"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>FCR
+</code></pre> 
+<p>输出</p> 
+<pre><code>342156
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>骰子向前翻转，状态变为125643，再顺时针旋转，状态变为651243，最后向右翻转，状态变为342156</p> 
+</blockquote> 
+<h2><a id="_68"></a>解题思路</h2> 
+<p>本题没啥难度，主要就是模拟！</p> 
+<h2><a id="Java_72"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token comment">/**
+     * 通用的旋转方法，用于交换骰子上四个面的值。
+     * 此方法用于实现骰子翻转的各个方向变化，通过传入四个索引，按顺序交换这四个面的位置。
+     *
+     * @param state 当前骰子的六个面数组，依次表示 左、右、前、后、上、下。
+     * @param a     要交换的第一个面索引
+     * @param b     要交换的第二个面索引
+     * @param c     要交换的第三个面索引
+     * @param d     要交换的第四个面索引
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">rotate</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">,</span> <span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">,</span> <span class="token keyword">int</span> c<span class="token punctuation">,</span> <span class="token keyword">int</span> d<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> temp <span class="token operator">=</span> state<span class="token punctuation">[</span>a<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 临时保存第一个面的值</span>
+        state<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第二个面的值赋给第一个面</span>
+        state<span class="token punctuation">[</span>b<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第三个面的值赋给第二个面</span>
+        state<span class="token punctuation">[</span>c<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>d<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第四个面的值赋给第三个面</span>
+        state<span class="token punctuation">[</span>d<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>      <span class="token comment">// 第一个面的值赋给第四个面</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">/**
+     * 向左翻转 (L)：
+     * 将上面的面变为左边，左面的面变为下面，下面的面变为右边，右面的面变为上面。
+     * 通过左-&gt;上-&gt;右-&gt;下的顺序交换四个面的值。
+     *
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">turnL</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 左-&gt;上-&gt;右-&gt;下-&gt;左</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">/**
+     * 向右翻转 (R)：
+     * 将上面的面变为右边，右面的面变为下面，下面的面变为左边，左面的面变为上面。
+     * 通过左-&gt;下-&gt;右-&gt;上的顺序交换四个面的值。
+     *
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">turnR</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 左-&gt;下-&gt;右-&gt;上-&gt;左</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">/**
+     * 向前翻转 (F)：
+     * 将上面的面变为前面，前面的面变为下面，下面的面变为后面，后面的面变为上面。
+     * 通过前-&gt;上-&gt;后-&gt;下的顺序交换四个面的值。
+     *
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">turnF</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 前-&gt;上-&gt;后-&gt;下-&gt;前</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">/**
+     * 向后翻转 (B)：
+     * 将上面的面变为后面，后面的面变为下面，下面的面变为前面，前面的面变为上面。
+     * 通过前-&gt;下-&gt;后-&gt;上的顺序交换四个面的值。
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">turnB</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 前-&gt;下-&gt;后-&gt;上-&gt;前</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">/**
+     * 逆时针旋转 (A)：
+     * 将前面的面变为右边，右面的面变为后面，后面的面变为左边，左面的面变为前面。
+     * 通过左-&gt;后-&gt;右-&gt;前的顺序交换四个面的值。
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">turnA</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 左-&gt;后-&gt;右-&gt;前-&gt;左</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">/**
+     * 顺时针旋转 (C)：
+     * 将前面的面变为左边，左面的面变为后面，后面的面变为右边，右面的面变为前面。
+     * 通过左-&gt;前-&gt;右-&gt;后的顺序交换四个面的值。
+     *
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">turnC</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 左-&gt;前-&gt;右-&gt;后-&gt;左</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个扫描器对象，用于读取用户输入的指令序列</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> s <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 从输入中读取一串动作指令</span>
+
+        <span class="token comment">// 初始状态：骰子各个面的编号，依次表示 左、右、前、后、上、下。</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> state <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">}</span><span class="token punctuation">;</span>  <span class="token comment">// 初始状态: 左1，右2，前3，后4，上5，下6</span>
+
+        <span class="token comment">// 遍历输入的每一个字符，根据指令执行相应的操作</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> ch <span class="token operator">:</span> s<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">switch</span> <span class="token punctuation">(</span>ch<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">case</span> <span class="token string">'L'</span><span class="token operator">:</span> <span class="token function">turnL</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">// 执行左翻转</span>
+                <span class="token keyword">case</span> <span class="token string">'R'</span><span class="token operator">:</span> <span class="token function">turnR</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">// 执行右翻转</span>
+                <span class="token keyword">case</span> <span class="token string">'F'</span><span class="token operator">:</span> <span class="token function">turnF</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">// 执行前翻转</span>
+                <span class="token keyword">case</span> <span class="token string">'B'</span><span class="token operator">:</span> <span class="token function">turnB</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">// 执行后翻转</span>
+                <span class="token keyword">case</span> <span class="token string">'A'</span><span class="token operator">:</span> <span class="token function">turnA</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">// 执行逆时针旋转</span>
+                <span class="token keyword">case</span> <span class="token string">'C'</span><span class="token operator">:</span> <span class="token function">turnC</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">// 执行顺时针旋转</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最终骰子的六个面状态，按照左、右、前、后、上、下的顺序</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> num <span class="token operator">:</span> state<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_183"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 定义一个通用的旋转函数，用于交换骰子上四个面的值</span>
+<span class="token keyword">def</span> <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> c<span class="token punctuation">,</span> d<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    temp <span class="token operator">=</span> state<span class="token punctuation">[</span>a<span class="token punctuation">]</span>  <span class="token comment"># 临时保存第一个面的值</span>
+    state<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>b<span class="token punctuation">]</span>  <span class="token comment"># 第二个面的值赋给第一个面</span>
+    state<span class="token punctuation">[</span>b<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>c<span class="token punctuation">]</span>  <span class="token comment"># 第三个面的值赋给第二个面</span>
+    state<span class="token punctuation">[</span>c<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>d<span class="token punctuation">]</span>  <span class="token comment"># 第四个面的值赋给第三个面</span>
+    state<span class="token punctuation">[</span>d<span class="token punctuation">]</span> <span class="token operator">=</span> temp  <span class="token comment"># 第一个面的值赋给第四个面</span>
+
+<span class="token comment"># 定义向左翻转函数 (L)</span>
+<span class="token keyword">def</span> <span class="token function">turnL</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    rotate<span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>  <span class="token comment"># 左-&gt;上-&gt;右-&gt;下-&gt;左</span>
+
+<span class="token comment"># 定义向右翻转函数 (R)</span>
+<span class="token keyword">def</span> <span class="token function">turnR</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    rotate<span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span>  <span class="token comment"># 左-&gt;下-&gt;右-&gt;上-&gt;左</span>
+
+<span class="token comment"># 定义向前翻转函数 (F)</span>
+<span class="token keyword">def</span> <span class="token function">turnF</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    rotate<span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span>  <span class="token comment"># 前-&gt;上-&gt;后-&gt;下-&gt;前</span>
+
+<span class="token comment"># 定义向后翻转函数 (B)</span>
+<span class="token keyword">def</span> <span class="token function">turnB</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    rotate<span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span>  <span class="token comment"># 前-&gt;下-&gt;后-&gt;上-&gt;前</span>
+
+<span class="token comment"># 定义逆时针旋转函数 (A)</span>
+<span class="token keyword">def</span> <span class="token function">turnA</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    rotate<span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span>  <span class="token comment"># 左-&gt;后-&gt;右-&gt;前-&gt;左</span>
+
+<span class="token comment"># 定义顺时针旋转函数 (C)</span>
+<span class="token keyword">def</span> <span class="token function">turnC</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    rotate<span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span>  <span class="token comment"># 左-&gt;前-&gt;右-&gt;后-&gt;左</span>
+
+<span class="token comment"># 主程序</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    <span class="token comment"># 从输入中获取用户指令</span>
+    s <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># 用户输入一串动作指令</span>
+
+    <span class="token comment"># 初始状态：左1，右2，前3，后4，上5，下6</span>
+    state <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 遍历输入的每一个字符，根据指令执行相应的翻转或旋转操作</span>
+    <span class="token keyword">for</span> ch <span class="token keyword">in</span> s<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> ch <span class="token operator">==</span> <span class="token string">'L'</span><span class="token punctuation">:</span>
+            turnL<span class="token punctuation">(</span>state<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> ch <span class="token operator">==</span> <span class="token string">'R'</span><span class="token punctuation">:</span>
+            turnR<span class="token punctuation">(</span>state<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> ch <span class="token operator">==</span> <span class="token string">'F'</span><span class="token punctuation">:</span>
+            turnF<span class="token punctuation">(</span>state<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> ch <span class="token operator">==</span> <span class="token string">'B'</span><span class="token punctuation">:</span>
+            turnB<span class="token punctuation">(</span>state<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> ch <span class="token operator">==</span> <span class="token string">'A'</span><span class="token punctuation">:</span>
+            turnA<span class="token punctuation">(</span>state<span class="token punctuation">)</span>
+        <span class="token keyword">elif</span> ch <span class="token operator">==</span> <span class="token string">'C'</span><span class="token punctuation">:</span>
+            turnC<span class="token punctuation">(</span>state<span class="token punctuation">)</span>
+
+    <span class="token comment"># 输出最终骰子的六个面状态</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">,</span> state<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="JavaScript_244"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 定义一个通用的旋转函数，用于交换骰子上四个面的值</span>
+<span class="token keyword">function</span> <span class="token function">rotate</span><span class="token punctuation">(</span><span class="token parameter">state<span class="token punctuation">,</span> a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> c<span class="token punctuation">,</span> d</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> temp <span class="token operator">=</span> state<span class="token punctuation">[</span>a<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 临时保存第一个面的值</span>
+    state<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第二个面的值赋给第一个面</span>
+    state<span class="token punctuation">[</span>b<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第三个面的值赋给第二个面</span>
+    state<span class="token punctuation">[</span>c<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>d<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第四个面的值赋给第三个面</span>
+    state<span class="token punctuation">[</span>d<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>      <span class="token comment">// 第一个面的值赋给第四个面</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向左翻转函数 (L)</span>
+<span class="token keyword">function</span> <span class="token function">turnL</span><span class="token punctuation">(</span><span class="token parameter">state</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;上-&gt;右-&gt;下-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向右翻转函数 (R)</span>
+<span class="token keyword">function</span> <span class="token function">turnR</span><span class="token punctuation">(</span><span class="token parameter">state</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;下-&gt;右-&gt;上-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向前翻转函数 (F)</span>
+<span class="token keyword">function</span> <span class="token function">turnF</span><span class="token punctuation">(</span><span class="token parameter">state</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 前-&gt;上-&gt;后-&gt;下-&gt;前</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向后翻转函数 (B)</span>
+<span class="token keyword">function</span> <span class="token function">turnB</span><span class="token punctuation">(</span><span class="token parameter">state</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 前-&gt;下-&gt;后-&gt;上-&gt;前</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义逆时针旋转函数 (A)</span>
+<span class="token keyword">function</span> <span class="token function">turnA</span><span class="token punctuation">(</span><span class="token parameter">state</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;后-&gt;右-&gt;前-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义顺时针旋转函数 (C)</span>
+<span class="token keyword">function</span> <span class="token function">turnC</span><span class="token punctuation">(</span><span class="token parameter">state</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;前-&gt;右-&gt;后-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 主程序</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">s</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 初始状态：左1，右2，前3，后4，上5，下6</span>
+    <span class="token keyword">let</span> state <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历输入的每一个字符，根据指令执行相应的翻转或旋转操作</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> ch <span class="token keyword">of</span> s<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">===</span> <span class="token string">'L'</span><span class="token punctuation">)</span> <span class="token function">turnL</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">===</span> <span class="token string">'R'</span><span class="token punctuation">)</span> <span class="token function">turnR</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">===</span> <span class="token string">'F'</span><span class="token punctuation">)</span> <span class="token function">turnF</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">===</span> <span class="token string">'B'</span><span class="token punctuation">)</span> <span class="token function">turnB</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">===</span> <span class="token string">'A'</span><span class="token punctuation">)</span> <span class="token function">turnA</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">===</span> <span class="token string">'C'</span><span class="token punctuation">)</span> <span class="token function">turnC</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终骰子的六个面状态</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>state<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="C_314"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义一个通用的旋转函数，用于交换骰子上四个面的值</span>
+<span class="token keyword">void</span> <span class="token function">rotate</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">,</span> <span class="token keyword">int</span> c<span class="token punctuation">,</span> <span class="token keyword">int</span> d<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> temp <span class="token operator">=</span> state<span class="token punctuation">[</span>a<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 临时保存第一个面的值</span>
+    state<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第二个面的值赋给第一个面</span>
+    state<span class="token punctuation">[</span>b<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第三个面的值赋给第二个面</span>
+    state<span class="token punctuation">[</span>c<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>d<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第四个面的值赋给第三个面</span>
+    state<span class="token punctuation">[</span>d<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>      <span class="token comment">// 第一个面的值赋给第四个面</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向左翻转函数 (L)</span>
+<span class="token keyword">void</span> <span class="token function">turnL</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;上-&gt;右-&gt;下-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向右翻转函数 (R)</span>
+<span class="token keyword">void</span> <span class="token function">turnR</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;下-&gt;右-&gt;上-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向前翻转函数 (F)</span>
+<span class="token keyword">void</span> <span class="token function">turnF</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 前-&gt;上-&gt;后-&gt;下-&gt;前</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向后翻转函数 (B)</span>
+<span class="token keyword">void</span> <span class="token function">turnB</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 前-&gt;下-&gt;后-&gt;上-&gt;前</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义逆时针旋转函数 (A)</span>
+<span class="token keyword">void</span> <span class="token function">turnA</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;后-&gt;右-&gt;前-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义顺时针旋转函数 (C)</span>
+<span class="token keyword">void</span> <span class="token function">turnC</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;前-&gt;右-&gt;后-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string s<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> s<span class="token punctuation">;</span>  <span class="token comment">// 从输入中获取用户指令</span>
+
+    <span class="token comment">// 初始状态：左1，右2，前3，后4，上5，下6</span>
+    <span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历输入的每一个字符，根据指令执行相应的翻转或旋转操作</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> ch <span class="token operator">:</span> s<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">==</span> <span class="token string">'L'</span><span class="token punctuation">)</span> <span class="token function">turnL</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">==</span> <span class="token string">'R'</span><span class="token punctuation">)</span> <span class="token function">turnR</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">==</span> <span class="token string">'F'</span><span class="token punctuation">)</span> <span class="token function">turnF</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">==</span> <span class="token string">'B'</span><span class="token punctuation">)</span> <span class="token function">turnB</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">==</span> <span class="token string">'A'</span><span class="token punctuation">)</span> <span class="token function">turnA</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>ch <span class="token operator">==</span> <span class="token string">'C'</span><span class="token punctuation">)</span> <span class="token function">turnC</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终骰子的六个面状态</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">6</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> state<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_387"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义一个通用的旋转函数，用于交换骰子上四个面的值</span>
+<span class="token keyword">void</span> <span class="token function">rotate</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">,</span> <span class="token keyword">int</span> c<span class="token punctuation">,</span> <span class="token keyword">int</span> d<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> temp <span class="token operator">=</span> state<span class="token punctuation">[</span>a<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 临时保存第一个面的值</span>
+    state<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第二个面的值赋给第一个面</span>
+    state<span class="token punctuation">[</span>b<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第三个面的值赋给第二个面</span>
+    state<span class="token punctuation">[</span>c<span class="token punctuation">]</span> <span class="token operator">=</span> state<span class="token punctuation">[</span>d<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 第四个面的值赋给第三个面</span>
+    state<span class="token punctuation">[</span>d<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>      <span class="token comment">// 第一个面的值赋给第四个面</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向左翻转函数 (L)</span>
+<span class="token keyword">void</span> <span class="token function">turnL</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;上-&gt;右-&gt;下-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向右翻转函数 (R)</span>
+<span class="token keyword">void</span> <span class="token function">turnR</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;下-&gt;右-&gt;上-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向前翻转函数 (F)</span>
+<span class="token keyword">void</span> <span class="token function">turnF</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 前-&gt;上-&gt;后-&gt;下-&gt;前</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义向后翻转函数 (B)</span>
+<span class="token keyword">void</span> <span class="token function">turnB</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 前-&gt;下-&gt;后-&gt;上-&gt;前</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义逆时针旋转函数 (A)</span>
+<span class="token keyword">void</span> <span class="token function">turnA</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;后-&gt;右-&gt;前-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义顺时针旋转函数 (C)</span>
+<span class="token keyword">void</span> <span class="token function">turnC</span><span class="token punctuation">(</span><span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">rotate</span><span class="token punctuation">(</span>state<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 左-&gt;前-&gt;右-&gt;后-&gt;左</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> s<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> s<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 从输入中获取用户指令</span>
+
+    <span class="token comment">// 初始状态：左1，右2，前3，后4，上5，下6</span>
+    <span class="token keyword">int</span> state<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历输入的每一个字符，根据指令执行相应的翻转或旋转操作</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'L'</span><span class="token punctuation">)</span> <span class="token function">turnL</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'R'</span><span class="token punctuation">)</span> <span class="token function">turnR</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'F'</span><span class="token punctuation">)</span> <span class="token function">turnF</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'B'</span><span class="token punctuation">)</span> <span class="token function">turnB</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'A'</span><span class="token punctuation">)</span> <span class="token function">turnA</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'C'</span><span class="token punctuation">)</span> <span class="token function">turnC</span><span class="token punctuation">(</span>state<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终骰子的六个面状态</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">6</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> state<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/8cd89b041733c94fa7e109870533c06d.png" alt="fengmian"></p> 
+<h2><a id="_464"></a>完整用例</h2> 
+<h3><a id="1_466"></a>用例1</h3> 
+<pre><code class="prism language-input1">LRFBCALRBFACLFBACRLBA
+</code></pre> 
+<h3><a id="2_472"></a>用例2</h3> 
+<pre><code class="prism language-input2">LCFRBALC
+</code></pre> 
+<h3><a id="3_478"></a>用例3</h3> 
+<pre><code class="prism language-input3">LRLRLRLRLRFCFCFCFCFC
+</code></pre> 
+<h3><a id="4_484"></a>用例4</h3> 
+<pre><code class="prism language-input4">LRFBLRFBAACCLFBBACCLL
+</code></pre> 
+<h3><a id="5_490"></a>用例5</h3> 
+<pre><code class="prism language-input5">LRFBAC
+</code></pre> 
+<h3><a id="6_496"></a>用例6</h3> 
+<pre><code class="prism language-input6">CCCC
+</code></pre> 
+<h3><a id="7_502"></a>用例7</h3> 
+<pre><code class="prism language-input7">CRR
+</code></pre> 
+<h3><a id="8_508"></a>用例8</h3> 
+<pre><code class="prism language-input8">F
+</code></pre> 
+<h3><a id="9_514"></a>用例9</h3> 
+<pre><code class="prism language-input9">CFCB
+</code></pre> 
+<h3><a id="10_520"></a>用例10</h3> 
+<pre><code class="prism language-input10">CACALRLRFBACFBALRLRCA
+</code></pre>
+                </div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_2"></a>题目描述</h4> 
+<p>小强在参加《密室逃生》游戏，当前关卡要求找到符合给定 密-码K（升序的不重复小写字母组成） 的箱子，并给出箱子编号，箱子编号为 1~N 。<br> 每个箱子中都有一个 字符串s ，字符串由大写字母、小写字母、数字、标点符号、空格组成，需要在这些字符串中找到所有的字母，忽略大小写后排列出对应的密-码串，并返回匹配密-码的箱子序号。</p> 
+<p>提示：满足条件的箱子不超过1个。</p> 
+<h4><a id="_9"></a>输入描述</h4> 
+<p>第一行为 key 的字符串，<br> 第二行为箱子 boxes，为数组样式，以空格分隔</p> 
+<ul><li>箱子 N 数量满足 1 ≤ N ≤ 10000,</li><li>s 长度满足 0 ≤ s.length ≤ 50，</li><li>密-码为仅包含小写字母的升序字符串，且不存在重复字母，</li><li>密-码 K 长度1 ≤ K.l e n g t h ≤ 26</li></ul> 
+<h4><a id="_19"></a>输出描述</h4> 
+<p>返回对应箱子编号<br> 如不存在符合要求的密-码箱，则返回 -1。</p> 
+<h4><a id="_24"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>abc<br>s,sdf134 A2c4b</td></tr><tr><td>输出</td><td>2</td></tr><tr><td>说明</td><td>第 2 个箱子中的 Abc ，符合密-码 abc。</td></tr></tbody></table> 
+<h4><a id="_28"></a>题目解析</h4> 
+<p>简单题，最简单的就是双重for循环，统计字符数量，在和key的数量对比。大于等于，则说明当前box就是可以匹配密-码的箱子，返回当前箱子的序号。如果一直找不到，则返回-1。</p> 
+<p>但是不知道会不会超时：另一种就是</p> 
+<p>先将key转成数组，进行字典序排序</p> 
+<p>外层循环依旧遍历每个box，</p> 
+<p>如果box.length &lt; key.length，则肯定不行，直接下次循环。</p> 
+<p>如果box.length &gt;= key.length，则先将box转为小写模式，然后将box转为数组字典序排序，接下来利用两个指针k,j，分别从key的0索引位置，和box的0索引位置开始扫描，如果扫描到的key[k] == box[j]，则k++，j++，否则只有j++。</p> 
+<p>当k===key.length时，则说明当前box中就是匹配密-码的箱子。</p> 
+<p>这种算法，最坏的情况是O(n*slen)，但是其他情况都有优化可能。</p> 
+<h4><a id="C_46"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string password<span class="token punctuation">,</span> boxes_str<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> password<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取第一行输入，即密-码</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> boxes_str<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取第二行输入，即所有盒子的字符串</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> boxes<span class="token punctuation">;</span> <span class="token comment">// 创建一个字符串向量，用于存储所有盒子的字符串</span>
+    string box <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> boxes_str<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果遇到空格，则将当前盒子字符串加入向量中</span>
+            boxes<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>box<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            box <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            box <span class="token operator">+=</span> c<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    boxes<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>box<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将最后一个盒子字符串加入向量中</span>
+    <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始化结果为-1，表示未找到</span>
+
+    <span class="token comment">// 遍历所有盒子</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> boxes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string lowerCase <span class="token operator">=</span> boxes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">transform</span><span class="token punctuation">(</span>lowerCase<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> lowerCase<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> lowerCase<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">::</span>tolower<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将盒子字符串转为小写字母</span>
+        vector<span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token operator">&gt;</span> letters<span class="token punctuation">;</span> <span class="token comment">// 创建一个字符向量，用于存储盒子中的字母</span>
+
+        <span class="token comment">// 遍历盒子中的每个字符</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> lowerCase<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果是小写字母</span>
+                letters<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将其加入字符向量</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token function">sort</span><span class="token punctuation">(</span>letters<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> letters<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符向量按字典序排序</span>
+        string sortedLetters <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个字符串，用于拼接排好序的字母</span>
+
+        <span class="token comment">// 遍历排好序的字母向量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> letters<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sortedLetters <span class="token operator">+=</span> c<span class="token punctuation">;</span> <span class="token comment">// 将每个字母加入字符串中</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sortedLetters <span class="token operator">==</span> password<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果拼接后的字符串与密-码相等</span>
+            result <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将结果设为当前盒子的编号</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 跳出循环</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="JavaScript_105"></a>JavaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token comment">// 导入所需模块</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> <span class="token function-variable function">cmp</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">&lt;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">&gt;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">let</span> password <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> boxes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>password<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    password <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    boxes <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始化结果为-1，表示未找到</span>
+
+    <span class="token comment">// 遍历所有盒子</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> boxes<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">let</span> lower_case <span class="token operator">=</span> boxes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将盒子字符串转为小写字母</span>
+      <span class="token keyword">let</span> letters <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个字符列表，用于存储盒子中的字母</span>
+
+      <span class="token comment">// 遍历盒子中的每个字符</span>
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> lower_case<span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> c <span class="token operator">=</span> lower_case<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果是小写字母</span>
+          letters<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将其加入字符列表</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+
+      letters<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>cmp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符列表按字典序排序</span>
+      <span class="token keyword">let</span> builder <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个列表，用于拼接排好序的字母</span>
+
+      <span class="token comment">// 遍历排好序的字母列表</span>
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> letters<span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        builder<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>letters<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将每个字母加入列表中</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>builder<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span> <span class="token operator">===</span> password<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果拼接后的字符串与密-码相等</span>
+        result <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将结果设为当前盒子的编号</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 跳出循环</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="Java_167"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span> <span class="token comment">// 导入Scanner类</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span> <span class="token comment">// 导入ArrayList类</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span><span class="token punctuation">;</span> <span class="token comment">// 导入List类</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>stream<span class="token punctuation">.</span></span><span class="token class-name">Collectors</span><span class="token punctuation">;</span> <span class="token comment">// 导入stream和Collectors类</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建Scanner对象，用于从控制台读取输入</span>
+        <span class="token class-name">String</span> password <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取第一行输入，即密-码</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> boxes <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取第二行输入，即所有盒子的字符串，使用空格分隔并转为数组</span>
+        <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始化结果为-1，表示未找到</span>
+
+        <span class="token comment">// 遍历所有盒子</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> boxes<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> lowerCase <span class="token operator">=</span> boxes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将盒子字符串转为小写字母</span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Character</span><span class="token punctuation">&gt;</span></span> letters <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个字符列表，用于存储盒子中的字母</span>
+
+            <span class="token comment">// 遍历盒子中的每个字符</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> lowerCase<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果是小写字母</span>
+                    letters<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将其加入字符列表</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            letters <span class="token operator">=</span> letters<span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sorted</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">collect</span><span class="token punctuation">(</span><span class="token class-name">Collectors</span><span class="token punctuation">.</span><span class="token function">toList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符列表按字典序排序</span>
+            <span class="token class-name">StringBuilder</span> builder <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个StringBuilder对象，用于拼接排好序的字母</span>
+
+            <span class="token comment">// 遍历排好序的字母列表</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Character</span> c <span class="token operator">:</span> letters<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                builder<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将每个字母加入StringBuilder中</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>builder<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>password<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果拼接后的字符串与密-码相等</span>
+                result <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将结果设为当前盒子的编号</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 跳出循环</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_214"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token comment"># 导入所需模块</span>
+<span class="token keyword">import</span> sys
+<span class="token keyword">from</span> typing <span class="token keyword">import</span> List
+<span class="token keyword">from</span> functools <span class="token keyword">import</span> cmp_to_key
+
+<span class="token comment"># 定义比较函数，用于按字典序排序</span>
+<span class="token keyword">def</span> <span class="token function">cmp</span><span class="token punctuation">(</span>a<span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">,</span> b<span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token builtin">int</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> a <span class="token operator">&lt;</span> b<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span>
+    <span class="token keyword">elif</span> a <span class="token operator">&gt;</span> b<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>
+
+<span class="token comment"># 读取输入</span>
+password <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+boxes <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+result <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token comment"># 初始化结果为-1，表示未找到</span>
+
+<span class="token comment"># 遍历所有盒子</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>boxes<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    lower_case <span class="token operator">=</span> boxes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># 将盒子字符串转为小写字母</span>
+    letters <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment"># 创建一个字符列表，用于存储盒子中的字母</span>
+
+    <span class="token comment"># 遍历盒子中的每个字符</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> lower_case<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token keyword">and</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">:</span> <span class="token comment"># 如果是小写字母</span>
+            letters<span class="token punctuation">.</span>append<span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token comment"># 将其加入字符列表</span>
+
+    letters<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span>cmp_to_key<span class="token punctuation">(</span><span class="token builtin">cmp</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># 将字符列表按字典序排序</span>
+    builder <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment"># 创建一个列表，用于拼接排好序的字母</span>
+
+    <span class="token comment"># 遍历排好序的字母列表</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> letters<span class="token punctuation">:</span>
+        builder<span class="token punctuation">.</span>append<span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token comment"># 将每个字母加入列表中</span>
+
+    <span class="token keyword">if</span> <span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>builder<span class="token punctuation">)</span> <span class="token operator">==</span> password<span class="token punctuation">:</span> <span class="token comment"># 如果拼接后的字符串与密-码相等</span>
+        result <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span> <span class="token comment"># 将结果设为当前盒子的编号</span>
+        <span class="token keyword">break</span> <span class="token comment"># 跳出循环</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span> <span class="token comment"># 输出结果</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_19" rel="nofollow">输出描述</a></li><li><a href="#_24" rel="nofollow">用例</a></li><li><a href="#_28" rel="nofollow">题目解析</a></li><li><a href="#C_46" rel="nofollow">C++</a></li><li><a href="#JavaScript_105" rel="nofollow">JavaScript</a></li><li><a href="#Java_167" rel="nofollow">Java</a></li><li><a href="#Python_214" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

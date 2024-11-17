@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_2"></a>题目描述</h4> 
+<p>在一行中输入一个字符串数组，如果其中一个字符串的所有以索引0开头的子串在数组中都有，那么这个字符串就是潜在密码，</p> 
+<p>在所有潜在密码中最长的是真正的密码，如果有多个长度相同的真正的密码，那么取字典序最大的为唯一的真正的密码，求唯一的真正的密码。</p> 
+<h4><a id="_8"></a>输入描述</h4> 
+<p>无</p> 
+<h4><a id="_12"></a>输出描述</h4> 
+<p>无</p> 
+<h4><a id="_16"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>h he hel hell hello o ok n ni nin ninj ninja</td></tr><tr><td>输出</td><td>ninja</td></tr><tr><td>说明</td><td><p>按要求，hello、ok、<a href="https://so.csdn.net/so/search?q=ninja&amp;spm=1001.2101.3001.7020" target="_blank" rel="noopener noreferrer">ninja</a>都是潜在密码。</p><p>检查长度，hello、ninja是真正的密码。</p><p>检查字典序，ninja是唯一真正密码。</p></td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>a b c d f</td></tr><tr><td>输出</td><td>f</td></tr><tr><td>说明</td><td><p>按要求，a b c d f 都是潜在密码。</p><p>检查长度，a b c d f 是真正的密码。</p><p>检查字典序，f是唯一真正密码。</p></td></tr></tbody></table> 
+<h4><a id="_22"></a>题目解析</h4> 
+<h5><a id="_25"></a>分析</h5> 
+<p>我们以样例1 来分析题目：</p> 
+<p>已经知道：hello、ok、ninja是潜在密码。</p> 
+<p>这是为啥呢？其实很简单</p> 
+<p><strong>一个字符串的所有以索引0开头的子串在</strong>这句话是重点。以hello为例，他以索引0为开头的字串是？也就是以h开头的字串是？h，he,hel,hell,hell0。这五个字串。</p> 
+<p>然后这5个字串同样都在输入的数组中，所有hello是潜在的密码。</p> 
+<p>同理ok、ninja也是潜在的密码。</p> 
+<p>hello、ok、ninja最长的是hello和ninja。</p> 
+<p>然后再根据字典序判断出ninja是唯一的真正密码。</p> 
+<h4><a id="_43"></a>解题思路</h4> 
+<ol><li> <p><strong>处理输入</strong>：首先，需要读取输入并将其拆分为单词数组。</p> </li><li> <p><strong>创建哈希集合</strong>：为了快速检查一个子串是否在输入数组中，将输入数组中的所有字符串放入一个哈希集合。</p> </li><li> <p><strong>初始化解答</strong>：初始化一个空字符串作为解答。在后续的循环中，将根据条件更新这个解答。</p> </li><li> <p><strong>按顺序检查每一个词</strong>：遍历输入数组中的每一个单词，对于每一个单词，检查它是否满足以下条件：</p> <p>a. <strong>检查所有以索引 0 开头的子串</strong>：遍历当前单词的所有以索引 0 开头的子串，检查这些子串是否都在哈希集合中。如果所有子串都在哈希集合中，说明当前单词满足条件 1。</p> <p>b. <strong>比较解答长度</strong>：如果当前单词满足条件 1，接下来比较当前单词的长度与解答的长度。如果当前单词的长度大于解答的长度，将当前单词设置为新的解答。</p> <p>c. <strong>比较解答字典排序</strong>：如果当前单词满足条件 1 且长度与解答相同，比较当前单词与解答的字典序。如果当前单词的字典序大于解答的字典序，将当前单词设置为新的解答。</p> </li><li> <p><strong>输出解答</strong>：遍历完输入数组后，输出最终的解答。</p> </li></ol> 
+<h4><a id="C_63"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    std<span class="token operator">::</span>string input_line<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> input_line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>istringstream <span class="token function">iss</span><span class="token punctuation">(</span>input_line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>string word<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>string<span class="token operator">&gt;</span> inputs<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> word<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        inputs<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 将所有字符串放入哈希集合</span>
+    std<span class="token operator">::</span>unordered_set<span class="token operator">&lt;</span>std<span class="token operator">::</span>string<span class="token operator">&gt;</span> <span class="token function">wordSet</span><span class="token punctuation">(</span>inputs<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> inputs<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 真正的解答</span>
+    std<span class="token operator">::</span>string realAnswer <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 按顺序检查每一个词</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>string<span class="token operator">&amp;</span> input <span class="token operator">:</span> inputs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 条件1：检查这个词所有以索引0开头的子串在数组中是否都有</span>
+        bool hasAllPrefixes <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 以索引0开头的子串</span>
+            std<span class="token operator">::</span>string prefix <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>wordSet<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>prefix<span class="token punctuation">)</span> <span class="token operator">==</span> wordSet<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                hasAllPrefixes <span class="token operator">=</span> false<span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>hasAllPrefixes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 条件2：比较解答长度</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> realAnswer<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                realAnswer <span class="token operator">=</span> input<span class="token punctuation">;</span>
+            <span class="token comment">// 条件3：比较解答字典排序</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> realAnswer<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> input <span class="token operator">&gt;</span> realAnswer<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                realAnswer <span class="token operator">=</span> input<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> realAnswer <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JaScript_120"></a>JaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input_line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    <span class="token keyword">const</span> inputs <span class="token operator">=</span> input_line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 将所有字符串放入哈希集合</span>
+    <span class="token keyword">const</span> wordSet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span>inputs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 真正的解答</span>
+    <span class="token keyword">let</span> realAnswer <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 按顺序检查每一个词</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> input_word <span class="token keyword">of</span> inputs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 条件1：检查这个词所有以索引0开头的子串在数组中是否都有</span>
+        <span class="token keyword">let</span> hasAllPrefixes <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input_word<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 以索引0开头的子串</span>
+            <span class="token keyword">const</span> prefix <span class="token operator">=</span> input_word<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>wordSet<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>prefix<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                hasAllPrefixes <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>hasAllPrefixes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 条件2：比较解答长度</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>input_word<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> realAnswer<span class="token punctuation">.</span>length<span class="token punctuation">)</span>
+                realAnswer <span class="token operator">=</span> input_word<span class="token punctuation">;</span>
+            <span class="token comment">// 条件3：比较解答字典排序</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>input_word<span class="token punctuation">.</span>length <span class="token operator">===</span> realAnswer<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> input_word <span class="token operator">&gt;</span> realAnswer<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                realAnswer <span class="token operator">=</span> input_word<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>realAnswer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h4><a id="Java_170"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashSet</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 处理输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> inputs <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 将所有字符串放入哈希集合</span>
+        <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> wordSet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> input <span class="token operator">:</span> inputs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            wordSet<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 真正的解答</span>
+        <span class="token class-name">String</span> realAnswer <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 按顺序检查每一个词</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> input <span class="token operator">:</span> inputs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 条件1：检查这个词所有以索引0开头的子串在数组中是否都有</span>
+            <span class="token keyword">boolean</span> hasAllPrefixes <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 以索引0开头的子串</span>
+                <span class="token class-name">String</span> prefix <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>wordSet<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>prefix<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    hasAllPrefixes <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>hasAllPrefixes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 条件2：比较解答长度</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> realAnswer<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                    realAnswer <span class="token operator">=</span> input<span class="token punctuation">;</span>
+                <span class="token comment">// 条件3：比较解答字典排序</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> realAnswer<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> input<span class="token punctuation">.</span><span class="token function">compareTo</span><span class="token punctuation">(</span>realAnswer<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    realAnswer <span class="token operator">=</span> input<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>realAnswer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+ 
+</code></pre> 
+<h4><a id="Python_222"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token comment"># 处理输入</span>
+inputs <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 将所有字符串放入哈希集合</span>
+word_set <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>inputs<span class="token punctuation">)</span>
+
+<span class="token comment"># 真正的解答</span>
+real_answer <span class="token operator">=</span> <span class="token string">""</span>
+
+<span class="token comment"># 按顺序检查每一个词</span>
+<span class="token keyword">for</span> input_word <span class="token keyword">in</span> inputs<span class="token punctuation">:</span>
+    <span class="token comment"># 条件1：检查这个词所有以索引0开头的子串在数组中是否都有</span>
+    has_all_prefixes <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>input_word<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 以索引0开头的子串</span>
+        prefix <span class="token operator">=</span> input_word<span class="token punctuation">[</span><span class="token punctuation">:</span>i<span class="token punctuation">]</span>
+        <span class="token keyword">if</span> prefix <span class="token keyword">not</span> <span class="token keyword">in</span> word_set<span class="token punctuation">:</span>
+            has_all_prefixes <span class="token operator">=</span> <span class="token boolean">False</span>
+            <span class="token keyword">break</span>
+
+    <span class="token keyword">if</span> has_all_prefixes<span class="token punctuation">:</span>
+        <span class="token comment"># 条件2：比较解答长度</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>input_word<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>real_answer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            real_answer <span class="token operator">=</span> input_word
+        <span class="token comment"># 条件3：比较解答字典排序</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>input_word<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">len</span><span class="token punctuation">(</span>real_answer<span class="token punctuation">)</span> <span class="token keyword">and</span> input_word <span class="token operator">&gt;</span> real_answer<span class="token punctuation">:</span>
+            real_answer <span class="token operator">=</span> input_word
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>real_answer<span class="token punctuation">)</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_8" rel="nofollow">输入描述</a></li><li><a href="#_12" rel="nofollow">输出描述</a></li><li><a href="#_16" rel="nofollow">用例</a></li><li><a href="#_22" rel="nofollow">题目解析</a></li><li><ul><li><a href="#_25" rel="nofollow">分析</a></li></ul> 
+    </li><li><a href="#_43" rel="nofollow">解题思路</a></li><li><a href="#C_63" rel="nofollow">C++</a></li><li><a href="#JaScript_120" rel="nofollow">JaScript</a></li><li><a href="#Java_170" rel="nofollow">Java</a></li><li><a href="#Python_222" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

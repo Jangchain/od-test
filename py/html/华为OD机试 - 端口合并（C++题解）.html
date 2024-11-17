@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>有M(1&lt;=M&lt;=10)个端口组，<br> 每个端口组是长度为N(1&lt;=N&lt;=100)的整数数组，<br> 如果端口组间存在2个及以上不同端口相同，则认为这2个端口组互相关联，可以合并。<br> 第一行输入端口组个数M，再输入M行，每行逗号分隔，代表端口组。<br> 输出合并后的端口组，用二维数组表示。</p> 
+<h4><a id="_9"></a>输入描述</h4> 
+<p>第一行输入一个数字M<br> 第二行开始输入M行，每行是长度为N的整数数组，用逗号分割</p> 
+<h4><a id="_14"></a>输出描述</h4> 
+<p>合并后的二维数组</p> 
+<h4><a id="_18"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>4<br>4<br>2,3,2<br>1,2<br>5</td></tr><tr><td>输出</td><td>[[4],[2,3,2],[1,2],[5]]</td></tr><tr><td>说明</td><td>仅有一个端口2相同，不可以合并。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>3<br>2,3,1<br>4,3,2<br>5</td></tr><tr><td>输出</td><td>[[1,2,3,4],[5]]</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>6<br>10<br>4,2,1<br>9<br>3,6,9,2<br>6,3,4<br>8</td></tr><tr><td>输出</td><td>[[10],[1,2,3,4,6,9],[9],[8]]</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h4><a id="_26"></a>题目解析</h4> 
+<p>通过用例解释这道题目：</p> 
+<p>在用例2 中：</p> 
+<p>2,3,1</p> 
+<p>4,3,2</p> 
+<p>5</p> 
+<p>【2，3，1】与【4，3，2】存在2和3是相同的，所以可以合并。</p> 
+<p>在用例3中</p> 
+<p>10</p> 
+<p>4,2,1</p> 
+<p>9</p> 
+<p>3,6,9,2</p> 
+<p>6,3,4</p> 
+<p>8</p> 
+<p>【6,3,4】与【3,6,9,2】存在3和6是相同的，可以合并成为【2，3，4，6，9】</p> 
+<p>然后发现【4,2,1】与【2，3，4，6，9】存在2和4 相同，最后合并成【1,2,3,4,6,9】</p> 
+<p>双重for循环可能不足以解决这个问题，因为一次循环可能会出现新的数组。因此，建议使用while循环，并将初始条件设置为true，只要有任何一次合并，就将flag设为true。如果循环结束时flag仍然为false，则说明不再有可以合并的端口组。</p> 
+<h4><a id="C_66"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> groupCount<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> groupCount<span class="token punctuation">;</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> portGroups<span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>groupCount <span class="token operator">&gt;</span> <span class="token number">10</span> <span class="token operator">||</span> groupCount <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"[[]]"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> groupCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>string input<span class="token punctuation">;</span>
+        std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> input<span class="token punctuation">;</span>
+        std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>string<span class="token operator">&gt;</span> ports<span class="token punctuation">;</span>
+        <span class="token class-name">size_t</span> pos <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        std<span class="token operator">::</span>string delimiter <span class="token operator">=</span> <span class="token string">","</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>pos <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>delimiter<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">!=</span> std<span class="token operator">::</span>string<span class="token operator">::</span>npos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            std<span class="token operator">::</span>string port <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            ports<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>port<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            input<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos <span class="token operator">+</span> delimiter<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        ports<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> portSet<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>string<span class="token operator">&amp;</span> port <span class="token operator">:</span> ports<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            portSet<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>port<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        portGroups<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>portSet<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    bool merged <span class="token operator">=</span> true<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>merged<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        merged <span class="token operator">=</span> false<span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> portGroups<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> portGroups<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> group1 <span class="token operator">=</span> portGroups<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> group2 <span class="token operator">=</span> portGroups<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">int</span> port <span class="token operator">:</span> group1<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>group2<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>port<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        count<span class="token operator">++</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">&gt;=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        group1<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>group2<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> group2<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        portGroups<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>portGroups<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> j<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        merged <span class="token operator">=</span> true<span class="token punctuation">;</span>
+                        <span class="token keyword">break</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>merged<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>merged<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> mergedPortGroups<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> portGroup <span class="token operator">:</span> portGroups<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">mergedPortGroup</span><span class="token punctuation">(</span>portGroup<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> portGroup<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        std<span class="token operator">::</span><span class="token function">sort</span><span class="token punctuation">(</span>mergedPortGroup<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> mergedPortGroup<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        mergedPortGroups<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>mergedPortGroup<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"["</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> mergedPortGroups<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"["</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> mergedPortGroups<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> mergedPortGroups<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">!=</span> mergedPortGroups<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"]"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">!=</span> mergedPortGroups<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"]"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_14" rel="nofollow">输出描述</a></li><li><a href="#_18" rel="nofollow">用例</a></li><li><a href="#_26" rel="nofollow">题目解析</a></li><li><a href="#C_66" rel="nofollow">C++</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

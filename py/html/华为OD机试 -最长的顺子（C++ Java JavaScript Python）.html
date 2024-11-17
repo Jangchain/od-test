@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_3"></a>题目描述</h4> 
+<p><a href="https://so.csdn.net/so/search?q=%E6%96%97%E5%9C%B0%E4%B8%BB&amp;spm=1001.2101.3001.7020">斗地主</a>起源于湖北十堰房县，据说是一位叫吴修全的年轻人根据当地流行的扑克玩法“跑得快”改编的，如今已风靡整个中国，并流行于互联网上。</p> 
+<p>牌型：单顺，又称顺子，最少5张牌，最多12张牌(3…A)不能有2，也不能有大小王，不计花色。</p> 
+<p>例如： 3-4-5-6-7-8，7-8-9-10-J-Q，3-4-5-6-7-8-9-10-J-Q-K-A</p> 
+<p>可用的牌 3&lt;4&lt;5&lt;6&lt;7&lt;8&lt;9&lt;10&lt;J&lt;Q&lt;K&lt;A&lt;2&lt;B(小王)&lt;C(大王)，每种牌除大小王外有四种花色</p> 
+<p>(共有13×4+2张牌)</p> 
+<p>输入：</p> 
+<ol><li>手上有的牌</li><li>已经出过的牌(包括对手出的和自己出的牌)</li></ol> 
+<p>输出：</p> 
+<ul><li>对手可能构成的最长的顺子(如果有相同长度的顺子，输出牌面最大的那一个)，</li><li>如果无法构成顺子，则输出 NO-CHAIN。</li></ul> 
+<h4><a id="_25"></a>输入描述</h4> 
+<p>输入的第一行为当前手中的牌</p> 
+<p>输入的第二行为已经出过的牌</p> 
+<h4><a id="_31"></a>输出描述</h4> 
+<p>最长的顺子</p> 
+<h4><a id="_35"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>3-3-3-3-4-4-5-5-6-7-8-9-10-J-Q-K-A<br>4-5-6-7-8-8-8</td></tr><tr><td>输出</td><td>9-10-J-Q-K-A</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>3-3-3-3-8-8-8-8<br>K-K-K-K</td></tr><tr><td>输出</td><td>NO-CHAIN</td></tr><tr><td>说明</td><td>剩余的牌无法构成顺子</td></tr></tbody></table> 
+<h4><a id="_41"></a></h4> 
+<h4><a id="C_43"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 将牌面映射为数字，方便处理</span>
+string <span class="token function">mapToNumber</span><span class="token punctuation">(</span>string pai<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"J"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"11"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"11"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"J"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"Q"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"12"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"12"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"Q"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"K"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"13"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"13"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"K"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"A"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"14"</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">==</span> <span class="token string">"14"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"A"</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> pai<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+string <span class="token function">getLongestChain</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> myCards<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> usedCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 统计3~A的每张牌的数量，对应数组的索引3~14</span>
+    <span class="token keyword">int</span> cardCount<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 从cardCount中去除myCards，剩下的就是对手的牌及数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>string card <span class="token operator">:</span> myCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> idx <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span><span class="token function">mapToNumber</span><span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 从cardCount中去除usedCards，剩下的就是对手的牌及数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>string card <span class="token operator">:</span> usedCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> idx <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span><span class="token function">mapToNumber</span><span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// res用于保存顺子</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> res<span class="token punctuation">;</span>
+    <span class="token comment">// path用于保存连续的牌</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> path<span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>cardCount<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 从牌面3开始遍历，如果牌数量大于0，则加入path</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cardCount<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            path<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果遇到牌数量为0的，则连续的牌被中断，若此时连续的牌数量大于等于5，则可以形成顺子，我们将顺子加入res中</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                string str<span class="token punctuation">;</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span>string idx <span class="token operator">:</span> path<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    string pai <span class="token operator">=</span> <span class="token function">mapToNumber</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    str <span class="token operator">+=</span> pai <span class="token operator">+</span> <span class="token string">"-"</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                str<span class="token punctuation">.</span><span class="token function">pop_back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 去掉最后一个"-"</span>
+                res<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 清空path，为下一次连续的牌腾位置</span>
+            path<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果没有顺子，则返回"NO-CHAIN"</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>res<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"NO-CHAIN"</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果有顺子，则先按照顺子长度升序，若长度相等，则按照字典序升序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> res<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span>string a<span class="token punctuation">,</span> string b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> b<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">?</span> a<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> b<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> a <span class="token operator">&lt;</span> b<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> res<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> myCards<span class="token punctuation">,</span> usedCards<span class="token punctuation">;</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> pos <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    string token<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>pos <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">!=</span> string<span class="token operator">::</span>npos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        token <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        myCards<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        line<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    myCards<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    pos <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>pos <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">!=</span> string<span class="token operator">::</span>npos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        token <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        usedCards<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        line<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    usedCards<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">getLongestChain</span><span class="token punctuation">(</span>myCards<span class="token punctuation">,</span> usedCards<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="java_150"></a>java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将牌面映射为数字，方便处理</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">mapToNumber</span><span class="token punctuation">(</span><span class="token class-name">String</span> pai<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"J"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"11"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"11"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"J"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"Q"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"12"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"12"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"Q"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"K"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"13"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"13"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"K"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"A"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"14"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pai<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"14"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"A"</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> pai<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">getLongestChain</span><span class="token punctuation">(</span><span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> myCards<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> usedCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 统计3~A的每张牌的数量，对应数组的索引3~14</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cardCount <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 从cardCount中去除myCards，剩下的就是对手的牌及数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> card <span class="token operator">:</span> myCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> idx <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span><span class="token function">mapToNumber</span><span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 从cardCount中去除usedCards，剩下的就是对手的牌及数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> card <span class="token operator">:</span> usedCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> idx <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span><span class="token function">mapToNumber</span><span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// res用于保存顺子</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> res <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// path用于保存连续的牌</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> path <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> cardCount<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 从牌面3开始遍历，如果牌数量大于0，则加入path</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cardCount<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                path<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果遇到牌数量为0的，则连续的牌被中断，若此时连续的牌数量大于等于5，则可以形成顺子，我们将顺子加入res中</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token class-name">StringBuilder</span> sb <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> idx <span class="token operator">:</span> path<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token class-name">String</span> pai <span class="token operator">=</span> <span class="token function">mapToNumber</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>pai<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    sb<span class="token punctuation">.</span><span class="token function">deleteCharAt</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 去掉最后一个"-"</span>
+                    res<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 清空path，为下一次连续的牌腾位置</span>
+                path<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果没有顺子，则返回"NO-CHAIN"</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>res<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"NO-CHAIN"</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果有顺子，则先按照顺子长度升序，若长度相等，则按照字典序升序</span>
+        <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>res<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">Comparator</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token annotation punctuation">@Override</span>
+            <span class="token keyword">public</span> <span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token class-name">String</span> a<span class="token punctuation">,</span> <span class="token class-name">String</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> a<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> b<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">?</span> a<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> b<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> a<span class="token punctuation">.</span><span class="token function">compareTo</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> myCards <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> usedCards <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> line <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> tokens <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> token <span class="token operator">:</span> tokens<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            myCards<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        line <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        tokens <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> token <span class="token operator">:</span> tokens<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            usedCards<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">getLongestChain</span><span class="token punctuation">(</span>myCards<span class="token punctuation">,</span> usedCards<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="javaScript_249"></a>javaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 将牌面映射为数字，方便处理</span>
+<span class="token keyword">function</span> <span class="token function">mapToNumber</span><span class="token punctuation">(</span><span class="token parameter">pai</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"J"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"11"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"11"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"J"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"Q"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"12"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"12"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"Q"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"K"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"13"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"13"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"K"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"A"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"14"</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pai <span class="token operator">===</span> <span class="token string">"14"</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"A"</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> pai<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">getLongestChain</span><span class="token punctuation">(</span><span class="token parameter">myCards<span class="token punctuation">,</span> usedCards</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 统计3~A的每张牌的数量，对应数组的索引3~14</span>
+  <span class="token keyword">const</span> cardCount <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 从cardCount中去除myCards，剩下的就是对手的牌及数量</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> card <span class="token keyword">of</span> myCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> idx <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span><span class="token function">mapToNumber</span><span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 从cardCount中去除usedCards，剩下的就是对手的牌及数量</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> card <span class="token keyword">of</span> usedCards<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> idx <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span><span class="token function">mapToNumber</span><span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// res用于保存顺子</span>
+  <span class="token keyword">let</span> res <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">// path用于保存连续的牌</span>
+  <span class="token keyword">let</span> path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> cardCount<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从牌面3开始遍历，如果牌数量大于0，则加入path</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cardCount<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      path<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>i<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 如果遇到牌数量为0的，则连续的牌被中断，若此时连续的牌数量大于等于5，则可以形成顺子，我们将顺子加入res中</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span>length <span class="token operator">&gt;=</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> str <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> idx <span class="token keyword">of</span> path<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token keyword">let</span> pai <span class="token operator">=</span> <span class="token function">mapToNumber</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          str <span class="token operator">+=</span> pai <span class="token operator">+</span> <span class="token string">"-"</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        str <span class="token operator">=</span> str<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 去掉最后一个"-"</span>
+        res<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      <span class="token comment">// 清空path，为下一次连续的牌腾位置</span>
+      path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 如果没有顺子，则返回"NO-CHAIN"</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>res<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">"NO-CHAIN"</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 如果有顺子，则先按照顺子长度升序，若长度相等，则按照字典序升序</span>
+  res<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> a<span class="token punctuation">.</span>length <span class="token operator">!==</span> b<span class="token punctuation">.</span>length <span class="token operator">?</span> a<span class="token punctuation">.</span>length <span class="token operator">-</span> b<span class="token punctuation">.</span>length <span class="token operator">:</span> a<span class="token punctuation">.</span><span class="token function">localeCompare</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> res<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">let</span> myCards <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'-'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  rl<span class="token punctuation">.</span><span class="token function">once</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> usedCards <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'-'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">getLongestChain</span><span class="token punctuation">(</span>myCards<span class="token punctuation">,</span> usedCards<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="python_336"></a>python</h4> 
+<pre><code class="prism language-python">myCards <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span>
+usedCards <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">mapToNumber</span><span class="token punctuation">(</span>pai<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"J"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"11"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"11"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"J"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"Q"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"12"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"12"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"Q"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"K"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"13"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"13"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"K"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"A"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"14"</span>
+    <span class="token keyword">if</span> pai <span class="token operator">==</span> <span class="token string">"14"</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"A"</span>
+    <span class="token keyword">return</span> pai
+
+<span class="token keyword">def</span> <span class="token function">getLongestChain</span><span class="token punctuation">(</span>myCards<span class="token punctuation">,</span> usedCards<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    cardCount <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">for</span> card <span class="token keyword">in</span> myCards<span class="token punctuation">:</span>
+        idx <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>mapToNumber<span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>
+
+    <span class="token keyword">for</span> card <span class="token keyword">in</span> usedCards<span class="token punctuation">:</span>
+        idx <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>mapToNumber<span class="token punctuation">(</span>card<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        cardCount<span class="token punctuation">[</span>idx<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>
+
+    res <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>cardCount<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> cardCount<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            path<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">5</span><span class="token punctuation">:</span>
+                paiList <span class="token operator">=</span> <span class="token punctuation">[</span>mapToNumber<span class="token punctuation">(</span>idx<span class="token punctuation">)</span> <span class="token keyword">for</span> idx <span class="token keyword">in</span> path<span class="token punctuation">]</span>
+                res<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">"-"</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>paiList<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            path<span class="token punctuation">.</span>clear<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"NO-CHAIN"</span>
+
+    res<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> res<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>getLongestChain<span class="token punctuation">(</span>myCards<span class="token punctuation">,</span> usedCards<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<blockquote> 
+ <p></p> 
+ <div class="toc"> 
+  <h4>文章目录</h4> 
+  <ul><li><ul><li><ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_25" rel="nofollow">输入描述</a></li><li><a href="#_31" rel="nofollow">输出描述</a></li><li><a href="#_35" rel="nofollow">用例</a></li><li><a href="#_41" rel="nofollow"></a></li><li><a href="#C_43" rel="nofollow">C++</a></li><li><a href="#java_150" rel="nofollow">java</a></li><li><a href="#javaScript_249" rel="nofollow">javaScript</a></li><li><a href="#python_336" rel="nofollow">python</a></li><li><ul><li><a href="#1_399" rel="nofollow">用例1</a></li><li><a href="#2_406" rel="nofollow">用例2</a></li><li><a href="#3_413" rel="nofollow">用例3</a></li><li><a href="#4_420" rel="nofollow">用例4</a></li><li><a href="#5_427" rel="nofollow">用例5</a></li><li><a href="#6_434" rel="nofollow">用例6</a></li><li><a href="#7_441" rel="nofollow">用例7</a></li><li><a href="#8_448" rel="nofollow">用例8</a></li><li><a href="#9_455" rel="nofollow">用例9</a></li><li><a href="#10_462" rel="nofollow">用例10</a></li></ul> 
+    </li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </div> 
+ <p></p> 
+</blockquote> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/169f277a87c29b8ff13d65ef9e7eeec7.png" alt="fengmian">### 完整用例</p> 
+<h5><a id="1_399"></a>用例1</h5> 
+<pre><code class="prism language-input1">3-3-3-3-4-4-5-5-6-7-8-9-10-J-Q-K-A
+4-5-6-7-8-8-8
+</code></pre> 
+<h5><a id="2_406"></a>用例2</h5> 
+<pre><code class="prism language-input2">3-3-3-3-8-8-8-8
+K-K-K-K
+</code></pre> 
+<h5><a id="3_413"></a>用例3</h5> 
+<pre><code class="prism language-input3">3-3-3-3-4-4-5-5-6-7-8-9-10-J-Q-K-A
+4-5-6-7-8-8-8-9-10-J-Q-K-A
+</code></pre> 
+<h5><a id="4_420"></a>用例4</h5> 
+<pre><code class="prism language-input4">3-3-3-3-4-4-5-5-6-7-8-9-10-J-Q-K-A
+4-5-6-7-8-8-8-9-9-9-10-J
+</code></pre> 
+<h5><a id="5_427"></a>用例5</h5> 
+<pre><code class="prism language-input5">3-4-5-6-7-8-9-10-J-Q-K-A
+2-3-4-5-6-7-8-9-10-J-Q-K-A
+</code></pre> 
+<h5><a id="6_434"></a>用例6</h5> 
+<pre><code class="prism language-input6">3-4-5-6-7-8-9-10-J-Q-K-A
+2-2-2-2-3-3-3-J-J-J
+</code></pre> 
+<h5><a id="7_441"></a>用例7</h5> 
+<pre><code class="prism language-input7">3-3-3-3-9-9-9-9
+K-K-K-K
+</code></pre> 
+<h5><a id="8_448"></a>用例8</h5> 
+<pre><code class="prism language-input8">3-4-5-6-7-8-9-10-J-Q-K-A
+3-4-5-6-7-8-9-10-J-Q-K-A
+</code></pre> 
+<h5><a id="9_455"></a>用例9</h5> 
+<pre><code class="prism language-input9">3-4-5-6-7-8-9-10-J-Q-K-A
+A-2-3-4-5-6-7-8-9-10-J-Q-K
+</code></pre> 
+<h5><a id="10_462"></a>用例10</h5> 
+<pre><code class="prism language-input10">2-3-4-5-6-7-8-9-10-J-Q-K-A
+2-3-3-3-4-5-6-7-8-9-9-9-10-J-Q-K-A-A-A
+</code></pre>
+                </div>
+</body>
+</html>

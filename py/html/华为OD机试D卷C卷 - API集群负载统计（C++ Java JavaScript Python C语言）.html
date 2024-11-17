@@ -1,0 +1,392 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_5"></a>题目描述</h2> 
+<p>某个产品的RESTful API集合部署在服务器集群的多个节点上，近期对客户端访问日志进行了采集，需要统计各个API的访问频次，根据热点信息在服务器节点之间做负载均衡，现在需要实现热点信息统计查询功能。</p> 
+<p>RESTful API是由多个层级构成，层级之间使用 / 连接，如 /A/B/C/D 这个地址，A属于第一级，B属于第二级，C属于第三级，D属于第四级。</p> 
+<p>现在负载均衡模块需要知道给定层级上某个名字出现的频次，未出现过用0表示，实现这个功能。</p> 
+<h2><a id="_14"></a>输入描述</h2> 
+<p>第一行为N，表示访问历史日志的条数，0 ＜ N ≤ 100。</p> 
+<p>接下来N行，每一行为一个RESTful API的URL地址，约束地址中仅包含英文字母和连接符 / ，最大层级为10，每层级字符串最大长度为10。</p> 
+<p>最后一行为层级L和要查询的关键字</p> 
+<h2><a id="_22"></a>输出描述</h2> 
+<p>输出给定层级上，关键字出现的频次，使用完全匹配方式（大小写敏感）。</p> 
+<h2><a id="_26"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>5
+/huawei/computing/no/one
+/huawei/computing
+/huawei
+/huawei/cloud/no/one
+/huawei/wireless/no/one
+2 computing
+</code></pre> 
+<p>输出</p> 
+<pre><code>2
+</code></pre> 
+<p>说明</p> 
+<p>在第二层级上，computing出现了2次，因此输出2</p> 
+<h2><a id="2_50"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>5
+/huawei/computing/no/one
+/huawei/computing
+/huawei
+/huawei/cloud/no/one
+/huawei/wireless/no/one
+4 two
+</code></pre> 
+<p>输出</p> 
+<pre><code>0
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>存在第四层级的URL上，没有出现two，因此频次是0</p> 
+</blockquote> 
+<h2><a id="_76"></a>解题思路</h2> 
+<ol><li>创建一个映射表，键为层级和关键字，值为频次。这个映射表将用于存储每个层级和关键字的出现频次。</li><li>遍历每一条访问历史日志。对于每一条日志，将URL地址按照"/"分割成多个部分。</li><li>检查每个层级的字符串。对于每个层级，将层级和关键字作为键。如果键在映射表中存在，就将频次加1，否则将频次设为1。</li></ol> 
+<h2><a id="C_84"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个map，键为层级和关键字，值为频次</span>
+    map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> map<span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个vector来存储输入的数据</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> lines<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取输入的数据</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        lines<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取访问历史日志的条数</span>
+    <span class="token keyword">int</span> N <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每一条访问历史日志</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将URL地址按照"/"分割成多个部分</span>
+        stringstream <span class="token function">ss</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        string part<span class="token punctuation">;</span>
+        vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> parts<span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>ss<span class="token punctuation">,</span> part<span class="token punctuation">,</span> <span class="token char">'/'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parts<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>part<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 检查每个层级的字符串</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> parts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将层级和关键字作为键</span>
+            string key <span class="token operator">=</span> <span class="token function">to_string</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token char">'-'</span> <span class="token operator">+</span> parts<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果键在map中存在，就将频次加1，否则将频次设为1</span>
+            map<span class="token punctuation">[</span>key<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取要查询的层级和关键字</span>
+    stringstream <span class="token function">ss</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span>N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    string L<span class="token punctuation">,</span> keyword<span class="token punctuation">;</span>
+    ss <span class="token operator">&gt;&gt;</span> L <span class="token operator">&gt;&gt;</span> keyword<span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出给定层级上，关键字出现的频次</span>
+    string key <span class="token operator">=</span> L <span class="token operator">+</span> <span class="token char">'-'</span> <span class="token operator">+</span> keyword<span class="token punctuation">;</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>map<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>key<span class="token punctuation">)</span> <span class="token operator">?</span> map<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_144"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取访问历史日志的条数</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建一个HashMap，键为层级和关键字，值为频次</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> map <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历每一条访问历史日志</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将URL地址按照"/"分割成多个部分</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parts <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"/"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 检查每个层级的字符串</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> parts<span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 将层级和关键字作为键</span>
+                <span class="token class-name">String</span> key <span class="token operator">=</span> j <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> parts<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果键在HashMap中存在，就将频次加1，否则将频次设为1</span>
+                map<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> map<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取要查询的层级和关键字</span>
+        <span class="token keyword">int</span> <span class="token class-name">L</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> keyword <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出给定层级上，关键字出现的频次</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>map<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span><span class="token class-name">L</span> <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> keyword<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_182"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 创建一个对象，键为层级和关键字，值为频次</span>
+<span class="token keyword">let</span> map <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建一个数组来存储输入的数据</span>
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当接收到用户输入的数据时，将数据存入数组</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+    lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当接收完所有数据后，开始处理</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取访问历史日志的条数</span>
+    <span class="token keyword">let</span> <span class="token constant">N</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每一条访问历史日志</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token constant">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将URL地址按照"/"分割成多个部分</span>
+        <span class="token keyword">let</span> parts <span class="token operator">=</span> lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 检查每个层级的字符串</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> parts<span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将层级和关键字作为键</span>
+            <span class="token keyword">let</span> key <span class="token operator">=</span> j<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'-'</span> <span class="token operator">+</span> parts<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果键在对象中存在，就将频次加1，否则将频次设为1</span>
+            map<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>map<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取要查询的层级和关键字</span>
+    <span class="token keyword">let</span> <span class="token punctuation">[</span><span class="token constant">L</span><span class="token punctuation">,</span> keyword<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token constant">N</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出给定层级上，关键字出现的频次</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>map<span class="token punctuation">[</span><span class="token constant">L</span> <span class="token operator">+</span> <span class="token string">'-'</span> <span class="token operator">+</span> keyword<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_231"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 创建一个字典，键为层级和关键字，值为频次</span>
+<span class="token builtin">map</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+<span class="token comment"># 读取访问历史日志的条数</span>
+N <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历每一条访问历史日志</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 将URL地址按照"/"分割成多个部分</span>
+    parts <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'/'</span><span class="token punctuation">)</span>
+    <span class="token comment"># 检查每个层级的字符串</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>parts<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 将层级和关键字作为键</span>
+        key <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'-'</span> <span class="token operator">+</span> parts<span class="token punctuation">[</span>j<span class="token punctuation">]</span>
+        <span class="token comment"># 如果键在字典中存在，就将频次加1，否则将频次设为1</span>
+        <span class="token builtin">map</span><span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>key<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+
+<span class="token comment"># 读取要查询的层级和关键字</span>
+L<span class="token punctuation">,</span> keyword <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 输出给定层级上，关键字出现的频次</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">.</span>get<span class="token punctuation">(</span>L <span class="token operator">+</span> <span class="token string">'-'</span> <span class="token operator">+</span> keyword<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_258"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LOGS</span> <span class="token expression"><span class="token number">100</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LEVELS</span> <span class="token expression"><span class="token number">10</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LENGTH</span> <span class="token expression"><span class="token number">11</span> </span><span class="token comment">// 每层级字符串最大长度为10，再加上一个结束符</span></span>
+
+<span class="token comment">// 定义一个结构体来存储层级和关键字的组合以及对应的频次</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> key<span class="token punctuation">[</span>MAX_LEVELS <span class="token operator">*</span> MAX_LENGTH<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 层级和关键字的组合</span>
+    <span class="token keyword">int</span> count<span class="token punctuation">;</span> <span class="token comment">// 频次</span>
+<span class="token punctuation">}</span> ApiFrequency<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">,</span> L<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> keyword<span class="token punctuation">[</span>MAX_LENGTH<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    ApiFrequency frequencies<span class="token punctuation">[</span>MAX_LOGS <span class="token operator">*</span> MAX_LEVELS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 存储所有可能的层级和关键字组合</span>
+    <span class="token keyword">int</span> frequencyCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取访问历史日志的条数</span>
+    <span class="token function">getchar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 消除换行符</span>
+
+    <span class="token comment">// 读取每一条访问历史日志</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> url<span class="token punctuation">[</span>MAX_LEVELS <span class="token operator">*</span> MAX_LENGTH<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">fgets</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>url<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取一行URL地址</span>
+        url<span class="token punctuation">[</span><span class="token function">strcspn</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span> <span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 去除换行符</span>
+
+        <span class="token comment">// 分割URL地址</span>
+        <span class="token keyword">char</span> <span class="token operator">*</span>part <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span> <span class="token string">"/"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> level <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>part <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 构造层级和关键字的组合</span>
+            <span class="token keyword">char</span> key<span class="token punctuation">[</span>MAX_LEVELS <span class="token operator">*</span> MAX_LENGTH<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token function">sprintf</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> <span class="token string">"%d-%s"</span><span class="token punctuation">,</span> level<span class="token punctuation">,</span> part<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 检查是否已经存在于frequencies中</span>
+            <span class="token keyword">int</span> found <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> frequencyCount<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>frequencies<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>key<span class="token punctuation">,</span> key<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    frequencies<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 如果存在，频次加1</span>
+                    found <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>found<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果不存在，添加新的组合到frequencies</span>
+                <span class="token function">strcpy</span><span class="token punctuation">(</span>frequencies<span class="token punctuation">[</span>frequencyCount<span class="token punctuation">]</span><span class="token punctuation">.</span>key<span class="token punctuation">,</span> key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                frequencies<span class="token punctuation">[</span>frequencyCount<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                frequencyCount<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            part <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">"/"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            level<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取要查询的层级和关键字</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %s"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>L<span class="token punctuation">,</span> keyword<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 构造查询的key</span>
+    <span class="token keyword">char</span> queryKey<span class="token punctuation">[</span>MAX_LEVELS <span class="token operator">*</span> MAX_LENGTH<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>queryKey<span class="token punctuation">,</span> <span class="token string">"%d-%s"</span><span class="token punctuation">,</span> L<span class="token punctuation">,</span> keyword<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 查询频次</span>
+    <span class="token keyword">int</span> frequency <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> frequencyCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>frequencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>key<span class="token punctuation">,</span> queryKey<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            frequency <span class="token operator">=</span> frequencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出给定层级上，关键字出现的频次</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> frequency<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_346"></a>完整用例</h2> 
+<h3><a id="1_347"></a>用例1</h3> 
+<pre><code class="prism language-input1">3
+/x/y/z
+/x/y
+/x
+1 y
+</code></pre> 
+<h3><a id="2_357"></a>用例2</h3> 
+<pre><code class="prism language-input2">1
+/a/b/c
+3 c
+</code></pre> 
+<h3><a id="3_365"></a>用例3</h3> 
+<pre><code class="prism language-input3">4
+/apple
+/apple/orange
+/apple/banana
+/apple/orange/kiwi
+2 orange
+</code></pre> 
+<h3><a id="4_376"></a>用例4</h3> 
+<pre><code class="prism language-input4">5
+/a
+/a/b
+/a/b/c
+/a/b/c/d
+/a/b/c/d/e
+4 d
+</code></pre> 
+<h3><a id="5_388"></a>用例5</h3> 
+<pre><code class="prism language-input5">2
+/x/y/z
+/x/y/z/a
+3 a
+</code></pre> 
+<h3><a id="6_397"></a>用例6</h3> 
+<pre><code class="prism language-input6">3
+/foo/bar
+/foo/bar/baz
+/foo
+1 bar
+</code></pre> 
+<h3><a id="7_407"></a>用例7</h3> 
+<pre><code class="prism language-input7">4
+/x
+/x/y
+/y/x
+/x/y/x
+3 x
+</code></pre> 
+<h3><a id="8_418"></a>用例8</h3> 
+<pre><code class="prism language-input8">6
+/a/b/c/d
+/a/b/c
+/a/b
+/a
+/b/a
+/c/b/a
+2 b
+</code></pre> 
+<h3><a id="9_431"></a>用例9</h3> 
+<pre><code class="prism language-input9">7
+/p/q/r
+/p/q/r/s
+/p/q/r/s/t
+/p/q/r/s/t/u
+/v/w/x/y/z
+/a/b/c/d/e
+/f/g/h/i/j
+5 e
+</code></pre> 
+<h3><a id="10_445"></a>用例10</h3> 
+<pre><code class="prism language-input10">8
+/one/two/three/four/five/six/seven/eight
+/one/two/three/four/five/six/seven
+/one/two/three/four/five/six
+/one/two/three/four/five
+/one/two/three/four
+/one/two/three
+/one/two
+/one
+6 six
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_5" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_22" rel="nofollow">输出描述</a></li><li><a href="#_26" rel="nofollow">用例</a></li><li><a href="#2_50" rel="nofollow">用例2</a></li><li><a href="#_76" rel="nofollow">解题思路</a></li><li><a href="#C_84" rel="nofollow">C++</a></li><li><a href="#Java_144" rel="nofollow">Java</a></li><li><a href="#javaScript_182" rel="nofollow">javaScript</a></li><li><a href="#Python_231" rel="nofollow">Python</a></li><li><a href="#C_258" rel="nofollow">C语言</a></li><li><a href="#_346" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_347" rel="nofollow">用例1</a></li><li><a href="#2_357" rel="nofollow">用例2</a></li><li><a href="#3_365" rel="nofollow">用例3</a></li><li><a href="#4_376" rel="nofollow">用例4</a></li><li><a href="#5_388" rel="nofollow">用例5</a></li><li><a href="#6_397" rel="nofollow">用例6</a></li><li><a href="#7_407" rel="nofollow">用例7</a></li><li><a href="#8_418" rel="nofollow">用例8</a></li><li><a href="#9_431" rel="nofollow">用例9</a></li><li><a href="#10_445" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e63c6cedd4327fcd227846a924641623.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

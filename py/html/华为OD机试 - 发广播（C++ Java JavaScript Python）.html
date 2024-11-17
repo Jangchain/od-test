@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_2"></a>题目描述</h4> 
+<blockquote> 
+ <p>某地有N个广播站，站点之间有些有连接，有些没有。有连接的站点在接受到广播后会互相发送。</p> 
+ <p>给定一个N*N的二维数组matrix,数组的元素都是字符’0’或者’1’。</p> 
+ <p>matrix[i][j] = ‘1’, 代表i和j站点之间有连接，</p> 
+ <p>matrix[i][j] = ‘0’, 代表没连接，</p> 
+ <p>现在要发一条广播，问初始最少给几个广播站发送，才能保证所有的广播站都收到消息。</p> 
+</blockquote> 
+<h4><a id="_14"></a>输入描述</h4> 
+<blockquote> 
+ <p>从stdin输入，共一行数据，表示二维数组的各行，用逗号分隔行。保证每行字符串所含的字符数一样的。</p> 
+ <p>比如：110,110,001。</p> 
+</blockquote> 
+<h4><a id="_20"></a>输出描述</h4> 
+<blockquote> 
+ <p>返回初始最少需要发送广播站个数</p> 
+</blockquote> 
+<h5><a id="ACM_26"></a>ACM输入输出模式</h5> 
+<p>如果你经常使用<strong>Leetcode</strong>,会知道<strong>letcode</strong>是不需要编写输入输出函数的。但是华为OD机考使用的是 <strong>ACM 模式</strong>，需要手动编写输入和输出。</p> 
+<p>所以最好在牛-客上提前熟悉这种模式。例如C++使用<code>cin/cout</code>,python使用<code>input()/print()</code>。JavaScript使用node的<code>readline()</code>和<code>console.log()</code>。Java 使用<code>sacnner/system.out.print()</code></p> 
+<h4><a id="_33"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>110,110,001</td></tr><tr><td>输出</td><td>2</td></tr><tr><td>说明</td><td>站点1和站点2直接有连接，站点3和其他的都没连接，所以开始至少需要给两个站点发送广播。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td><p>100,010,001</p></td></tr><tr><td>输出</td><td>3</td></tr><tr><td>说明</td><td>3台服务器互不连接，所以需要分别广播这3台服务器。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td><p>11,11</p></td></tr><tr><td>输出</td><td>1</td></tr><tr><td>说明</td><td>2台服务器相互连接，所以只需要广播其中一台服务器</td></tr></tbody></table> 
+<h4><a id="_42"></a>解题思路：</h4> 
+<ol><li>读取输入的二维数组<code>matrix</code>，其中<code>matrix[i][j]</code>表示站点i和站点j之间是否有连接。</li><li>初始化一个长度为N的数组<code>visited</code>，用于记录每个站点是否已被访问。初始时，所有站点都未被访问，即<code>visited[i] = 0</code>。</li><li>初始化计数器<code>count</code>为0，用于记录最少需要发送广播站的个数。</li><li>遍历所有站点，对于每个未被访问的站点i：<br> a. 使用深度优先搜索（DFS）遍历与站点i直接或间接连接的所有站点，并将这些站点标记为已访问。<br> b. 将计数器<code>count</code>加1，表示需要给站点i发送广播。</li><li>遍历完所有站点后，计数器<code>count</code>的值即为初始最少需要发送广播站的个数。</li></ol> 
+<h4><a id="C_56"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索（DFS）函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> matrix<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> visited<span class="token punctuation">,</span> <span class="token keyword">int</span> index<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将站点 index 标记为已访问</span>
+    visited<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 获取站点 index 的连接情况</span>
+    string row <span class="token operator">=</span> matrix<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历站点 index 的所有连接</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> row<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果站点 i 与站点 index 有连接且未被访问</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>row<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'1'</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 对站点 i 进行深度优先搜索（DFS）</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入字符串</span>
+    string input<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 将输入字符串转换为 vector&lt;string&gt; 类型的 matrix</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> matrix<span class="token punctuation">;</span>
+    string temp <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token string">','</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            matrix<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            temp <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            temp <span class="token operator">+=</span> c<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    matrix<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> matrix<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化一个长度为 n 的 vector&lt;int&gt; 类型的 visited，用于记录每个站点是否已被访问</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">visited</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化计数器 count 为 0，用于记录需要发送广播的站点数量</span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有站点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果站点 i 未被访问</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 对站点 i 进行深度优先搜索（DFS），将与站点 i 直接或间接连接的所有站点标记为已访问</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 将计数器 count 加 1，表示需要给站点 i 发送广播</span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出计数器 count 的值，即初始最少需要发送广播站个数</span>
+    cout <span class="token operator">&lt;&lt;</span> count <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h4><a id="java_125"></a>java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个 Scanner 对象用于读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 将输入字符串转换为 ArrayList&lt;String&gt; 类型的 matrix</span>
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> matrix <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> temp <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> input<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token string">','</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                matrix<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                temp <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                temp <span class="token operator">+=</span> c<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        matrix<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> matrix<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化一个长度为 n 的数组 visited，用于记录每个站点是否已被访问</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化计数器 count 为 0，用于记录需要发送广播的站点数量</span>
+        <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历所有站点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果站点 i 未被访问</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 对站点 i 进行深度优先搜索（DFS），将与站点 i 直接或间接连接的所有站点标记为已访问</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 将计数器 count 加 1，表示需要给站点 i 发送广播</span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出计数器 count 的值，即初始最少需要发送广播站个数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 深度优先搜索（DFS）函数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">,</span> <span class="token keyword">int</span> index<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将站点 index 标记为已访问</span>
+        visited<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取站点 index 的连接情况</span>
+        <span class="token class-name">String</span> row <span class="token operator">=</span> matrix<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历站点 index 的所有连接</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> row<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果站点 i 与站点 index 有连接且未被访问</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>row<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'1'</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 对站点 i 进行深度优先搜索（DFS）</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="javaScript_192"></a>javaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当从标准输入读取到一行时，执行以下操作</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> temp <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 将输入字符串转换为表示站点连接关系的数组 matrix</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> c <span class="token keyword">of</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">===</span> <span class="token string">','</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      matrix<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      temp <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      temp <span class="token operator">+=</span> c<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  matrix<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> n <span class="token operator">=</span> matrix<span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化一个长度为 n 的数组 visited，用于记录每个站点是否已被访问</span>
+  <span class="token keyword">const</span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化计数器 count 为 0，用于记录需要发送广播的站点数量</span>
+  <span class="token keyword">let</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历所有站点</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果站点 i 未被访问</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 对站点 i 进行深度优先搜索（DFS），将与站点 i 直接或间接连接的所有站点标记为已访问</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 将计数器 count 加 1，表示需要给站点 i 发送广播</span>
+      count<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出计数器 count 的值，即初始最少需要发送广播站个数</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索（DFS）函数</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> index</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将站点 index 标记为已访问</span>
+  visited<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token comment">// 获取站点 index 的连接情况</span>
+  <span class="token keyword">const</span> row <span class="token operator">=</span> matrix<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历站点 index 的所有连接</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> row<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果站点 i 与站点 index 有连接且未被访问</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>row<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">===</span> <span class="token string">'1'</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 对站点 i 进行深度优先搜索（DFS）</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+ 
+</code></pre> 
+<h4><a id="python_263"></a>python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 深度优先搜索（DFS）函数</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 将站点 index 标记为已访问</span>
+    visited<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>
+    <span class="token comment"># 获取站点 index 的连接情况</span>
+    row <span class="token operator">=</span> matrix<span class="token punctuation">[</span>index<span class="token punctuation">]</span>
+    <span class="token comment"># 遍历站点 index 的所有连接</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果站点 i 与站点 index 有连接且未被访问</span>
+        <span class="token keyword">if</span> row<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'1'</span> <span class="token keyword">and</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token comment"># 对站点 i 进行深度优先搜索（DFS）</span>
+            dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取输入字符串</span>
+    <span class="token builtin">input</span> <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 将输入字符串转换为表示站点连接关系的数组 matrix</span>
+    matrix <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 获取站点数量</span>
+    n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>matrix<span class="token punctuation">)</span>
+
+    <span class="token comment"># 初始化一个长度为 n 的列表 visited，用于记录每个站点是否已被访问</span>
+    visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> n
+    <span class="token comment"># 初始化计数器 count 为 0，用于记录需要发送广播的站点数量</span>
+    count <span class="token operator">=</span> <span class="token number">0</span>
+
+    <span class="token comment"># 遍历所有站点</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果站点 i 未被访问</span>
+        <span class="token keyword">if</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token comment"># 对站点 i 进行深度优先搜索（DFS），将与站点 i 直接或间接连接的所有站点标记为已访问</span>
+            dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span>
+            <span class="token comment"># 将计数器 count 加 1，表示需要给站点 i 发送广播</span>
+            count <span class="token operator">+=</span> <span class="token number">1</span>
+
+    <span class="token comment"># 输出计数器 count 的值，即初始最少需要发送广播站个数</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span>
+
+</code></pre> 
+<blockquote> 
+ <p></p> 
+ <div class="toc"> 
+  <h4>文章目录</h4> 
+  <ul><li><ul><li><ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_20" rel="nofollow">输出描述</a></li><li><ul><li><a href="#ACM_26" rel="nofollow">ACM输入输出模式</a></li></ul> 
+     </li><li><a href="#_33" rel="nofollow">用例</a></li><li><a href="#_42" rel="nofollow">解题思路：</a></li><li><a href="#C_56" rel="nofollow">C++</a></li><li><a href="#java_125" rel="nofollow">java</a></li><li><a href="#javaScript_192" rel="nofollow">javaScript</a></li><li><a href="#python_263" rel="nofollow">python</a></li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </div> 
+ <p></p> 
+</blockquote> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

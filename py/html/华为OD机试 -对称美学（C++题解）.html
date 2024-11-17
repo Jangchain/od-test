@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>对称就是最大的美学，现有一道关于对称字符串的美学。已知：</p> 
+<ul><li>第1个字符串：R</li><li>第2个字符串：BR</li><li>第3个字符串：RBBR</li><li>第4个字符串：BRRBRBBR</li><li>第5个字符串：RBBRBRRBBRRBRBBR</li></ul> 
+<p>相信你已经发现规律了，没错！就是第 i 个字符串 = 第 i - 1 号字符串取反 + 第 i - 1 号字符串；</p> 
+<p>取反（R-&gt;B, B-&gt;R）;</p> 
+<p>现在告诉你n和k，让你求得第n个字符串的第k个字符是多少。（k的编号从0开始）</p> 
+<h4><a id="_17"></a>输入描述</h4> 
+<p>第一行输入一个T，表示有T组用例；</p> 
+<p>解析来输入T行，每行输入两个数字，表示n，k</p> 
+<ul><li>1 ≤ T ≤ 100；</li><li>1 ≤ n ≤ 64；</li><li>0 ≤ k ＜ 2^(n-1)；</li></ul> 
+<h4><a id="_27"></a>输出描述</h4> 
+<p>输出T行表示答案；</p> 
+<p>输出 “blue” 表示字符是B；</p> 
+<p>输出 “red” 表示字符是R。</p> 
+<p>备注：输出字符串区分大小写，请注意输出小写字符串，不带双引号。</p> 
+<h4><a id="_37"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>5<br>1 0<br>2 1<br>3 2<br>4 6<br>5 8</td></tr><tr><td>输出</td><td><code>red</code><br><code>red</code><br><code>blue</code><br><code>blue</code><br><code>blue</code></td></tr><tr><td>说明</td><td>第 1 个字符串：R -&gt; 第 0 个字符为R<br>第 2 个字符串：BR -&gt; 第 1 个字符为R<br>第 3 个字符串：RBBR -&gt; 第 2 个字符为B<br>第 4 个字符串：BRRBRBBR -&gt; 第 6 个字符为B<br>第 5 个字符串：RBBRBRRBBRRBRBBR -&gt; 第 8 个字符为B</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>1<br>64 73709551616</td></tr><tr><td>输出</td><td>red</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h4><a id="_43"></a>题目解析</h4> 
+<p>看不懂题目？没关系。我们先把题目中的字符串画出来。根据题目红色的是R.蓝色的是B</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/3870179a712ea08b3425ebcb4d1bb930.png" alt="image-20230307133934938"></p> 
+<p>仔细观察表格你会看到：</p> 
+<p>第5个字符串的后半部分，和第4个字符串完全相同；</p> 
+<p>第4个字符串的后半部分，和第3个字符串完全相同；</p> 
+<p>第3个字符串的后半部分，和第2个字符串完全相同；</p> 
+<p>第2个字符串的后半部分，和第1个字符串完全相同；</p> 
+<p>当前字符串与前一个字符串存在依赖关系，明显跟递归有关系了啊！</p> 
+<p>在仔细观察，你会发现每个字符串的前半部分，与前一个字符串的颜色正好相反。</p> 
+<h4><a id="C_70"></a>C++</h4> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 递归函数，找到第n个字符串的第k个字符</span>
+<span class="token keyword">char</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">long</span> n<span class="token punctuation">,</span> <span class="token keyword">long</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 第1个字符串</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token string">'R'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 第2个字符串</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>k <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token string">'B'</span><span class="token punctuation">;</span> <span class="token comment">// 如果k为0，则返回B</span>
+        <span class="token keyword">else</span> <span class="token keyword">return</span> <span class="token string">'R'</span><span class="token punctuation">;</span> <span class="token comment">// 否则返回R</span>
+    <span class="token punctuation">}</span>
+ 
+    <span class="token keyword">long</span> len <span class="token operator">=</span> <span class="token number">1L</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>n<span class="token operator">-</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算字符串长度</span>
+    <span class="token comment">// 如果 k 在后半段，则与前一个字符串相同</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>k <span class="token operator">&gt;=</span> len<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">long</span> pos <span class="token operator">=</span> k <span class="token operator">-</span> len<span class="token punctuation">;</span> <span class="token comment">// 计算在前一个字符串中的位置</span>
+        <span class="token keyword">return</span> <span class="token function">find</span><span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> pos<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归求解前一个字符串中的字符</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果 k 在前半段，则与前一个字符串相反</span>
+        <span class="token keyword">return</span> <span class="token function">find</span><span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'R'</span> <span class="token operator">?</span> <span class="token string">'B'</span> <span class="token operator">:</span> <span class="token string">'R'</span><span class="token punctuation">;</span> <span class="token comment">// 递归求解前一个字符串中的字符，并根据结果返回相反的字符</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+ 
+ 
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> t<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> t<span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">long</span><span class="token operator">&gt;&gt;</span> input_case<span class="token punctuation">;</span>
+    <span class="token comment">// 读入所有测试用例</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>t<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">long</span> n<span class="token punctuation">,</span> k<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> k<span class="token punctuation">;</span>
+        vector<span class="token operator">&lt;</span><span class="token keyword">long</span><span class="token operator">&gt;</span> single_case <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>n<span class="token punctuation">,</span> k<span class="token punctuation">}</span><span class="token punctuation">;</span>
+        input_case<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>single_case<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+ 
+    <span class="token comment">// 对每个测试用例进行求解</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> t<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">long</span> n <span class="token operator">=</span> input_case<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> k <span class="token operator">=</span> input_case<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        string res <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> k<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'R'</span> <span class="token operator">?</span> <span class="token string">"red"</span> <span class="token operator">:</span> <span class="token string">"blue"</span><span class="token punctuation">;</span> <span class="token comment">// 根据求解结果判断是红色还是蓝色</span>
+        cout <span class="token operator">&lt;&lt;</span> res <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_17" rel="nofollow">输入描述</a></li><li><a href="#_27" rel="nofollow">输出描述</a></li><li><a href="#_37" rel="nofollow">用例</a></li><li><a href="#_43" rel="nofollow">题目解析</a></li><li><a href="#C_70" rel="nofollow">C++</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>一个歌手准备从A城去B城参加演出。</p> 
+<ol><li> <p>按照合同，他必须在 T 天内赶到</p> </li><li> <p>歌手途经 N 座城市</p> </li><li> <p>歌手不能往回走</p> </li><li> <p>每两座城市之间需要的天数都可以提前获知。</p> </li><li> <p>歌手在每座城市都可以在路边卖唱赚钱。</p> <p>经过调研，歌手提前获知了每座城市卖唱的收入预期： 如果在一座城市第一天卖唱可以赚M，后续每天的收入会减少D（第二天赚的钱是 M - D，第三天是 M - 2D …）。如果收入减少到 0 就不会再少了。</p> </li><li> <p>歌手到达后的第二天才能开始卖唱。如果今天卖过唱，第二天才能出发。</p> </li></ol> 
+<p>贪心的歌手最多可以赚多少钱？</p> 
+<h2><a id="_25"></a>输入描述</h2> 
+<p>第一行两个数字 T 和 N，中间用空格隔开。</p> 
+<ul><li>T 代表总天数，0 &lt; T &lt; 1000</li><li>N 代表路上经过 N 座城市，0 &lt; N &lt; 100</li></ul> 
+<p>第二行 N+1 个数字，中间用空格隔开。代表每两座城市之间耗费的时间。</p> 
+<ul><li>其总和 ≤ T。</li></ul> 
+<p>接下来 N 行，每行两个数字 M 和 D，中间用空格隔开。代表每个城市的输入预期。</p> 
+<ul><li>0 &lt; M &lt; 1000</li><li>0 &lt; D &lt; 100</li></ul> 
+<h2><a id="_41"></a>输出描述</h2> 
+<p>一个数字。代表歌手最多可以赚多少钱。以回车结束。</p> 
+<h2><a id="_45"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>10 2
+1 1 2
+120 20
+90 10
+</code></pre> 
+<p>输出</p> 
+<pre><code>540
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>总共10天，路上经过2座城市。</p> 
+ <p>路上共花 1+1+2=4 天</p> 
+ <p>剩余6天最好的计划是在第一座城市待3天，在第二座城市待3天。</p> 
+ <p>在第一座城市赚的钱：120 + 100 + 80 = 300</p> 
+ <p>在第二座城市赚的钱：90 + 80 + 70 = 240</p> 
+ <p>一共 300 + 240 = 540。</p> 
+</blockquote> 
+<h2><a id="_78"></a>解题思路</h2> 
+<h3><a id="_80"></a>贪心算法</h3> 
+<p>贪心算法在此问题中的应用</p> 
+<ol><li> <p><strong>最大化每天收益</strong>：对于每个城市，根据其收入预期M和收入递减值D，可以计算出如果在该城市卖唱，每一天的收益是多少。随着时间的推移，这个城市的日收益会递减。在这个过程中，算法每天都会计算并尝试选择当天的最大可能收益。</p> </li><li> <p><strong>选择最佳卖唱天数</strong>：由于总天数T是有限的，所以需要在所有可选的卖唱天数中挑选出最有利的组合。这里的贪心选择是通过优先队列（最小堆）来实现的。优先队列中存储的是当前选择的卖唱天数的收益。如果遇到一个新的天数其收益比队列中最小的收益要高，那么就替换掉这个最小收益的天数。这样，我们总是保持了收益最大化的天数组合。</p> </li></ol> 
+<h3><a id="__88"></a>具体 步骤</h3> 
+<ol><li> <p>初始化一个优先队列，用于记录每天的收益。优先队列的特性是，队列中的元素总是按照一定的顺序排列，这里是按照收益的大小排列。</p> </li><li> <p>遍历每个城市，对于每个城市，计算从第一天开始每天的收益，并将其加入优先队列。</p> </li><li> <p>如果优先队列的大小超过了剩余的天数，那么就取出优先队列中最小的收益，并与当天的收益进行比较。如果当天的收益更高，那么就将最小的收益移出队列，并将当天的收益加入队列。这样做的目的是，始终保持队列中的元素是最高的收益。</p> </li><li> <p>当收益为0时，即当前城市的收益已经减少到0，那么就不再在该城市卖唱，跳出循环，继续处理下一个城市。</p> </li><li> <p>最后，将优先队列中的所有收益相加，得到最大收益，并输出。</p> </li></ol> 
+<p>核心思想是贪心算法，即每一步都做出在当前看来最好的选择，最终得到的就是全局最优解。</p> 
+<h2><a id="C_110"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> T<span class="token punctuation">,</span> N<span class="token punctuation">;</span> <span class="token comment">// 分别表示总天数和城市数量</span>
+    cin <span class="token operator">&gt;&gt;</span> T <span class="token operator">&gt;&gt;</span> N<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">travelDays</span><span class="token punctuation">(</span>N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储每两座城市之间耗费的时间</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> travelDays<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">M</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">D</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// M存储每个城市的收入预期，D存储每个城市的收入递减值</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> M<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;&gt;</span> D<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算必须花费的路程时间</span>
+    <span class="token keyword">int</span> roadCost <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        roadCost <span class="token operator">+=</span> travelDays<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 可用于卖唱赚钱的时间</span>
+    <span class="token keyword">int</span> remain <span class="token operator">=</span> T <span class="token operator">-</span> roadCost<span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用优先队列记录每天的收益</span>
+    priority_queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">,</span> greater<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> earningsQueue<span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每个城市</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> days <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前城市卖唱的天数</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>true<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> profitToday <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>M<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> days <span class="token operator">*</span> D<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算今天的收益</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>earningsQueue<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> remain<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                earningsQueue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>profitToday<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>earningsQueue<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> profitToday <span class="token operator">&gt;</span> earningsQueue<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    earningsQueue<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 移除最小收益</span>
+                    earningsQueue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>profitToday<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 加入今天的收益</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>profitToday <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果收益为0，不再卖唱</span>
+            days<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算总收益</span>
+    <span class="token keyword">int</span> maxEarnings <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>earningsQueue<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        maxEarnings <span class="token operator">+=</span> earningsQueue<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        earningsQueue<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> maxEarnings <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出总收益</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_173"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">PriorityQueue</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">T</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 总天数</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 城市数量</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> travelDays <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">N</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每两座城市之间耗费的时间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            travelDays<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token class-name">M</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每个城市的收入预期M</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token class-name">D</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每个城市的收入递减值D</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">M</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">D</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算必须花费的路程时间</span>
+        <span class="token keyword">int</span> roadCost <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            roadCost <span class="token operator">+=</span> travelDays<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 可用于卖唱赚钱的时间</span>
+        <span class="token keyword">int</span> remain <span class="token operator">=</span> <span class="token class-name">T</span> <span class="token operator">-</span> roadCost<span class="token punctuation">;</span>
+
+        <span class="token comment">// 使用优先队列记录每天的收益</span>
+        <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> earningsQueue <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历每个城市</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> days <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前城市卖唱的天数</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> profitToday <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token class-name">M</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> days <span class="token operator">*</span> <span class="token class-name">D</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>earningsQueue<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> remain<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    earningsQueue<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>profitToday<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>earningsQueue<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> profitToday <span class="token operator">&gt;</span> earningsQueue<span class="token punctuation">.</span><span class="token function">peek</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        earningsQueue<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 移除最小收益</span>
+                        earningsQueue<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>profitToday<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 加入今天的收益</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>profitToday <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果收益为0，不再卖唱</span>
+                days<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 计算总收益</span>
+        <span class="token keyword">int</span> maxEarnings <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>earningsQueue<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            maxEarnings <span class="token operator">+=</span> earningsQueue<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>maxEarnings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_236"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span><span class="token constant">T</span><span class="token punctuation">,</span> <span class="token constant">N</span><span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> travelDays <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> <span class="token constant">M</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> <span class="token constant">D</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token constant">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>m<span class="token punctuation">,</span> d<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token constant">M</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token constant">D</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 计算必须花费的路程时间</span>
+  <span class="token keyword">const</span> roadCost <span class="token operator">=</span> travelDays<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">acc<span class="token punctuation">,</span> val</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> acc <span class="token operator">+</span> val<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 可用于卖唱赚钱的时间</span>
+  <span class="token keyword">const</span> remain <span class="token operator">=</span> <span class="token constant">T</span> <span class="token operator">-</span> roadCost<span class="token punctuation">;</span>
+
+  <span class="token comment">// 记录每天的收益，不使用优先队列</span>
+  <span class="token keyword">let</span> earnings <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历每个城市</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token constant">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> days <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前城市卖唱的天数</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 计算今天的收益，如果收益小于0，则按0计算</span>
+      <span class="token keyword">const</span> profitToday <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token constant">M</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> days <span class="token operator">*</span> <span class="token constant">D</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 如果收益数组的大小小于剩余天数，直接添加今天的收益</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>earnings<span class="token punctuation">.</span>length <span class="token operator">&lt;</span> remain<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        earnings<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>profitToday<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 找到收益数组中最小的收益并替换</span>
+        <span class="token keyword">const</span> minEarningIndex <span class="token operator">=</span> earnings<span class="token punctuation">.</span><span class="token function">indexOf</span><span class="token punctuation">(</span>Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token operator">...</span>earnings<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>earnings<span class="token punctuation">[</span>minEarningIndex<span class="token punctuation">]</span> <span class="token operator">&lt;</span> profitToday<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          earnings<span class="token punctuation">[</span>minEarningIndex<span class="token punctuation">]</span> <span class="token operator">=</span> profitToday<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+      <span class="token comment">// 如果今天的收益为0，结束循环</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>profitToday <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      days<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 计算总收益</span>
+  <span class="token keyword">const</span> maxEarnings <span class="token operator">=</span> earnings<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">acc<span class="token punctuation">,</span> val</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> acc <span class="token operator">+</span> val<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出总收益</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>maxEarnings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_301"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> heapq
+
+<span class="token comment"># 读取输入</span>
+T<span class="token punctuation">,</span> N <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 总天数和城市数量</span>
+travel_days <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 每两座城市之间耗费的时间</span>
+M <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 每个城市的收入预期M</span>
+D <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 每个城市的收入递减值D</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    m<span class="token punctuation">,</span> d <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    M<span class="token punctuation">.</span>append<span class="token punctuation">(</span>m<span class="token punctuation">)</span>
+    D<span class="token punctuation">.</span>append<span class="token punctuation">(</span>d<span class="token punctuation">)</span>
+
+<span class="token comment"># 计算必须花费的路程时间</span>
+road_cost <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>travel_days<span class="token punctuation">)</span>
+<span class="token comment"># 可用于卖唱赚钱的时间</span>
+remain <span class="token operator">=</span> T <span class="token operator">-</span> road_cost
+
+<span class="token comment"># 使用优先队列（最小堆）记录每天的收益</span>
+earnings_queue <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 遍历每个城市</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    days <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 当前城市卖唱的天数</span>
+    <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+        <span class="token comment"># 计算今天的收益，如果收益小于0，则按0计算</span>
+        profit_today <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>M<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> days <span class="token operator">*</span> D<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token comment"># 如果优先队列的大小小于剩余天数，直接添加今天的收益</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>earnings_queue<span class="token punctuation">)</span> <span class="token operator">&lt;</span> remain<span class="token punctuation">:</span>
+            heapq<span class="token punctuation">.</span>heappush<span class="token punctuation">(</span>earnings_queue<span class="token punctuation">,</span> profit_today<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果今天的收益大于优先队列中的最小收益，则替换</span>
+            <span class="token keyword">if</span> earnings_queue <span class="token keyword">and</span> profit_today <span class="token operator">&gt;</span> earnings_queue<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                heapq<span class="token punctuation">.</span>heappop<span class="token punctuation">(</span>earnings_queue<span class="token punctuation">)</span>
+                heapq<span class="token punctuation">.</span>heappush<span class="token punctuation">(</span>earnings_queue<span class="token punctuation">,</span> profit_today<span class="token punctuation">)</span>
+        <span class="token comment"># 如果今天的收益为0，结束循环</span>
+        <span class="token keyword">if</span> profit_today <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+        days <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 计算总收益</span>
+max_earnings <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>earnings_queue<span class="token punctuation">)</span>
+
+<span class="token comment"># 输出总收益</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>max_earnings<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_352"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 获取输入中的整数数组</span>
+<span class="token keyword">int</span><span class="token operator">*</span> <span class="token function">getIntArray</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span> line<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span><span class="token operator">*</span> array <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 假设最多100个整数</span>
+    <span class="token keyword">int</span> num<span class="token punctuation">,</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">sscanf</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>num<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        array<span class="token punctuation">[</span>i<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> num<span class="token punctuation">;</span>
+        <span class="token comment">// 移动到下一个整数</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">*</span>line <span class="token operator">!=</span> <span class="token char">' '</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">*</span>line <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">)</span> line<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">*</span>line <span class="token operator">==</span> <span class="token char">' '</span><span class="token punctuation">)</span> line<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token operator">*</span>size <span class="token operator">=</span> i<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> array<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算数组中所有元素的和</span>
+<span class="token keyword">int</span> <span class="token function">sumArray</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span> array<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        sum <span class="token operator">+=</span> array<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> sum<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 找到数组中的最小值的索引</span>
+<span class="token keyword">int</span> <span class="token function">findMinIndex</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span> array<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> minIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>array<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> array<span class="token punctuation">[</span>minIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            minIndex <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> minIndex<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> line<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 假设每行输入不超过1024个字符</span>
+    <span class="token keyword">int</span> T<span class="token punctuation">,</span> N<span class="token punctuation">;</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> travelDays<span class="token punctuation">;</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> M<span class="token punctuation">;</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> D<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> travelDaysSize<span class="token punctuation">,</span> MSize<span class="token punctuation">,</span> DSize<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> roadCost<span class="token punctuation">,</span> remain<span class="token punctuation">;</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> earnings<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> earningsSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取第一行输入，获取总天数T和城市数量N</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sscanf</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>T<span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取第二行输入，获取每两座城市之间耗费的时间</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    travelDays <span class="token operator">=</span> <span class="token function">getIntArray</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token operator">&amp;</span>travelDaysSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 分配内存空间给M和D数组</span>
+    M <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span> <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    D <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span> <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取后续行输入，获取每个城市的收入预期M和收入递减值D</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">sscanf</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>M<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>D<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算必须花费的路程时间</span>
+    roadCost <span class="token operator">=</span> <span class="token function">sumArray</span><span class="token punctuation">(</span>travelDays<span class="token punctuation">,</span> travelDaysSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 可用于卖唱赚钱的时间</span>
+    remain <span class="token operator">=</span> T <span class="token operator">-</span> roadCost<span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化收益数组</span>
+    earnings <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span> <span class="token operator">*</span> remain<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每个城市</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> days <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前城市卖唱的天数</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算今天的收益，如果收益小于0，则按0计算</span>
+            <span class="token keyword">int</span> profitToday <span class="token operator">=</span> M<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> days <span class="token operator">*</span> D<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>profitToday <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> profitToday <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果收益数组的大小小于剩余天数，直接添加今天的收益</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>earningsSize <span class="token operator">&lt;</span> remain<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                earnings<span class="token punctuation">[</span>earningsSize<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> profitToday<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 找到收益数组中最小的收益并替换</span>
+                <span class="token keyword">int</span> minEarningIndex <span class="token operator">=</span> <span class="token function">findMinIndex</span><span class="token punctuation">(</span>earnings<span class="token punctuation">,</span> earningsSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>earnings<span class="token punctuation">[</span>minEarningIndex<span class="token punctuation">]</span> <span class="token operator">&lt;</span> profitToday<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    earnings<span class="token punctuation">[</span>minEarningIndex<span class="token punctuation">]</span> <span class="token operator">=</span> profitToday<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 如果今天的收益为0，结束循环</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>profitToday <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            days<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算总收益</span>
+    <span class="token keyword">int</span> maxEarnings <span class="token operator">=</span> <span class="token function">sumArray</span><span class="token punctuation">(</span>earnings<span class="token punctuation">,</span> earningsSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出总收益</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> maxEarnings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 释放内存</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>travelDays<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>D<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>earnings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_470"></a>完整用例</h2> 
+<h3><a id="1_472"></a>用例1</h3> 
+<pre><code class="prism language-input1">10 2
+1 1 2
+120 20
+90 10
+</code></pre> 
+<h3><a id="2_481"></a>用例2</h3> 
+<pre><code class="prism language-input2">10 1
+1 1
+120 20
+</code></pre> 
+<h3><a id="3_489"></a>用例3</h3> 
+<pre><code class="prism language-input3">2 1
+1 1
+120 20
+</code></pre> 
+<h3><a id="4_497"></a>用例4</h3> 
+<pre><code class="prism language-input4">3 2
+1 1 1
+120 20
+90 10
+</code></pre> 
+<h3><a id="5_506"></a>用例5</h3> 
+<pre><code class="prism language-input5">4 2
+1 1 1
+120 20
+90 10
+</code></pre> 
+<h3><a id="6_515"></a>用例6</h3> 
+<pre><code class="prism language-input6">10 2
+1 1 1
+120 20
+90 10
+</code></pre> 
+<h3><a id="7_524"></a>用例7</h3> 
+<pre><code class="prism language-input7">10 2
+1 1 1
+120 20
+120 20
+</code></pre> 
+<h3><a id="8_533"></a>用例8</h3> 
+<pre><code class="prism language-input8">10 2
+1 1 1
+120 20
+120 20
+</code></pre> 
+<h3><a id="9_542"></a>用例9</h3> 
+<pre><code class="prism language-input9">8 2
+1 2 2
+120 20
+90 10
+</code></pre> 
+<h3><a id="10_551"></a>用例10</h3> 
+<pre><code class="prism language-input10">6 2
+1 2 2
+120 20
+90 10
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/aefe45775b45f835f8898c2a9ac7c7b6.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

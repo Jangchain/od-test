@@ -1,0 +1,488 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>给定一个二维数组M行N列，二维数组里的数字代表图片的像素，为了简化问题，仅包含像素1和5两种像素，每种像素代表一个物体，2个物体相邻的格子为边界，求像素1代表的物体的边界个数。</p> 
+<p>像素1代表的物体的边界指与像素5相邻的像素1的格子，边界相邻的属于同一个边界，相邻需要考虑8个方向（上，下，左，右，左上，左下，右上，右下）。</p> 
+<p><strong>其他约束</strong></p> 
+<p>地图规格约束为：</p> 
+<p>0&lt;M&lt;100<br> 0&lt;N&lt;100</p> 
+<p>1）如下图，与像素5的格子相邻的像素1的格子（0,0）、（0,1）、（0,2）、（1,0）、（1,2）、（2,0）、（2,1）、（2,2）、（4,4）、（4,5）、（5,4）为边界，另（0,0）、（0,1）、（0,2）、（1,0）、（1,2）、（2,0）、（2,1）、（2,2）相邻，为1个边界，（4,4）、（4,5）、（5,4）相邻，为1个边界，所以下图边界个数为2。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/542cba9b9c5ea41eb4020ba58a73cce7.png" alt="image-20230403212929835"></p> 
+<p>2）如下图，与像素5的格子相邻的像素1的格子（0,0）、（0,1）、（0,2）、（1,0）、（1,2）、（2,0）、（2,1）、（2,2）、（3,3）、（3,4）、（3,5）、（4,3）、（4,5）、（5,3）、（5,4）、（5,5）为边界，另这些边界相邻，所以下图边界个数为1。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/56b89fcb659b2606d426740c34905b40.png" alt="image-20230403212911541"></p> 
+<p><strong>注：</strong>（2,2）、（3,3）相邻。</p> 
+<h2><a id="_26"></a>输入描述</h2> 
+<p>第一行，行数M，列数N</p> 
+<p>第二行开始，是M行N列的像素的二维数组，仅包含像素1和5</p> 
+<h2><a id="_32"></a>输出描述</h2> 
+<p>像素1代表的物体的边界个数。</p> 
+<p>如果没有边界输出0（比如只存在像素1，或者只存在像素5）。</p> 
+<h2><a id="_38"></a>用例</h2> 
+<table><tbody><tr><td>输入</td><td><code>6 6</code><br><code>1 1 1 1 1 1</code><br><code>1 5 1 1 1 1</code><br><code>1 1 1 1 1 1</code><br><code>1 1 1 1 1 1</code><br><code>1 1 1 1 1 1</code><br><code>1 1 1 1 1 5</code></td></tr><tr><td>输出</td><td>2</td></tr><tr><td>说明</td><td>参考题目描述部分</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td><code>6 6</code><br><code>1 1 1 1 1 1</code><br><code>1 5 1 1 1 1</code><br><code>1 1 1 1 1 1</code><br><code>1 1 1 1 1 1</code><br><code>1 1 1 1 5 1</code><br><code>1 1 1 1 1 1</code></td></tr><tr><td>输出</td><td>1</td></tr><tr><td>说明</td><td>参考题目描述部分</td></tr></tbody></table> 
+<h2><a id="_44"></a>解题思路</h2> 
+<ol><li> <p><strong>定义方向数组</strong>：设置两个数组 <code>dx</code> 和 <code>dy</code>，分别表示在二维数组中八个方向上的横纵坐标变化（上、下、左、右和四个对角方向）。</p> </li><li> <p><strong>深度优先搜索 (DFS) 函数</strong>：定义 <code>dfs</code> 函数，用于深度优先搜索。这个函数会递归地在二维数组中移动，查找满足特定条件的边界单元。</p> 
+  <ul><li><strong>标记访问</strong>：首先，将当前位置标记为已访问，防止重复搜索。</li><li><strong>遍历方向</strong>：然后，遍历八个方向。对于每个方向，计算新坐标。</li><li><strong>边界条件检查</strong>：如果新坐标在地图范围内，且对应的值为 1，且是边界（通过调用 <code>isBorder</code> 函数判断），且未被访问过，则递归地调用 <code>dfs</code> 函数。</li></ul> </li><li> <p><strong>边界判断函数 (<code>isBorder</code>)</strong>：这个函数用于判断给定的坐标是否是边界。</p> 
+  <ul><li><strong>遍历方向</strong>：遍历八个方向，对于每个方向，计算新坐标。</li><li><strong>判断边界</strong>：如果新坐标在地图范围内，且对应的值为 5，则认为当前位置是边界。</li></ul> </li><li> <p><strong>遍历地图</strong>：遍历地图的每个单元。</p> 
+  <ul><li>对于每个单元，检查是否满足以下条件：值为 1，是边界（通过 <code>isBorder</code> 判断），且未被访问过。</li><li>如果满足条件，则从该单元开始执行深度优先搜索，并将 <code>count</code> 加 1。</li></ul> </li></ol> 
+<h2><a id="C_70"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+
+<span class="token comment">// 定义移动方向数组，表示八个方向上的横纵坐标变化</span>
+<span class="token keyword">int</span> dx<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> dy<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token comment">// 定义一个二维数组，用于记录某个位置是否被访问过</span>
+std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> visited<span class="token punctuation">;</span>
+
+<span class="token comment">// 声明深度优先搜索函数和判断边界的函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> mp<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+bool <span class="token function">isBorder</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> mp<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 使用cin读取输入</span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> m<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> m<span class="token punctuation">;</span>
+    <span class="token comment">// 初始化地图数组mp和访问记录数组visited</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">mp</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    visited<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 循环读取地图信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化计数器，用于记录边界的数量</span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历地图的每一个位置</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前位置是1，且是边界，且未被访问过，则进行深度优先搜索</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isBorder</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 每完成一次深度优先搜索，边界数量加1</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出边界的数量</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> count <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> mp<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 标记当前位置为已访问</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历八个方向</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算移动后的新坐标</span>
+        <span class="token keyword">int</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 检查新坐标是否在地图范围内，是否为1，是否是边界，是否未被访问过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token operator">&lt;</span> n <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isBorder</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 递归进行深度优先搜索</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 判断一个位置是否是边界的函数</span>
+bool <span class="token function">isBorder</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> mp<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 遍历八个方向</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算移动后的新坐标</span>
+        <span class="token keyword">int</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果新坐标在地图范围内，且值为5，则当前位置是边界</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token operator">&lt;</span> n <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果所有方向都不满足边界条件，则返回false</span>
+    <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_155"></a>javaScript</h2> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义移动方向数组，表示八个方向上的横纵坐标变化</span>
+<span class="token keyword">const</span> dx <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> dy <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 标记当前位置为已访问</span>
+  visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token comment">// 遍历八个方向</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 计算移动后的新坐标</span>
+    <span class="token keyword">const</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 检查新坐标是否在地图范围内，是否为1，是否是边界，是否未被访问过</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token operator">&lt;</span> n <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isBorder</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 递归进行深度优先搜索</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 判断一个位置是否是边界的函数</span>
+<span class="token keyword">function</span> <span class="token function">isBorder</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 遍历八个方向</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 计算移动后的新坐标</span>
+    <span class="token keyword">const</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 如果新坐标在地图范围内，且值为5，则当前位置是边界</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token operator">&lt;</span> n <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 如果所有方向都不满足边界条件，则返回false</span>
+  <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> lineCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  lineCount<span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取 n 和 m 的值</span>
+    <span class="token punctuation">[</span>n<span class="token punctuation">,</span> m<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">&lt;=</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取地图数据</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      mp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    mp<span class="token punctuation">[</span>lineCount <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span>lineCount <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    visited<span class="token punctuation">[</span>lineCount <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">===</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入完成后的逻辑</span>
+    <span class="token comment">// 遍历地图的每一个位置</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前位置是1，且是边界，且未被访问过，则进行深度优先搜索</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isBorder</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 每完成一次深度优先搜索，边界数量加1</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 输出边界的数量</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 关闭 readline 接口</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="java_243"></a>java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义移动方向数组，表示八个方向上的横纵坐标变化</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dx <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dy <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token comment">// 定义一个二维数组，用于记录某个位置是否被访问过</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 使用Scanner类读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取行数n和列数m</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> m <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化地图数组mp和访问记录数组visited</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> mp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 循环读取地图信息</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化计数器，用于记录边界的数量</span>
+        <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历地图的每一个位置</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果当前位置是1，且是边界，且未被访问过，则进行深度优先搜索</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isBorder</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 每完成一次深度优先搜索，边界数量加1</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出边界的数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 深度优先搜索函数</span>
+    <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> mp<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 标记当前位置为已访问</span>
+        visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历八个方向</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算移动后的新坐标</span>
+            <span class="token keyword">int</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 检查新坐标是否在地图范围内，是否为1，是否是边界，是否未被访问过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token generics"><span class="token punctuation">&lt;</span> n <span class="token operator">&amp;</span><span class="token operator">&amp;</span> ny <span class="token punctuation">&gt;</span></span><span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isBorder</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 递归进行深度优先搜索</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 判断一个位置是否是边界的函数</span>
+    <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">isBorder</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> mp<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 遍历八个方向</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算移动后的新坐标</span>
+            <span class="token keyword">int</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果新坐标在地图范围内，且值为5，则当前位置是边界</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token generics"><span class="token punctuation">&lt;</span> n <span class="token operator">&amp;</span><span class="token operator">&amp;</span> ny <span class="token punctuation">&gt;</span></span><span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果所有方向都不满足边界条件，则返回false</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="python_326"></a>python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 定义移动方向数组，表示八个方向上的横纵坐标变化</span>
+dx <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span>
+dy <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 深度优先搜索函数</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 标记当前位置为已访问</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token comment"># 遍历八个方向</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 计算移动后的新坐标</span>
+        nx<span class="token punctuation">,</span> ny <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token comment"># 检查新坐标是否在地图范围内，是否为1，是否是边界，是否未被访问过</span>
+        <span class="token keyword">if</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> nx <span class="token operator">&lt;</span> n <span class="token keyword">and</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> ny <span class="token operator">&lt;</span> m <span class="token keyword">and</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">and</span> is_border<span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token keyword">not</span> visited<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token comment"># 递归进行深度优先搜索</span>
+            dfs<span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span>
+
+<span class="token comment"># 判断一个位置是否是边界的函数</span>
+<span class="token keyword">def</span> <span class="token function">is_border</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 遍历八个方向</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 计算移动后的新坐标</span>
+        nx<span class="token punctuation">,</span> ny <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token comment"># 如果新坐标在地图范围内，且值为5，则当前位置是边界</span>
+        <span class="token keyword">if</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> nx <span class="token operator">&lt;</span> n <span class="token keyword">and</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> ny <span class="token operator">&lt;</span> m <span class="token keyword">and</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token comment"># 如果所有方向都不满足边界条件，则返回False</span>
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token comment"># 读取输入</span>
+n<span class="token punctuation">,</span> m <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+mp <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> m <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 初始化计数器，用于记录边界的数量</span>
+count <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 遍历地图的每一个位置</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前位置是1，且是边界，且未被访问过，则进行深度优先搜索</span>
+        <span class="token keyword">if</span> mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">and</span> is_border<span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token keyword">not</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            dfs<span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span>
+            count <span class="token operator">+=</span> <span class="token number">1</span>  <span class="token comment"># 每完成一次深度优先搜索，边界数量加1</span>
+
+<span class="token comment"># 输出边界的数量</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_379"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdbool.h&gt;</span></span>
+
+<span class="token comment">// 定义移动方向数组，表示八个方向上的横纵坐标变化</span>
+<span class="token keyword">int</span> dx<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> dy<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 函数声明</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> mp<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">,</span> bool visited<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+bool <span class="token function">is_border</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> mp<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> mp<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">,</span> bool visited<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 标记当前位置为已访问</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+    <span class="token comment">// 遍历八个方向</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算移动后的新坐标</span>
+        <span class="token keyword">int</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 检查新坐标是否在地图范围内，是否为1，是否是边界，是否未被访问过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token operator">&lt;</span> n <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">is_border</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 递归进行深度优先搜索</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>nx<span class="token punctuation">,</span> ny<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 判断一个位置是否是边界的函数</span>
+bool <span class="token function">is_border</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> mp<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 遍历八个方向</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算移动后的新坐标</span>
+        <span class="token keyword">int</span> nx <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> ny <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果新坐标在地图范围内，且值为5，则当前位置是边界</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nx <span class="token operator">&lt;</span> n <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> ny <span class="token operator">&lt;</span> m <span class="token operator">&amp;&amp;</span> mp<span class="token punctuation">[</span>nx<span class="token punctuation">]</span><span class="token punctuation">[</span>ny<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果所有方向都不满足边界条件，则返回false</span>
+    <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> m<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> mp<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    bool visited<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>false<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取地图信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化计数器，用于记录边界的数量</span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历地图的每一个位置</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前位置是1，且是边界，且未被访问过，则进行深度优先搜索</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>mp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">is_border</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> mp<span class="token punctuation">,</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span>  <span class="token comment">// 每完成一次深度优先搜索，边界数量加1</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出边界的数量</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_459"></a>完整用例</h2> 
+<h3><a id="1_461"></a>用例1</h3> 
+<pre><code class="prism language-input1">6 6
+1 1 1 1 1 1
+1 1 1 1 1 1
+1 1 5 1 1 1
+1 1 1 1 5 1
+1 1 1 1 1 1
+1 1 1 1 1 1
+</code></pre> 
+<h3><a id="2_473"></a>用例2</h3> 
+<pre><code class="prism language-input2">6 6
+1 1 1 1 1 1
+1 1 1 1 1 1
+1 1 1 5 5 1
+1 1 1 5 1 1
+1 1 1 1 1 1
+1 1 1 1 1 1
+</code></pre> 
+<h3><a id="3_485"></a>用例3</h3> 
+<pre><code class="prism language-input3">6 6
+1 1 1 1 1 1
+1 5 5 5 5 1
+1 5 1 1 5 1
+1 5 1 1 5 1
+1 5 5 5 5 1
+1 1 1 1 1 1
+</code></pre> 
+<h3><a id="4_497"></a>用例4</h3> 
+<pre><code class="prism language-input4">6 6
+1 1 1 1 1 1
+1 1 1 1 1 1
+1 1 5 5 1 1
+1 1 5 5 1 1
+1 1 1 1 1 1
+1 1 1 1 1 1
+</code></pre> 
+<h3><a id="5_509"></a>用例5</h3> 
+<pre><code class="prism language-input5">5 3
+1 5 1
+1 5 1
+1 5 1
+1 5 1
+1 5 1
+</code></pre> 
+<h3><a id="6_520"></a>用例6</h3> 
+<pre><code class="prism language-input6">3 5
+1 1 1 1 1
+5 5 5 5 5
+1 1 1 1 1
+</code></pre> 
+<h3><a id="7_529"></a>用例7</h3> 
+<pre><code class="prism language-input7">4 4
+1 1 1 1
+1 1 1 1
+1 1 5 5
+1 1 5 5
+</code></pre> 
+<h3><a id="8_539"></a>用例8</h3> 
+<pre><code class="prism language-input8">3 3
+5 5 5
+5 5 5
+5 5 5
+</code></pre> 
+<h3><a id="9_548"></a>用例9</h3> 
+<pre><code class="prism language-input9">3 3
+5 5 5
+5 1 5
+5 5 5
+</code></pre> 
+<h3><a id="10_557"></a>用例10</h3> 
+<pre><code class="prism language-input10">2 2
+1 5
+5 1
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_26" rel="nofollow">输入描述</a></li><li><a href="#_32" rel="nofollow">输出描述</a></li><li><a href="#_38" rel="nofollow">用例</a></li><li><a href="#_44" rel="nofollow">解题思路</a></li><li><a href="#C_70" rel="nofollow">C++</a></li><li><a href="#javaScript_155" rel="nofollow">javaScript</a></li><li><a href="#java_243" rel="nofollow">java</a></li><li><a href="#python_326" rel="nofollow">python</a></li><li><a href="#C_379" rel="nofollow">C语言</a></li><li><a href="#_459" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_461" rel="nofollow">用例1</a></li><li><a href="#2_473" rel="nofollow">用例2</a></li><li><a href="#3_485" rel="nofollow">用例3</a></li><li><a href="#4_497" rel="nofollow">用例4</a></li><li><a href="#5_509" rel="nofollow">用例5</a></li><li><a href="#6_520" rel="nofollow">用例6</a></li><li><a href="#7_529" rel="nofollow">用例7</a></li><li><a href="#8_539" rel="nofollow">用例8</a></li><li><a href="#9_548" rel="nofollow">用例9</a></li><li><a href="#10_557" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/9d61ee8aaf8c7fde8a07766c94cd14bf.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

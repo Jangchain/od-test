@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>某公司部门需要派遣员工去国外做项目。</p> 
+<p>现在，代号为 x 的国家和代号为 y 的国家分别需要 cntx 名和 cnty 名员工。</p> 
+<p>部门每个员工有一个员工号（1,2,3,…），工号连续，从1开始。</p> 
+<p>部长派遣员工的规则：</p> 
+<ul><li>规则1：从 [1, k] 中选择员工派遣出去</li><li>规则2：编号为 x 的倍数的员工不能去 x 国，编号为 y 的倍数的员工不能去 y 国。</li></ul> 
+<p>问题：</p> 
+<p>找到最小的 k，使得可以将编号在 [1, k] 中的员工分配给 x 国和 y 国，且满足 x 国和 y 国的需求。</p> 
+<h2><a id="_20"></a>输入描述</h2> 
+<p>四个整数 x，y，cntx，cnty。</p> 
+<ul><li>2 ≤ x &lt; y ≤ 30000</li><li>x 和 y 一定是质数</li><li>1 ≤ cntx, cnty &lt; 10^9</li><li>cntx + cnty ≤ 10^9</li></ul> 
+<h2><a id="_29"></a>输出描述</h2> 
+<p>满足条件的最小的k</p> 
+<h2><a id="_33"></a>用例</h2> 
+<table><thead><tr><th>输入</th><th>2 3 3 1</th></tr></thead><tbody><tr><td>输出</td><td>5</td></tr><tr><td>说明</td><td>输入说明：2 表示国家代号23 表示国家代号33 表示国家2需要3个人1 表示国家3需要1个人</td></tr></tbody></table> 
+<h2><a id="_42"></a>解题思路</h2> 
+<p>题目的问题是：要找到一个最小的k，使得在遵守上述规则的情况下，可以从编号在[1, k]中的员工中选择足够的员工派遣到x国和y国，满足他们的需求。</p> 
+<p>输入数据的解释如下：</p> 
+<ul><li>2 表示员工的ID如果是2的倍数，就不能派遣到国家X。</li><li>3 表示员工的ID如果是3的倍数，就不能派遣到国家Y。</li><li>3 表示国家X需要3个员工。</li><li>1 表示国家Y需要1个员工。</li></ul> 
+<p>我们需要找到一个最小的员工ID，使得在[1, ID]的范围内，能够找到至少3个可以派遣到国家X的员工和至少1个可以派遣到国家Y的员工。</p> 
+<p>在这个例子中，员工ID为5是满足条件的最小值。因为在[1, 5]的范围内，可以找到3个可以派遣到国家X的员工（他们的ID是1, 3, 5），以及1个可以派遣到国家Y的员工（他的ID是1）。所以，输出结果是5。</p> 
+<p>这段代码使用了二分查找法（Binary Search）来寻找满足特定条件的最小员工ID。二分查找法是一种在有序集合中查找特定元素的搜索算法，通过每次比较中间元素来缩小搜索范围，从而提高查找效率。</p> 
+<p>这里的特定条件是：在排除不能同时为两个国家工作的员工后，剩余的员工数量能满足两个国家的需求。</p> 
+<ol><li> <p><strong>二分查找法</strong>：</p> 
+  <ul><li>初始化搜索范围，下限为两国员工需求之和，上限为一个大数（例如10亿）。</li><li>在每次循环中，计算搜索范围的中间值 <code>midStaffID</code>。</li><li>根据 <code>midStaffID</code> 判断是否满足条件，然后调整搜索范围。如果满足条件，缩小上限；否则，增大下限。</li><li>重复上述过程，直到找到满足条件的最小 <code>midStaffID</code>。</li></ul> </li><li> <p><strong>排除法</strong>：</p> 
+  <ul><li>计算在1到 <code>midStaffID</code> 范围内，不能同时为两个国家工作的员工数量。</li><li>这些员工的ID是国家X或国家Y的倍数，或者两者的公倍数。</li><li>计算排除这些员工后，每个国家实际上还需要多少员工。</li><li>如果剩余的员工数量能满足两个国家的需求，那么 <code>midStaffID</code> 就满足条件。</li></ul> </li></ol> 
+<h2><a id="C_77"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义x, y, cntX, cntY用于存储输入的四个数值</span>
+    <span class="token keyword">long</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> cntX<span class="token punctuation">,</span> cntY<span class="token punctuation">;</span>
+    <span class="token comment">// 从标准输入读取这四个值</span>
+    cin <span class="token operator">&gt;&gt;</span> x <span class="token operator">&gt;&gt;</span> y <span class="token operator">&gt;&gt;</span> cntX <span class="token operator">&gt;&gt;</span> cntY<span class="token punctuation">;</span>
+
+    <span class="token comment">// minID是满足条件的最小员工ID，初始值设置为两个国家需要的员工总数</span>
+    <span class="token keyword">long</span> minID <span class="token operator">=</span> cntX <span class="token operator">+</span> cntY<span class="token punctuation">;</span>
+    <span class="token comment">// maxID是员工ID的可能的最大值</span>
+    <span class="token keyword">long</span> <span class="token keyword">long</span> maxID <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">long</span> <span class="token keyword">long</span><span class="token punctuation">)</span><span class="token number">1e18</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用二分查找算法</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>minID <span class="token operator">&lt;=</span> maxID<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算中间值midID</span>
+        <span class="token keyword">long</span> midID <span class="token operator">=</span> minID <span class="token operator">+</span> <span class="token punctuation">(</span>maxID <span class="token operator">-</span> minID<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算在[1, midID]范围内不能去国家X的员工数量</span>
+        <span class="token keyword">long</span> excludedX <span class="token operator">=</span> midID <span class="token operator">/</span> x<span class="token punctuation">;</span>
+        <span class="token comment">// 计算在[1, midID]范围内不能去国家Y的员工数量</span>
+        <span class="token keyword">long</span> excludedY <span class="token operator">=</span> midID <span class="token operator">/</span> y<span class="token punctuation">;</span>
+        <span class="token comment">// 计算在[1, midID]范围内既不能去X国也不能去Y国的员工数量</span>
+        <span class="token keyword">long</span> excludedBoth <span class="token operator">=</span> midID <span class="token operator">/</span> <span class="token punctuation">(</span>x <span class="token operator">*</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算国家X实际需要的员工数量</span>
+        <span class="token keyword">long</span> neededX <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0L</span><span class="token punctuation">,</span> cntX <span class="token operator">-</span> <span class="token punctuation">(</span>excludedY <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算国家Y实际需要的员工数量</span>
+        <span class="token keyword">long</span> neededY <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0L</span><span class="token punctuation">,</span> cntY <span class="token operator">-</span> <span class="token punctuation">(</span>excludedX <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算总共不能使用的员工数量</span>
+        <span class="token keyword">long</span> totalExcluded <span class="token operator">=</span> midID <span class="token operator">-</span> excludedX <span class="token operator">-</span> excludedY <span class="token operator">+</span> excludedBoth<span class="token punctuation">;</span>
+
+        <span class="token comment">// 判断当前的中间值是否满足条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>neededX <span class="token operator">+</span> neededY <span class="token operator">&lt;=</span> totalExcluded<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果满足条件，则减小最大的搜索范围</span>
+            maxID <span class="token operator">=</span> midID <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果不满足条件，则增加最小的搜索范围</span>
+            minID <span class="token operator">=</span> midID <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出满足条件的最小员工ID</span>
+    cout <span class="token operator">&lt;&lt;</span> minID <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_132"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> cntX<span class="token punctuation">,</span> cntY<span class="token punctuation">;</span> <span class="token comment">// 定义静态变量x, y, cntX, cntY</span>
+
+        x <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLong</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取国家X的倍数限制</span>
+        y <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLong</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取国家Y的倍数限制</span>
+        cntX <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLong</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取国家X需要的员工数量</span>
+        cntY <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLong</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取国家Y需要的员工数量</span>
+
+        <span class="token keyword">long</span> minID <span class="token operator">=</span> cntX <span class="token operator">+</span> cntY<span class="token punctuation">;</span> <span class="token comment">// 设置员工ID的最小值，初值为两国需要的员工总数</span>
+        <span class="token keyword">long</span> maxID <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">pow</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">18</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 设置员工ID的最大值</span>
+
+        <span class="token comment">// 通过二分查找算法找到满足条件的最小员工ID</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>minID <span class="token operator">&lt;=</span> maxID<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">long</span> midID <span class="token operator">=</span> minID <span class="token operator">+</span> <span class="token punctuation">(</span>maxID <span class="token operator">-</span> minID<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 计算中间值midID</span>
+
+            <span class="token keyword">long</span> excludedX <span class="token operator">=</span> midID <span class="token operator">/</span> x<span class="token punctuation">;</span> <span class="token comment">// 计算在[1, midID]范围内不能去X国的员工数</span>
+            <span class="token keyword">long</span> excludedY <span class="token operator">=</span> midID <span class="token operator">/</span> y<span class="token punctuation">;</span> <span class="token comment">// 计算在[1, midID]范围内不能去Y国的员工数</span>
+            <span class="token keyword">long</span> excludedBoth <span class="token operator">=</span> midID <span class="token operator">/</span> <span class="token punctuation">(</span>x <span class="token operator">*</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算在[1, midID]范围内同时不能去X国和Y国的员工数</span>
+
+            <span class="token keyword">long</span> neededX <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntX <span class="token operator">-</span> <span class="token punctuation">(</span>excludedY <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算X国实际需要的员工数</span>
+            <span class="token keyword">long</span> neededY <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntY <span class="token operator">-</span> <span class="token punctuation">(</span>excludedX <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算Y国实际需要的员工数</span>
+            <span class="token keyword">long</span> totalExcluded <span class="token operator">=</span> midID <span class="token operator">-</span> excludedX <span class="token operator">-</span> excludedY <span class="token operator">+</span> excludedBoth<span class="token punctuation">;</span> <span class="token comment">// 计算总共不能使用的员工数</span>
+
+            <span class="token comment">// 判断当前midID是否满足条件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>neededX <span class="token operator">+</span> neededY <span class="token operator">&lt;=</span> totalExcluded<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                maxID <span class="token operator">=</span> midID <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果满足条件，降低最大ID的搜索范围</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                minID <span class="token operator">=</span> midID <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果不满足条件，提高最小ID的搜索范围</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>minID<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出满足条件的最小员工ID</span>
+        sc<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 关闭扫描器</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="javaScript_178"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块，用于从标准输入读取数据</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>  <span class="token comment">// 标准输入作为输入源</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 标准输出作为输出源</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当从标准输入中读取到一行数据时触发</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将读取到的行分割成数组，并将其元素转换为数字</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> cntX<span class="token punctuation">,</span> cntY<span class="token punctuation">]</span> <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// minID是满足条件的最小员工ID，初始值设置为两个国家需要的员工总数</span>
+    <span class="token keyword">let</span> minID <span class="token operator">=</span> cntX <span class="token operator">+</span> cntY<span class="token punctuation">;</span>
+    <span class="token comment">// maxID是员工ID的可能的最大值</span>
+    <span class="token keyword">let</span> maxID <span class="token operator">=</span> <span class="token number">10</span><span class="token operator">**</span><span class="token number">10</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用二分查找算法</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>minID <span class="token operator">&lt;=</span> maxID<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算中间值midID</span>
+        <span class="token keyword">const</span> midID <span class="token operator">=</span> minID <span class="token operator">+</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span><span class="token punctuation">(</span>maxID <span class="token operator">-</span> minID<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算在[1, midID]范围内不能去国家X的员工数量</span>
+        <span class="token keyword">const</span> excludedX <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>midID <span class="token operator">/</span> x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算在[1, midID]范围内不能去国家Y的员工数量</span>
+        <span class="token keyword">const</span> excludedY <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>midID <span class="token operator">/</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算在[1, midID]范围内既不能去X国也不能去Y国的员工数量</span>
+        <span class="token keyword">const</span> excludedBoth <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>midID <span class="token operator">/</span> <span class="token punctuation">(</span>x <span class="token operator">*</span> y<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算国家X实际需要的员工数量</span>
+        <span class="token keyword">const</span> neededX <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntX <span class="token operator">-</span> <span class="token punctuation">(</span>excludedY <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算国家Y实际需要的员工数量</span>
+        <span class="token keyword">const</span> neededY <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntY <span class="token operator">-</span> <span class="token punctuation">(</span>excludedX <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算总共不能使用的员工数量</span>
+        <span class="token keyword">const</span> totalExcluded <span class="token operator">=</span> midID <span class="token operator">-</span> excludedX <span class="token operator">-</span> excludedY <span class="token operator">+</span> excludedBoth<span class="token punctuation">;</span>
+
+        <span class="token comment">// 判断当前的中间值是否满足条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>neededX <span class="token operator">+</span> neededY <span class="token operator">&lt;=</span> totalExcluded<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果满足条件，则减小最大的搜索范围</span>
+            maxID <span class="token operator">=</span> midID <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果不满足条件，则增加最小的搜索范围</span>
+            minID <span class="token operator">=</span> midID <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出满足条件的最小员工ID</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>minID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_236"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 使用map函数和int函数从标准输入读取四个整数</span>
+x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> cntX<span class="token punctuation">,</span> cntY <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># minID是满足条件的最小员工ID，初始值设置为两个国家需要的员工总数</span>
+minID <span class="token operator">=</span> cntX <span class="token operator">+</span> cntY
+<span class="token comment"># maxID是员工ID的可能的最大值</span>
+maxID <span class="token operator">=</span> <span class="token number">10</span><span class="token operator">**</span><span class="token number">18</span>
+
+<span class="token comment"># 使用二分查找算法</span>
+<span class="token keyword">while</span> minID <span class="token operator">&lt;=</span> maxID<span class="token punctuation">:</span>
+    <span class="token comment"># 计算中间值midID</span>
+    midID <span class="token operator">=</span> minID <span class="token operator">+</span> <span class="token punctuation">(</span>maxID <span class="token operator">-</span> minID<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+
+    <span class="token comment"># 计算在[1, midID]范围内不能去国家X的员工数量</span>
+    excludedX <span class="token operator">=</span> midID <span class="token operator">//</span> x
+    <span class="token comment"># 计算在[1, midID]范围内不能去国家Y的员工数量</span>
+    excludedY <span class="token operator">=</span> midID <span class="token operator">//</span> y
+    <span class="token comment"># 计算在[1, midID]范围内既不能去X国也不能去Y国的员工数量</span>
+    excludedBoth <span class="token operator">=</span> midID <span class="token operator">//</span> <span class="token punctuation">(</span>x <span class="token operator">*</span> y<span class="token punctuation">)</span>
+
+    <span class="token comment"># 计算国家X实际需要的员工数量</span>
+    neededX <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntX <span class="token operator">-</span> <span class="token punctuation">(</span>excludedY <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 计算国家Y实际需要的员工数量</span>
+    neededY <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntY <span class="token operator">-</span> <span class="token punctuation">(</span>excludedX <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 计算总共不能使用的员工数量</span>
+    totalExcluded <span class="token operator">=</span> midID <span class="token operator">-</span> excludedX <span class="token operator">-</span> excludedY <span class="token operator">+</span> excludedBoth
+
+    <span class="token comment"># 判断当前的中间值是否满足条件</span>
+    <span class="token keyword">if</span> neededX <span class="token operator">+</span> neededY <span class="token operator">&lt;=</span> totalExcluded<span class="token punctuation">:</span>
+        <span class="token comment"># 如果满足条件，则减小最大的搜索范围</span>
+        maxID <span class="token operator">=</span> midID <span class="token operator">-</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果不满足条件，则增加最小的搜索范围</span>
+        minID <span class="token operator">=</span> midID <span class="token operator">+</span> <span class="token number">1</span>
+
+<span class="token comment"># 输出满足条件的最小员工ID</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>minID<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_280"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+
+<span class="token comment">// 计算最大值的函数，用于确定实际需要的员工数量</span>
+<span class="token keyword">long</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token keyword">long</span> a<span class="token punctuation">,</span> <span class="token keyword">long</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> a <span class="token operator">&gt;</span> b <span class="token operator">?</span> a <span class="token operator">:</span> b<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">long</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> cntX<span class="token punctuation">,</span> cntY<span class="token punctuation">;</span>
+    <span class="token comment">// 从标准输入读取x, y, cntX, cntY</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%ld %ld %ld %ld"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>x<span class="token punctuation">,</span> <span class="token operator">&amp;</span>y<span class="token punctuation">,</span> <span class="token operator">&amp;</span>cntX<span class="token punctuation">,</span> <span class="token operator">&amp;</span>cntY<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化最小和最大员工编号</span>
+    <span class="token keyword">long</span> minID <span class="token operator">=</span> cntX <span class="token operator">+</span> cntY<span class="token punctuation">;</span> <span class="token comment">// 最小编号为两国需要的员工总数</span>
+    <span class="token keyword">long</span> <span class="token keyword">long</span> maxID <span class="token operator">=</span> <span class="token function">pow</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">18</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 假定的最大员工编号</span>
+
+    <span class="token comment">// 使用二分查找</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>minID <span class="token operator">&lt;=</span> maxID<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">long</span> midID <span class="token operator">=</span> minID <span class="token operator">+</span> <span class="token punctuation">(</span>maxID <span class="token operator">-</span> minID<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 计算中间编号</span>
+
+        <span class="token comment">// 计算不能去x国和y国的员工数量</span>
+        <span class="token keyword">long</span> excludedX <span class="token operator">=</span> midID <span class="token operator">/</span> x<span class="token punctuation">;</span>
+        <span class="token keyword">long</span> excludedY <span class="token operator">=</span> midID <span class="token operator">/</span> y<span class="token punctuation">;</span>
+        <span class="token keyword">long</span> excludedBoth <span class="token operator">=</span> midID <span class="token operator">/</span> <span class="token punctuation">(</span>x <span class="token operator">*</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算x国和y国实际需要的员工数量</span>
+        <span class="token keyword">long</span> neededX <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntX <span class="token operator">-</span> <span class="token punctuation">(</span>excludedY <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> neededY <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> cntY <span class="token operator">-</span> <span class="token punctuation">(</span>excludedX <span class="token operator">-</span> excludedBoth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算总共可用的员工数量</span>
+        <span class="token keyword">long</span> totalAvailable <span class="token operator">=</span> midID <span class="token operator">-</span> excludedX <span class="token operator">-</span> excludedY <span class="token operator">+</span> excludedBoth<span class="token punctuation">;</span>
+
+        <span class="token comment">// 根据可用员工数量更新minID和maxID</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>neededX <span class="token operator">+</span> neededY <span class="token operator">&lt;=</span> totalAvailable<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            maxID <span class="token operator">=</span> midID <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            minID <span class="token operator">=</span> midID <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出满足条件的最小员工编号</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%ld\n"</span><span class="token punctuation">,</span> minID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_331"></a>完整用例</h2> 
+<h3><a id="1_333"></a>用例1</h3> 
+<pre><code class="prism language-input1">2 3 3 1
+</code></pre> 
+<h3><a id="2_339"></a>用例2</h3> 
+<pre><code class="prism language-input2">2 3 1 1
+</code></pre> 
+<h3><a id="3_345"></a>用例3</h3> 
+<pre><code class="prism language-input3">2 7 1 1
+</code></pre> 
+<h3><a id="4_351"></a>用例4</h3> 
+<pre><code class="prism language-input4">5 11 2 2
+</code></pre> 
+<h3><a id="5_357"></a>用例5</h3> 
+<pre><code class="prism language-input5">3 5 10 10
+</code></pre> 
+<h3><a id="6_363"></a>用例6</h3> 
+<pre><code class="prism language-input6">2 5 100000000 100000000
+</code></pre> 
+<h3><a id="7_369"></a>用例7</h3> 
+<pre><code class="prism language-input7">3 13 500000000 500000000
+</code></pre> 
+<h3><a id="8_375"></a>用例8</h3> 
+<pre><code class="prism language-input8">2 3 100000 100000
+</code></pre> 
+<h3><a id="9_381"></a>用例9</h3> 
+<pre><code class="prism language-input9">17 19 1 1
+</code></pre> 
+<h3><a id="10_387"></a>用例10</h3> 
+<pre><code class="prism language-input10">5 7 10000 10000
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/d4a055099ac4869864793917c2aafd2c.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

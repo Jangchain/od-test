@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>石头剪刀布游戏有 3 种出拳形状：石头、剪刀、布。分别用字母 A , B , C 表示。</p> 
+<p><strong>游戏规则:</strong></p> 
+<p>出拳形状之间的胜负规则如下： A &gt; B；B &gt; C；C &gt; A；"&gt;"左边一个字母，表示相对优势形状。右边一个字母，表示相对劣势形状。<br> 当本场次中有且仅有一种出拳形状优于其它出拳形状，则该形状的玩家是胜利者。否则认为是平局。<br> 当发生平局，没有赢家。有多个胜利者时，同为赢家。</p> 
+<ul><li> <p>例如 1： 三个玩家出拳分别是A, B, C ，由于出现三方优势循环(即没有任何一方优于其它出拳者)，判断为平局。</p> </li><li> <p>例如 2： 两个玩家，出拳分别是 A, B ，出拳 A 的获胜。</p> </li><li> <p>例如 3： 三个玩家，出拳全部是 A ，判为平局。</p> </li></ul> 
+<h2><a id="_19"></a>输入描述</h2> 
+<p>在一场游戏中，每个玩家的信息为一行。玩家数量不超过 <code>1000</code> 。每个玩家信息有 <code>2</code> 个字段，用空格隔开：</p> 
+<ol><li>玩家 ID：一个仅由英文字母和数字组成的字符串</li><li>出拳形状：以英文大写字母表示, <code>A 、B 、C</code> 形状。 例：</li></ol> 
+<pre><code class="prism language-Shell">abc1 A
+xyz B
+</code></pre> 
+<h2><a id="_31"></a>输出描述</h2> 
+<p>输出为赢家的玩家 ID 列表(一个或多个)，每个 ID 一行，按<a href="https://so.csdn.net/so/search?q=%E5%AD%97%E7%AC%A6%E4%B8%B2&amp;spm=1001.2101.3001.7020">字符串</a>升序排列。如果没有赢家，输出为<code>"NULL"</code>字符串。例如：</p> 
+<pre><code class="prism language-Shell">abc1
+</code></pre> 
+<h2><a id="1_39"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>abc1 A  
+xyz B
+</code></pre> 
+<p>输出</p> 
+<pre><code>abc1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>A比B有优势，abc1 胜出</p> 
+</blockquote> 
+<h2><a id="2_58"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>abc1 A  
+xyz A
+</code></pre> 
+<p>输出</p> 
+<pre><code>NULL
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>没有优胜的出拳形状，平局</p> 
+</blockquote> 
+<h2><a id="3_77"></a>用例3</h2> 
+<p>输入</p> 
+<pre><code>abc1 A  
+def A  
+alic A  
+xyz B
+</code></pre> 
+<p>输出</p> 
+<pre><code>abc1  
+alic  
+def
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>A为优胜方，有三个赢家</p> 
+</blockquote> 
+<h2><a id="_104"></a>解题思路</h2> 
+<ol><li>创建一个映射，用来存储每种出拳形状（A、B、C）对应的玩家ID列表。</li><li>读取输入，将每个玩家的ID根据其出拳形状添加到映射中。</li><li>根据游戏规则，判断出拳形状的种类： 
+  <ul><li>如果不是两种形状，即为0种（无输入）、1种（所有玩家出同一形状）或3种（每种形状至少一个玩家），则判定为平局。</li><li>如果是两种形状，根据出拳规则（A &gt; B, B &gt; C, C &gt; A）确定胜出的形状，其对应的玩家ID即为胜利者。</li></ul> </li><li>如果有胜利者，对胜利者的ID进行排序并输出；如果没有胜利者，输出"NULL"。</li></ol> 
+<p>为什么不需要考虑每种出拳形状的人数?</p> 
+<p>根据题目的游戏规则，只有当有且仅有一种出拳形状优于其他出拳形状时，才有赢家。这意味着只有两种出拳形状存在时，才能根据规则确定胜者。如果有三种形状或者只有一种形状，无论每种形状的人数是多少，都会判定为平局。因此，在判断胜负时，只需要关注出拳形状的种类，而不是每种形状的人数。</p> 
+<h2><a id="C_117"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 存储每种出拳形状对应的玩家ID列表</span>
+    map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;&gt;</span> shapeToPlayerIds<span class="token punctuation">;</span>
+    string playerId<span class="token punctuation">,</span> shape<span class="token punctuation">;</span>
+
+    <span class="token comment">// 循环读取玩家ID和出拳形状</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>cin <span class="token operator">&gt;&gt;</span> playerId <span class="token operator">&gt;&gt;</span> shape<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果该出拳形状还未记录，则初始化玩家ID列表</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>shape<span class="token punctuation">)</span> <span class="token operator">==</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            shapeToPlayerIds<span class="token punctuation">[</span>shape<span class="token punctuation">]</span> <span class="token operator">=</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 将玩家ID添加到对应出拳形状的列表中</span>
+        shapeToPlayerIds<span class="token punctuation">[</span>shape<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>playerId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果每种出拳形状都只有一种，或者三种都有，则判定为平局</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token string">"NULL"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 存储胜利玩家ID的列表</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> winningPlayerIds<span class="token punctuation">;</span>
+
+    <span class="token comment">// 根据出拳规则，确定胜利玩家ID列表</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token string">"A"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token string">"B"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">"A"</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// A胜B</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token string">"B"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token string">"C"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">"B"</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// B胜C</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token string">"A"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token string">"C"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">"C"</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// C胜A</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token string">"NULL"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对胜利玩家ID进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>winningPlayerIds<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> winningPlayerIds<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出胜利玩家ID</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> id <span class="token operator">:</span> winningPlayerIds<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> id <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_174"></a>Java</h2> 
+<pre><code class="prism language-java"> 
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Collections</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Map</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">RockPaperScissors</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 存储每种出拳形状对应的玩家ID列表</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> shapeToPlayerIds <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 用于读取输入数据</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 循环读取玩家ID和出拳形状</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">hasNext</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> playerId <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 玩家ID</span>
+            <span class="token class-name">String</span> shape <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>    <span class="token comment">// 出拳形状</span>
+            <span class="token comment">// 如果该出拳形状还未记录，则初始化玩家ID列表</span>
+            shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">putIfAbsent</span><span class="token punctuation">(</span>shape<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 将玩家ID添加到对应出拳形状的列表中</span>
+            shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>shape<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>playerId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+     
+        <span class="token comment">// 如果每种出拳形状都只有一种，或者三种都有，则判定为平局</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"NULL"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 存储胜利玩家ID的列表</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> winningPlayerIds <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 根据出拳规则，确定胜利玩家ID列表</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span><span class="token string">"A"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span><span class="token string">"B"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">"A"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// A胜B</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span><span class="token string">"B"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span><span class="token string">"C"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">"B"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// B胜C</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span><span class="token string">"A"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span><span class="token string">"C"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">"C"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// C胜A</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果没有满足以上任何条件，则没有胜者</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"NULL"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 对胜利玩家ID进行排序</span>
+        <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>winningPlayerIds<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出胜利玩家ID</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> playerId <span class="token operator">:</span> winningPlayerIds<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>playerId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_232"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// Node.js代码</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 存储每种出拳形状对应的玩家ID列表</span>
+<span class="token keyword">let</span> shapeToPlayerIds <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>playerId<span class="token punctuation">,</span> shape<span class="token punctuation">]</span> <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 如果该出拳形状还未记录，则初始化玩家ID列表</span>
+  shapeToPlayerIds<span class="token punctuation">[</span>shape<span class="token punctuation">]</span> <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span>shape<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">// 将玩家ID添加到对应出拳形状的列表中</span>
+  shapeToPlayerIds<span class="token punctuation">[</span>shape<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>playerId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 如果每种出拳形状都只有一种，或者三种都有，则判定为平局</span>
+  <span class="token keyword">const</span> shapes <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">keys</span><span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>shapes<span class="token punctuation">.</span>length <span class="token operator">!==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'NULL'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 存储胜利玩家ID的列表</span>
+  <span class="token keyword">let</span> winningPlayerIds<span class="token punctuation">;</span>
+
+  <span class="token comment">// 根据出拳规则，确定胜利玩家ID列表</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'B'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// A胜B</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'B'</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'C'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'B'</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// B胜C</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'C'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    winningPlayerIds <span class="token operator">=</span> shapeToPlayerIds<span class="token punctuation">[</span><span class="token string">'C'</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// C胜A</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'NULL'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 对胜利玩家ID进行排序</span>
+  winningPlayerIds<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出胜利玩家ID</span>
+  winningPlayerIds<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">id</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_286"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># Python代码</span>
+<span class="token keyword">import</span> sys
+
+<span class="token comment"># 存储每种出拳形状对应的玩家ID列表</span>
+shape_to_player_ids <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+<span class="token comment"># 循环读取玩家ID和出拳形状</span>
+<span class="token keyword">for</span> line <span class="token keyword">in</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">:</span>
+    player_id<span class="token punctuation">,</span> shape <span class="token operator">=</span> line<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 如果该出拳形状还未记录，则初始化玩家ID列表</span>
+    <span class="token keyword">if</span> shape <span class="token keyword">not</span> <span class="token keyword">in</span> shape_to_player_ids<span class="token punctuation">:</span>
+        shape_to_player_ids<span class="token punctuation">[</span>shape<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token comment"># 将玩家ID添加到对应出拳形状的列表中</span>
+    shape_to_player_ids<span class="token punctuation">[</span>shape<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>player_id<span class="token punctuation">)</span>
+
+<span class="token comment"># 如果每种出拳形状都只有一种，或者三种都有，则判定为平局</span>
+<span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>shape_to_player_ids<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">2</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"NULL"</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token comment"># 存储胜利玩家ID的列表</span>
+    winning_player_ids <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 根据出拳规则，确定胜利玩家ID列表</span>
+    <span class="token keyword">if</span> <span class="token string">'A'</span> <span class="token keyword">in</span> shape_to_player_ids <span class="token keyword">and</span> <span class="token string">'B'</span> <span class="token keyword">in</span> shape_to_player_ids<span class="token punctuation">:</span>
+        winning_player_ids <span class="token operator">=</span> shape_to_player_ids<span class="token punctuation">[</span><span class="token string">'A'</span><span class="token punctuation">]</span>  <span class="token comment"># A胜B</span>
+    <span class="token keyword">elif</span> <span class="token string">'B'</span> <span class="token keyword">in</span> shape_to_player_ids <span class="token keyword">and</span> <span class="token string">'C'</span> <span class="token keyword">in</span> shape_to_player_ids<span class="token punctuation">:</span>
+        winning_player_ids <span class="token operator">=</span> shape_to_player_ids<span class="token punctuation">[</span><span class="token string">'B'</span><span class="token punctuation">]</span>  <span class="token comment"># B胜C</span>
+    <span class="token keyword">elif</span> <span class="token string">'A'</span> <span class="token keyword">in</span> shape_to_player_ids <span class="token keyword">and</span> <span class="token string">'C'</span> <span class="token keyword">in</span> shape_to_player_ids<span class="token punctuation">:</span>
+        winning_player_ids <span class="token operator">=</span> shape_to_player_ids<span class="token punctuation">[</span><span class="token string">'C'</span><span class="token punctuation">]</span>  <span class="token comment"># C胜A</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"NULL"</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 对胜利玩家ID进行排序</span>
+    winning_player_ids<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 输出胜利玩家ID</span>
+    <span class="token keyword">for</span> player_id <span class="token keyword">in</span> winning_player_ids<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>player_id<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_331"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义玩家结构体</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> id<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 玩家ID</span>
+    <span class="token keyword">char</span> shape<span class="token punctuation">;</span>   <span class="token comment">// 出拳形状</span>
+<span class="token punctuation">}</span> Player<span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于qsort排序</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Player <span class="token operator">*</span>playerA <span class="token operator">=</span> <span class="token punctuation">(</span>Player <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    Player <span class="token operator">*</span>playerB <span class="token operator">=</span> <span class="token punctuation">(</span>Player <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>playerA<span class="token operator">-&gt;</span>id<span class="token punctuation">,</span> playerB<span class="token operator">-&gt;</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Player players<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储所有玩家信息</span>
+    <span class="token keyword">int</span> countA <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> countB <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> countC <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录每种出拳形状的玩家数量</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 玩家总数</span>
+    <span class="token keyword">char</span> id<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">,</span> shape<span class="token punctuation">;</span>
+
+    <span class="token comment">// 循环读取玩家ID和出拳形状</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s %c"</span><span class="token punctuation">,</span> id<span class="token punctuation">,</span> <span class="token operator">&amp;</span>shape<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token constant">EOF</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>players<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">.</span>id<span class="token punctuation">,</span> id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        players<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">.</span>shape <span class="token operator">=</span> shape<span class="token punctuation">;</span>
+        <span class="token comment">// 根据出拳形状增加计数</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>shape <span class="token operator">==</span> <span class="token char">'A'</span><span class="token punctuation">)</span> countA<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>shape <span class="token operator">==</span> <span class="token char">'B'</span><span class="token punctuation">)</span> countB<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>shape <span class="token operator">==</span> <span class="token char">'C'</span><span class="token punctuation">)</span> countC<span class="token operator">++</span><span class="token punctuation">;</span>
+        n<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果每种出拳形状都只有一种，或者三种都有，则判定为平局</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>countA <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> countB <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> countC <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">||</span> countA <span class="token operator">==</span> n <span class="token operator">||</span> countB <span class="token operator">==</span> n <span class="token operator">||</span> countC <span class="token operator">==</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"NULL\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 根据出拳规则，确定胜利玩家ID列表</span>
+        <span class="token keyword">char</span> winShape <span class="token operator">=</span> <span class="token punctuation">(</span>countA <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> countC <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token char">'A'</span> <span class="token operator">:</span> <span class="token punctuation">(</span>countB <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> countA <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token char">'B'</span> <span class="token operator">:</span> <span class="token char">'C'</span><span class="token punctuation">;</span>
+        Player winners<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储胜利玩家信息</span>
+        <span class="token keyword">int</span> winCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 胜利玩家数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>players<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>shape <span class="token operator">==</span> winShape<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                winners<span class="token punctuation">[</span>winCount<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> players<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 对胜利玩家ID进行排序</span>
+        <span class="token function">qsort</span><span class="token punctuation">(</span>winners<span class="token punctuation">,</span> winCount<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Player<span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出胜利玩家ID</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> winCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> winners<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_393"></a>完整用例</h2> 
+<h3><a id="1_395"></a>用例1</h3> 
+<pre><code class="prism language-input1">player1 A
+player2 B
+player3 C
+</code></pre> 
+<h3><a id="2_403"></a>用例2</h3> 
+<pre><code class="prism language-input2">player1 A
+player2 B
+player3 B
+</code></pre> 
+<h3><a id="3_411"></a>用例3</h3> 
+<pre><code class="prism language-input3">player1 C
+player2 C
+player3 B
+</code></pre> 
+<h3><a id="4_419"></a>用例4</h3> 
+<pre><code class="prism language-input4">player1 B
+player2 A
+player3 A
+</code></pre> 
+<h3><a id="5_427"></a>用例5</h3> 
+<pre><code class="prism language-input5">player1 C
+player2 A
+player3 C
+</code></pre> 
+<h3><a id="6_435"></a>用例6</h3> 
+<pre><code class="prism language-input6">player1 B
+player2 B
+player3 B
+</code></pre> 
+<h3><a id="7_443"></a>用例7</h3> 
+<pre><code class="prism language-input7">player1 A
+player2 C
+player3 B
+player4 A
+</code></pre> 
+<h3><a id="8_452"></a>用例8</h3> 
+<pre><code class="prism language-input8">player1 B
+player2 C
+player3 C
+player4 B
+</code></pre> 
+<h3><a id="9_461"></a>用例9</h3> 
+<pre><code class="prism language-input9">player1 C
+player2 B
+player3 A
+player4 C
+player5 B
+player6 A
+</code></pre> 
+<h3><a id="10_472"></a>用例10</h3> 
+<pre><code class="prism language-input10">player1 A
+player2 A
+player3 B
+player4 B
+player5 C
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_19" rel="nofollow">输入描述</a></li><li><a href="#_31" rel="nofollow">输出描述</a></li><li><a href="#1_39" rel="nofollow">用例1</a></li><li><a href="#2_58" rel="nofollow">用例2</a></li><li><a href="#3_77" rel="nofollow">用例3</a></li><li><a href="#_104" rel="nofollow">解题思路</a></li><li><a href="#C_117" rel="nofollow">C++</a></li><li><a href="#Java_174" rel="nofollow">Java</a></li><li><a href="#javaScript_232" rel="nofollow">javaScript</a></li><li><a href="#Python_286" rel="nofollow">Python</a></li><li><a href="#C_331" rel="nofollow">C语言</a></li><li><a href="#_393" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_395" rel="nofollow">用例1</a></li><li><a href="#2_403" rel="nofollow">用例2</a></li><li><a href="#3_411" rel="nofollow">用例3</a></li><li><a href="#4_419" rel="nofollow">用例4</a></li><li><a href="#5_427" rel="nofollow">用例5</a></li><li><a href="#6_435" rel="nofollow">用例6</a></li><li><a href="#7_443" rel="nofollow">用例7</a></li><li><a href="#8_452" rel="nofollow">用例8</a></li><li><a href="#9_461" rel="nofollow">用例9</a></li><li><a href="#10_472" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/57a96c2d136b06b6a51f564d2f394b75.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

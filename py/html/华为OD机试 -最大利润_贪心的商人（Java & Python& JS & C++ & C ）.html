@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>商人经营一家店铺，有<code>number</code>种商品，由于仓库限制每件商品的最大持有数量是<code>item[index]</code>，每种商品的价格是<code>item-price[item_index][day]</code></p> 
+<p>通过对商品的买进和卖出获取利润，请给出商人在<code>days</code>天内能获取的最大的利润<br> 注：同一件商品可以反复买进和卖出</p> 
+<h2><a id="_13"></a>输入描述</h2> 
+<ul><li> <p>第一行输入商品的数量<code>number</code>，比如3</p> </li><li> <p>第二行输入商品售货天数 <code>days</code>，比如3</p> </li><li> <p>第三行输入仓库限制每件商品的最大持有数量是<code>item[index]</code>，比如<code>4 5 6</code></p> <p>后面继续输入<code>number</code>行<code>days</code>列，含义如下：</p> </li><li> <p>第一件商品每天的价格，比如<code>1 2 3</code></p> </li><li> <p>第二件商品每天的价格，比如<code>4 3 2</code></p> </li><li> <p>第三件商品每天的价格，比如<code>1 5 3</code></p> </li></ul> 
+<h2><a id="_30"></a>输出描述</h2> 
+<p>输出商人在这段时间内的最大利润。</p> 
+<h2><a id="1_36"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>3
+3
+4 5 6
+1 2 3
+4 3 2
+1 5 2
+</code></pre> 
+<p>输出</p> 
+<pre><code>32
+</code></pre> 
+<p>说明</p> 
+<blockquote></blockquote> 
+<h2><a id="2_59"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>1
+1
+1
+1
+</code></pre> 
+<p>输出</p> 
+<pre><code>0
+</code></pre> 
+<p>说明</p> 
+<blockquote></blockquote> 
+<h2><a id="_76"></a>解题思路</h2> 
+<p>我们只要找到商品价格走势的上升区段，然后低价买入，高价卖出即可求得最大利润。</p> 
+<p>和lettcode上的这题差不多！</p> 
+<p><a href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/" rel="nofollow">122. 买卖股票的最佳时机 II - 力扣（LeetCode）</a></p> 
+<p>使用贪心算法来计算每天售卖商品能够获得的最大利润。</p> 
+<h2><a id="Java_90"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 处理输入</span>
+        <span class="token class-name">Scanner</span> in <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> itemNumber <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 商品数量</span>
+        <span class="token keyword">int</span> days <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 售货天数</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> maxItems <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>itemNumber<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每件商品最大持有数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> prices <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>itemNumber<span class="token punctuation">]</span><span class="token punctuation">[</span>days<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 商品价格列表</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 贪心算法</span>
+        <span class="token keyword">int</span> maxProfit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历每件商品</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历商品价格列表，求出每天的利润</span>
+                <span class="token keyword">int</span> profit <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 当前价格减去前一天价格，如果为负数则代表亏本，不计入利润</span>
+                maxProfit <span class="token operator">+=</span> profit <span class="token operator">*</span> maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 求出当前商品能够获取的最大利润</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>maxProfit<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最大利润</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h2><a id="Python_131"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 处理输入</span>
+itemNumber <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 商品数量</span>
+days <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 售货天数</span>
+
+maxItems <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 每件商品最大持有数量</span>
+
+prices <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>itemNumber<span class="token punctuation">)</span><span class="token punctuation">]</span>  <span class="token comment"># 商品价格列表</span>
+
+<span class="token comment"># 贪心算法</span>
+maxProfit <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>itemNumber<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 遍历每件商品</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> days<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 遍历商品价格列表，求出每天的利润</span>
+        profit <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># 当前价格减去前一天价格，如果为负数则代表亏本，不计入利润</span>
+        maxProfit <span class="token operator">+=</span> profit <span class="token operator">*</span> maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span>  <span class="token comment"># 求出当前商品能够获取的最大利润</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>maxProfit<span class="token punctuation">)</span>  <span class="token comment"># 输出最大利润</span>
+
+
+</code></pre> 
+<h2><a id="JavaScript_154"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 处理输入</span>
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> itemNumber <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+  <span class="token keyword">const</span> days <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 商品数量和售货天数</span>
+
+  <span class="token keyword">const</span> maxItems <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 每件商品最大持有数量</span>
+
+  <span class="token keyword">const</span> prices <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 商品价格列表</span>
+ 
+  <span class="token keyword">let</span> maxProfit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历每件商品</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历商品价格列表，求出每天的利润</span>
+      <span class="token keyword">const</span> profit <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 当前价格减去前一天价格，如果为负数则代表亏本，不计入利润</span>
+      maxProfit <span class="token operator">+=</span> profit <span class="token operator">*</span> maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 求出当前商品能够获取的最大利润</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>maxProfit<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最大利润</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+
+</code></pre> 
+<h2><a id="C_193"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    <span class="token keyword">int</span> itemNumber<span class="token punctuation">,</span> days<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> itemNumber <span class="token operator">&gt;&gt;</span> days<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">maxItems</span><span class="token punctuation">(</span>itemNumber<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 每件商品最大持有数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">prices</span><span class="token punctuation">(</span>itemNumber<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>days<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 商品价格列表</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cin <span class="token operator">&gt;&gt;</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 贪心算法</span>
+    <span class="token keyword">int</span> maxProfit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历每件商品</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历商品价格列表，求出每天的利润</span>
+            <span class="token keyword">int</span> profit <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 当前价格减去前一天价格，如果为负数则代表亏本，不计入利润</span>
+            maxProfit <span class="token operator">+=</span> profit <span class="token operator">*</span> maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 求出当前商品能够获取的最大利润</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> maxProfit <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出最大利润</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h2><a id="C_234"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>a <span class="token operator">&gt;</span> b<span class="token punctuation">)</span> <span class="token operator">?</span> a <span class="token operator">:</span> b<span class="token punctuation">;</span> <span class="token comment">// 返回两个整数中的较大值</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    <span class="token keyword">int</span> itemNumber<span class="token punctuation">;</span> <span class="token comment">// 商品数量</span>
+    <span class="token keyword">int</span> days<span class="token punctuation">;</span> <span class="token comment">// 售货天数</span>
+
+    <span class="token comment">// 从标准输入读取商品数量和售货天数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>itemNumber<span class="token punctuation">,</span> <span class="token operator">&amp;</span>days<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> maxItems<span class="token punctuation">[</span>itemNumber<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每件商品的最大持有数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取每件商品的最大持有数量</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> prices<span class="token punctuation">[</span>itemNumber<span class="token punctuation">]</span><span class="token punctuation">[</span>days<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 商品价格列表，二维数组存储</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取每件商品在每一天的价格</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 贪心算法计算最大利润</span>
+    <span class="token keyword">int</span> maxProfit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最大利润为0</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> itemNumber<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历每件商品</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> days<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历每一天的价格</span>
+            <span class="token comment">// 当前价格减去前一天的价格，计算利润</span>
+            <span class="token keyword">int</span> profit <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> prices<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果利润为正，则将其乘以该商品的最大持有量，加到总利润中</span>
+            maxProfit <span class="token operator">+=</span> profit <span class="token operator">*</span> maxItems<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最大利润</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> maxProfit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e316da25b9114e17ed4a5e7c5a832008.png" alt="fengmian"></p> 
+<h2><a id="_288"></a>完整用例</h2> 
+<h3><a id="1_290"></a>用例1</h3> 
+<pre><code class="prism language-input1">3
+3
+4 5 6
+1 2 3
+4 3 2
+1 5 2
+</code></pre> 
+<h3><a id="2_301"></a>用例2</h3> 
+<pre><code class="prism language-input2">1
+2
+5
+3 5
+</code></pre> 
+<h3><a id="3_310"></a>用例3</h3> 
+<pre><code class="prism language-input3">2
+3
+3 4
+2 3 1
+5 4 6
+</code></pre> 
+<h3><a id="4_320"></a>用例4</h3> 
+<pre><code class="prism language-input4">3
+4
+2 3 1
+1 3 2 4
+4 2 5 1
+6 5 3 7
+</code></pre> 
+<h3><a id="5_331"></a>用例5</h3> 
+<pre><code class="prism language-input5">1
+1
+10
+5
+</code></pre> 
+<h3><a id="6_340"></a>用例6</h3> 
+<pre><code class="prism language-input6">2
+2
+5 3
+1 4
+3 1
+</code></pre> 
+<h3><a id="7_350"></a>用例7</h3> 
+<pre><code class="prism language-input7">3
+3
+3 2 1
+1 2 3
+3 2 1
+2 3 1
+</code></pre> 
+<h3><a id="8_361"></a>用例8</h3> 
+<pre><code class="prism language-input8">2
+4
+4 5
+1 3 2 4
+4 3 5 2
+</code></pre> 
+<h3><a id="9_371"></a>用例9</h3> 
+<pre><code class="prism language-input9">1
+5
+6
+1 2 3 4 5
+</code></pre> 
+<h3><a id="10_380"></a>用例10</h3> 
+<pre><code class="prism language-input10">2
+2
+1 1
+1 2
+2 1
+</code></pre>
+                </div>
+</body>
+</html>

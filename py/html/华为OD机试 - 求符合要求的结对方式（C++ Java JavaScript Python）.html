@@ -1,0 +1,346 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_0"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h4><a id="_4"></a>题目描述</h4> 
+<p>用一个数组A代表程序员的工作能力，公司想通过结对编程的方式提高员工的能力，假设结对后的能力为两个员工的能力之和，求一共有多少种结对方式使结对后能力为N。</p> 
+<h4><a id="_8"></a>输入描述</h4> 
+<p>第一行为员工的总人数，取值范围[1,1000]</p> 
+<p>第二行为数组A的元素，每个元素的取值范围[1,1000]</p> 
+<p>第三行为N的值，取值范围[1,1000]</p> 
+<h4><a id="_16"></a>输出描述</h4> 
+<p>满足结对后能力为N的结对方式总数。</p> 
+<h4><a id="_20"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>5<br>1 2 2 2 3<br>4</td></tr><tr><td>输出</td><td>4</td></tr><tr><td>说明</td><td>满足要求的结对方式为：A[0]和A[4]，A[1]和A[2]，A[1]和A[3]，A[2]和A[3]。</td></tr></tbody></table> 
+<h4><a id="_24"></a>解题思路</h4> 
+<ol><li>首先，读取员工总人数（<code>total</code>）。</li><li>接着，创建一个列表（<code>arr</code>）用于存储员工的工作能力，并读取每个员工的工作能力值。</li><li>然后，读取目标结对能力值（<code>n</code>）。</li><li>对员工工作能力列表进行排序（升序）。</li><li>初始化满足条件的结对方式总数（<code>ans</code>）为0，初始化左指针（<code>left</code>）为0，初始化右指针（<code>right</code>）为列表长度减1。</li><li>当左指针小于右指针时，执行以下操作：<br> a. 计算当前左右指针指向的员工能力之和（<code>sum</code>）。<br> b. 如果能力之和等于目标值N：<br> i. 如果左右指针指向的员工能力相等，计算这种情况下的结对方式数，并累加到总数。然后跳出循环。<br> ii. 否则，初始化左边相等员工能力的计数器（<code>count_left</code>）和右边相等员工能力的计数器（<code>count_right</code>）为1。计算左边相等员工能力的数量和右边相等员工能力的数量。计算这种情况下的结对方式数，并累加到总数。左指针右移，右指针左移。<br> c. 如果能力之和小于目标值N，左指针右移。<br> d. 如果能力之和大于目标值N，右指针左移。</li><li>输出满足条件的结对方式总数。</li></ol> 
+<p>这个解题思路采用了双指针技巧，通过在排序后的员工能力列表上移动左右指针，寻找满足条件的结对方式。当找到满足条件的结对方式时，需要考虑两种情况：左右指针指向的员工能力相等，或者不相等。对于这两种情况，分别计算结对方式数，并累加到总数。最后，输出满足条件的结对方式总数。</p> 
+<h4><a id="C_42"></a>C++</h4> 
+<pre><code class="prism language-js">#include <span class="token operator">&lt;</span>iostream<span class="token operator">&gt;</span>
+#include <span class="token operator">&lt;</span>vector<span class="token operator">&gt;</span>
+#include <span class="token operator">&lt;</span>algorithm<span class="token operator">&gt;</span>
+
+int <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个输入流对象用于读取输入</span>
+    std<span class="token operator">:</span><span class="token operator">:</span>ios<span class="token operator">:</span><span class="token operator">:</span><span class="token function">sync_with_stdio</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">:</span><span class="token operator">:</span>cin<span class="token punctuation">.</span><span class="token function">tie</span><span class="token punctuation">(</span>nullptr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取员工总人数</span>
+    int total<span class="token punctuation">;</span>
+    std<span class="token operator">:</span><span class="token operator">:</span>cin <span class="token operator">&gt;&gt;</span> total<span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个向量用于存储员工的工作能力</span>
+    std<span class="token operator">:</span><span class="token operator">:</span>vector<span class="token operator">&lt;</span>int<span class="token operator">&gt;</span> <span class="token function">arr</span><span class="token punctuation">(</span>total<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取每个员工的工作能力并存入向量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>int i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> total<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">:</span><span class="token operator">:</span>cin <span class="token operator">&gt;&gt;</span> arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取目标结对能力值N</span>
+    int n<span class="token punctuation">;</span>
+    std<span class="token operator">:</span><span class="token operator">:</span>cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+
+    <span class="token comment">// 对员工工作能力向量进行排序</span>
+    std<span class="token operator">:</span><span class="token operator">:</span><span class="token function">sort</span><span class="token punctuation">(</span>arr<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> arr<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化满足条件的结对方式总数为0</span>
+    int ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化左指针</span>
+    int left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化右指针</span>
+    int right <span class="token operator">=</span> arr<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 当左指针小于右指针时，继续寻找满足条件的结对方式</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;</span> right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算当前左右指针指向的员工能力之和</span>
+        int sum <span class="token operator">=</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">+</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果能力之和等于目标值N</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">==</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果左右指针指向的员工能力相等</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算这种情况下的结对方式数，并累加到总数</span>
+                ans <span class="token operator">+=</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 初始化左边相等员工能力的计数器</span>
+                int countLeft <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token comment">// 初始化右边相等员工能力的计数器</span>
+                int countRight <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token comment">// 计算左边相等员工能力的数量</span>
+                <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> right <span class="token operator">&amp;&amp;</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    left<span class="token operator">++</span><span class="token punctuation">;</span>
+                    countLeft<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 计算右边相等员工能力的数量</span>
+                <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">&gt;</span> left <span class="token operator">&amp;&amp;</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>right <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    right<span class="token operator">--</span><span class="token punctuation">;</span>
+                    countRight<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 计算这种情况下的结对方式数，并累加到总数</span>
+                ans <span class="token operator">+=</span> countLeft <span class="token operator">*</span> countRight<span class="token punctuation">;</span>
+                <span class="token comment">// 左指针右移</span>
+                left<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token comment">// 右指针左移</span>
+                right<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">&lt;</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果能力之和小于目标值N</span>
+            <span class="token comment">// 左指针右移</span>
+            left<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果能力之和大于目标值N</span>
+            <span class="token comment">// 右指针左移</span>
+            right<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出满足条件的结对方式总数</span>
+    std<span class="token operator">:</span><span class="token operator">:</span>cout <span class="token operator">&lt;&lt;</span> ans <span class="token operator">&lt;&lt;</span> std<span class="token operator">:</span><span class="token operator">:</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="Java_129"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个Scanner对象用于读取输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取员工总人数</span>
+        <span class="token keyword">int</span> total <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建一个数组用于存储员工的工作能力</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> arr <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>total<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取每个员工的工作能力并存入数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> total<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取目标结对能力值N</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 对员工工作能力数组进行排序</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化满足条件的结对方式总数为0</span>
+        <span class="token keyword">int</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化左指针</span>
+        <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化右指针</span>
+        <span class="token keyword">int</span> right <span class="token operator">=</span> arr<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 当左指针小于右指针时，继续寻找满足条件的结对方式</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;</span> right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算当前左右指针指向的员工能力之和</span>
+            <span class="token keyword">int</span> sum <span class="token operator">=</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">+</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果能力之和等于目标值N</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">==</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果左右指针指向的员工能力相等</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 计算这种情况下的结对方式数，并累加到总数</span>
+                    ans <span class="token operator">+=</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 初始化左边相等员工能力的计数器</span>
+                    <span class="token keyword">int</span> countLeft <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 初始化右边相等员工能力的计数器</span>
+                    <span class="token keyword">int</span> countRight <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 计算左边相等员工能力的数量</span>
+                    <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> right <span class="token operator">&amp;&amp;</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        left<span class="token operator">++</span><span class="token punctuation">;</span>
+                        countLeft<span class="token operator">++</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token comment">// 计算右边相等员工能力的数量</span>
+                    <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">&gt;</span> left <span class="token operator">&amp;&amp;</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>right <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        right<span class="token operator">--</span><span class="token punctuation">;</span>
+                        countRight<span class="token operator">++</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token comment">// 计算这种情况下的结对方式数，并累加到总数</span>
+                    ans <span class="token operator">+=</span> countLeft <span class="token operator">*</span> countRight<span class="token punctuation">;</span>
+                    <span class="token comment">// 左指针右移</span>
+                    left<span class="token operator">++</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 右指针左移</span>
+                    right<span class="token operator">--</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">&lt;</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果能力之和小于目标值N</span>
+                <span class="token comment">// 左指针右移</span>
+                left<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果能力之和大于目标值N</span>
+                <span class="token comment">// 右指针左移</span>
+                right<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出满足条件的结对方式总数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="javaScript_212"></a>javaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">main</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取员工总人数</span>
+    <span class="token keyword">const</span> total <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个数组用于存储员工的工作能力</span>
+    <span class="token keyword">const</span> arr <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取目标结对能力值N</span>
+    <span class="token keyword">const</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对员工工作能力数组进行排序</span>
+    arr<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">-</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化满足条件的结对方式总数为0</span>
+    <span class="token keyword">let</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化左指针</span>
+    <span class="token keyword">let</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化右指针</span>
+    <span class="token keyword">let</span> right <span class="token operator">=</span> arr<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 当左指针小于右指针时，继续寻找满足条件的结对方式</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;</span> right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算当前左右指针指向的员工能力之和</span>
+        <span class="token keyword">const</span> sum <span class="token operator">=</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">+</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果能力之和等于目标值N</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">===</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果左右指针指向的员工能力相等</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">===</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算这种情况下的结对方式数，并累加到总数</span>
+                ans <span class="token operator">+=</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 初始化左边相等员工能力的计数器</span>
+                <span class="token keyword">let</span> countLeft <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token comment">// 初始化右边相等员工能力的计数器</span>
+                <span class="token keyword">let</span> countRight <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token comment">// 计算左边相等员工能力的数量</span>
+                <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> right <span class="token operator">&amp;&amp;</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">===</span> arr<span class="token punctuation">[</span>left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    left<span class="token operator">++</span><span class="token punctuation">;</span>
+                    countLeft<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 计算右边相等员工能力的数量</span>
+                <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">&gt;</span> left <span class="token operator">&amp;&amp;</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span> <span class="token operator">===</span> arr<span class="token punctuation">[</span>right <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    right<span class="token operator">--</span><span class="token punctuation">;</span>
+                    countRight<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 计算这种情况下的结对方式数，并累加到总数</span>
+                ans <span class="token operator">+=</span> countLeft <span class="token operator">*</span> countRight<span class="token punctuation">;</span>
+                <span class="token comment">// 左指针右移</span>
+                left<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token comment">// 右指针左移</span>
+                right<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>sum <span class="token operator">&lt;</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果能力之和小于目标值N</span>
+            <span class="token comment">// 左指针右移</span>
+            left<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果能力之和大于目标值N</span>
+            <span class="token comment">// 右指针左移</span>
+            right<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出满足条件的结对方式总数</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="Python_302"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取员工总人数</span>
+    total <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 创建一个列表用于存储员工的工作能力</span>
+    arr <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 读取目标结对能力值N</span>
+    n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 对员工工作能力列表进行排序</span>
+    arr<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 初始化满足条件的结对方式总数为0</span>
+    ans <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token comment"># 初始化左指针</span>
+    left <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token comment"># 初始化右指针</span>
+    right <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>arr<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span>
+
+    <span class="token comment"># 当左指针小于右指针时，继续寻找满足条件的结对方式</span>
+    <span class="token keyword">while</span> left <span class="token operator">&lt;</span> right<span class="token punctuation">:</span>
+        <span class="token comment"># 计算当前左右指针指向的员工能力之和</span>
+        <span class="token builtin">sum</span> <span class="token operator">=</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">+</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span>
+        <span class="token comment"># 如果能力之和等于目标值N</span>
+        <span class="token keyword">if</span> <span class="token builtin">sum</span> <span class="token operator">==</span> n<span class="token punctuation">:</span>
+            <span class="token comment"># 如果左右指针指向的员工能力相等</span>
+            <span class="token keyword">if</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token comment"># 计算这种情况下的结对方式数，并累加到总数</span>
+                ans <span class="token operator">+=</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+                <span class="token keyword">break</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment"># 初始化左边相等员工能力的计数器</span>
+                count_left <span class="token operator">=</span> <span class="token number">1</span>
+                <span class="token comment"># 初始化右边相等员工能力的计数器</span>
+                count_right <span class="token operator">=</span> <span class="token number">1</span>
+                <span class="token comment"># 计算左边相等员工能力的数量</span>
+                <span class="token keyword">while</span> left <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> right <span class="token keyword">and</span> arr<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                    left <span class="token operator">+=</span> <span class="token number">1</span>
+                    count_left <span class="token operator">+=</span> <span class="token number">1</span>
+                <span class="token comment"># 计算右边相等员工能力的数量</span>
+                <span class="token keyword">while</span> right <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">&gt;</span> left <span class="token keyword">and</span> arr<span class="token punctuation">[</span>right<span class="token punctuation">]</span> <span class="token operator">==</span> arr<span class="token punctuation">[</span>right <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+                    right <span class="token operator">-=</span> <span class="token number">1</span>
+                    count_right <span class="token operator">+=</span> <span class="token number">1</span>
+                <span class="token comment"># 计算这种情况下的结对方式数，并累加到总数</span>
+                ans <span class="token operator">+=</span> count_left <span class="token operator">*</span> count_right
+                <span class="token comment"># 左指针右移</span>
+                left <span class="token operator">+=</span> <span class="token number">1</span>
+                <span class="token comment"># 右指针左移</span>
+                right <span class="token operator">-=</span> <span class="token number">1</span>
+        <span class="token keyword">elif</span> <span class="token builtin">sum</span> <span class="token operator">&lt;</span> n<span class="token punctuation">:</span>  <span class="token comment"># 如果能力之和小于目标值N</span>
+            <span class="token comment"># 左指针右移</span>
+            left <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>  <span class="token comment"># 如果能力之和大于目标值N</span>
+            <span class="token comment"># 右指针左移</span>
+            right <span class="token operator">-=</span> <span class="token number">1</span>
+
+    <span class="token comment"># 输出满足条件的结对方式总数</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

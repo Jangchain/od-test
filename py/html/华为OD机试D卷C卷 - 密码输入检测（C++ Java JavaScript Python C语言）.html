@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="100_3"></a>题目描述：密码输入检测（本题分值100）</h2> 
+<p>给定用户密码输入流input，输入流中字符’&lt;'表示退格，可以清除前一个输入的字符，请你编写程序，输出最终得到的密码字符，并判断密码是否满足如下的密码安全要求。<br> ​<br> 密码安全要求如下：<br> ​<br> 1.密码长度&gt;=8;<br> ​<br> 2.密码至少需要包含1个大写字母;<br> ​<br> 3.密码至少需要包含1个小写字母;<br> ​<br> 4.密码至少需要包含1个数字;<br> ​<br> 5.密码至少需要包含1个字母和数字以外的非空白特殊字符<br> ​<br> 注意空串退格后仍然为空串，且用户输入的字符串不包含‘&lt;’字符和空白字符。<br> ​</p> 
+<h2><a id="_22"></a>输入描述</h2> 
+<p>用一行字符串表示输入的用户数据，输入的字符串中‘&lt;’字符标识退格，用户输入的字符串不包含空白字符，例如：<code>ABC&lt;c89%000&lt;</code></p> 
+<h2><a id="_26"></a>输出描述</h2> 
+<p>输出经过程序处理后，输出的实际密码字符串，并输出改密码字符串是否满足密码安全要求。两者间由‘,’分隔， 例如：<code>ABc89%00,true</code></p> 
+<h2><a id="1_30"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c">ABC<span class="token operator">&lt;</span>c89<span class="token operator">%</span><span class="token number">000</span><span class="token operator">&lt;</span>
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-c">ABc89<span class="token operator">%</span><span class="token number">00</span><span class="token punctuation">,</span>true
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>解释：多余的C和0由于退格被去除,最终用户输入的密码为ABc89%00，且满足密码安全要求，输出true</p> 
+</blockquote> 
+<h2><a id="_54"></a>解题思路</h2> 
+<ol><li> <p>始化了五个变量：<code>result</code>（一个空字符串用于存储处理后的输入），<code>is_big</code>，<code>is_small</code>，<code>is_num</code>和<code>is_spec</code>（四个布尔变量，用于检查处理后的字符串是否包含大写字母、小写字母、数字和特殊字符）。</p> </li><li> <p>接下来，代码遍历输入的字符串中的每一个字符。对于每一个字符，代码首先检查它是否是’&lt;'。如果是，那么代码将删除<code>result</code>字符串的最后一个字符（如果存在的话）。否则，代码将执行以下操作：</p> 
+  <ul><li>将字符添加到<code>result</code>字符串中。</li><li>如果字符是数字，并且<code>is_num</code>当前为False，那么将<code>is_num</code>设置为True。</li><li>如果字符是小写字母，并且<code>is_small</code>当前为False，那么将<code>is_small</code>设置为True。</li><li>如果字符是大写字母，并且<code>is_big</code>当前为False，那么将<code>is_big</code>设置为True。</li><li>如果字符是特殊字符（即，它不是数字、小写字母、大写字母或空格），并且<code>is_spec</code>当前为False，那么将<code>is_spec</code>设置为True。</li></ul> </li><li> <p>在遍历完输入的字符串后，代码将检查<code>result</code>字符串是否满足以下条件：长度大于等于8，并且包含大写字母、小写字母、数字和特殊字符。如果满足这些条件，那么<code>flag_res</code>将被设置为True，否则，它将被设置为False。</p> </li><li> <p>最后，代码将输出<code>result</code>字符串和<code>flag_res</code>的值。这两个值之间用逗号分隔，<code>flag_res</code>的值被转换为字符串格式。</p> </li></ol> 
+<p>总的来说，这段代码的主要目标是对用户的输入进行处理，并检查处理后的结果是否满足特定的条件。</p> 
+<h2><a id="C_73"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cctype&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个字符串来读取用户的输入</span>
+    std<span class="token operator">::</span>string input<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个字符串来构建结果字符串</span>
+    std<span class="token operator">::</span>string result <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建四个布尔变量来检查输入字符串中是否包含大写字母、小写字母、数字和特殊字符</span>
+    bool isBig <span class="token operator">=</span> false<span class="token punctuation">;</span>
+    bool isSmall <span class="token operator">=</span> false<span class="token punctuation">;</span>
+    bool isNum <span class="token operator">=</span> false<span class="token punctuation">;</span>
+    bool isSpec <span class="token operator">=</span> false<span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历输入字符串中的每一个字符</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果字符是'&lt;', 则删除结果字符串的最后一个字符</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'&lt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>result<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result<span class="token punctuation">.</span><span class="token function">pop_back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则，将字符添加到结果字符串中</span>
+            result<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历输入字符串中的每一个字符</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 检查字符是否是数字</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isdigit</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            isNum <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 检查字符是否是小写字母</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">islower</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            isSmall <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 检查字符是否是大写字母</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isupper</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            isBig <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 检查字符是否是特殊字符</span>
+        <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            isSpec <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检查结果字符串是否满足长度大于等于8，并且包含大写字母、小写字母、数字和特殊字符</span>
+    bool flagRes <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">8</span> <span class="token operator">&amp;&amp;</span> isNum <span class="token operator">&amp;&amp;</span> isSmall <span class="token operator">&amp;&amp;</span> isBig <span class="token operator">&amp;&amp;</span> isSpec<span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出结果字符串和检查结果</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span> <span class="token string">","</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>boolalpha <span class="token operator">&lt;&lt;</span> flagRes <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_137"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个Scanner对象来读取用户的输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个StringBuilder对象来构建结果字符串</span>
+        <span class="token class-name">StringBuilder</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建四个布尔变量来检查输入字符串中是否包含大写字母、小写字母、数字和特殊字符</span>
+        <span class="token keyword">boolean</span> isBig <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token keyword">boolean</span> isSmall <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token keyword">boolean</span> isNum <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token keyword">boolean</span> isSpec <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历输入字符串中的每一个字符</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> input<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果字符是'&lt;', 则删除结果字符串的最后一个字符</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'&lt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    result<span class="token punctuation">.</span><span class="token function">deleteCharAt</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 否则，将字符添加到结果字符串中</span>
+                result<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+               
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+ 
+        <span class="token comment">// 遍历输入字符串中的每一个字符</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">char</span> c <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 检查字符是否是数字</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>  <span class="token class-name">Character</span><span class="token punctuation">.</span><span class="token function">isDigit</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    isNum <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 检查字符是否是小写字母</span>
+                <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>  <span class="token class-name">Character</span><span class="token punctuation">.</span><span class="token function">isLowerCase</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    isSmall <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 检查字符是否是大写字母</span>
+                <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token class-name">Character</span><span class="token punctuation">.</span><span class="token function">isUpperCase</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    isBig <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 检查字符是否是特殊字符</span>
+                <span class="token keyword">else</span>  <span class="token punctuation">{<!-- --></span>
+                    isSpec <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 检查结果字符串是否满足长度大于等于8，并且包含大写字母、小写字母、数字和特殊字符</span>
+        <span class="token keyword">boolean</span> flagRes <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">8</span> <span class="token operator">&amp;&amp;</span> isNum <span class="token operator">&amp;&amp;</span> isSmall <span class="token operator">&amp;&amp;</span> isBig <span class="token operator">&amp;&amp;</span> isSpec<span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出结果字符串和检查结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> flagRes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="javaScript_202"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">input</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> isBig <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> isSmall <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> isNum <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> isSpec <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> c <span class="token keyword">of</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">===</span> <span class="token string">'&lt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      result <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      result <span class="token operator">+=</span> c<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> c <span class="token keyword">of</span> result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">[0-9]</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      isNum <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">[a-z]</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      isSmall <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">[A-Z]</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      isBig <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      isSpec <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">let</span> flagRes <span class="token operator">=</span> result<span class="token punctuation">.</span>length <span class="token operator">&gt;=</span> <span class="token number">8</span> <span class="token operator">&amp;&amp;</span> isNum <span class="token operator">&amp;&amp;</span> isSmall <span class="token operator">&amp;&amp;</span> isBig <span class="token operator">&amp;&amp;</span> isSpec<span class="token punctuation">;</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> flagRes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_247"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 读取用户的输入</span>
+input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 创建一个字符串来构建结果字符串</span>
+result <span class="token operator">=</span> <span class="token string">""</span>
+
+<span class="token comment"># 创建四个布尔变量来检查输入字符串中是否包含大写字母、小写字母、数字和特殊字符</span>
+is_big <span class="token operator">=</span> <span class="token boolean">False</span>
+is_small <span class="token operator">=</span> <span class="token boolean">False</span>
+is_num <span class="token operator">=</span> <span class="token boolean">False</span>
+is_spec <span class="token operator">=</span> <span class="token boolean">False</span>
+
+<span class="token comment"># 遍历输入字符串中的每一个字符</span>
+<span class="token keyword">for</span> c <span class="token keyword">in</span> input_str<span class="token punctuation">:</span>
+    <span class="token comment"># 如果字符是'&lt;', 则删除结果字符串的最后一个字符</span>
+    <span class="token keyword">if</span> c <span class="token operator">==</span> <span class="token string">'&lt;'</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 否则，将字符添加到结果字符串中</span>
+        result <span class="token operator">+=</span> c
+
+<span class="token comment"># 遍历输入字符串中的每一个字符</span>
+<span class="token keyword">for</span> c <span class="token keyword">in</span> result<span class="token punctuation">:</span>
+    <span class="token comment"># 检查字符是否是数字</span>
+    <span class="token keyword">if</span> c<span class="token punctuation">.</span>isdigit<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        is_num <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token comment"># 检查字符是否是小写字母</span>
+    <span class="token keyword">elif</span> c<span class="token punctuation">.</span>islower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        is_small <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token comment"># 检查字符是否是大写字母</span>
+    <span class="token keyword">elif</span> c<span class="token punctuation">.</span>isupper<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        is_big <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token comment"># 检查字符是否是特殊字符</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        is_spec <span class="token operator">=</span> <span class="token boolean">True</span>
+
+<span class="token comment"># 检查结果字符串是否满足长度大于等于8，并且包含大写字母、小写字母、数字和特殊字符</span>
+flag_res <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">8</span> <span class="token keyword">and</span> is_num <span class="token keyword">and</span> is_small <span class="token keyword">and</span> is_big <span class="token keyword">and</span> is_spec
+
+<span class="token comment"># 输出结果字符串和检查结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>result <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>flag_res<span class="token punctuation">)</span><span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_292"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;ctype.h&gt;</span> <span class="token comment">// 包含字符处理函数</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LEN</span> <span class="token expression"><span class="token number">1000</span> </span><span class="token comment">// 定义最大输入长度</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">gets</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+    <span class="token comment">// 定义用于构建最终密码的字符串数组</span>
+    <span class="token keyword">char</span> result<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 结果字符串的当前长度</span>
+
+    <span class="token comment">// 定义四个布尔变量，分别用来标记是否含有大写字母、小写字母、数字和特殊字符</span>
+    <span class="token keyword">int</span> hasUpper <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> hasLower <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> hasDigit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> hasSpecial <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历输入字符串</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'&lt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果是退格符号，且结果字符串长度大于0，则删除最后一个字符</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                length<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则添加字符到结果字符串</span>
+            result<span class="token punctuation">[</span>length<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    result<span class="token punctuation">[</span>length<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> <span class="token comment">// 字符串结束标志</span>
+
+    <span class="token comment">// 再次遍历结果字符串，检查密码安全要求</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> length<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isupper</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> hasUpper <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 检查大写字母</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">islower</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> hasLower <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 检查小写字母</span>
+        <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isdigit</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> hasDigit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 检查数字</span>
+        <span class="token keyword">else</span> hasSpecial <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 检查特殊字符</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 判断是否满足密码安全要求</span>
+    <span class="token keyword">int</span> isValid <span class="token operator">=</span> length <span class="token operator">&gt;=</span> <span class="token number">8</span> <span class="token operator">&amp;&amp;</span> hasUpper <span class="token operator">&amp;&amp;</span> hasLower <span class="token operator">&amp;&amp;</span> hasDigit <span class="token operator">&amp;&amp;</span> hasSpecial<span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出处理后的密码及其是否符合安全要求</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s,%s\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">,</span> isValid <span class="token operator">?</span> <span class="token string">"true"</span> <span class="token operator">:</span> <span class="token string">"false"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_352"></a>完整用例</h2> 
+<h3><a id="1_354"></a>用例1</h3> 
+<p>Aa1&lt;2#&lt;3$</p> 
+<h3><a id="2_358"></a>用例2</h3> 
+<p>abcde&lt;FGH1!</p> 
+<h3><a id="3_361"></a>用例3</h3> 
+<p>aB1#&lt;2$&lt;3%</p> 
+<h3><a id="4_364"></a>用例4</h3> 
+<p>Aa1#&lt;2$&lt;3%&lt;</p> 
+<h3><a id="5_367"></a>用例5</h3> 
+<p>aaaaaaA1!</p> 
+<h3><a id="6_370"></a>用例6</h3> 
+<p>AAAAAAa1!</p> 
+<h3><a id="7_373"></a>用例7</h3> 
+<p>AaBbCcDd!</p> 
+<h3><a id="8_376"></a>用例8</h3> 
+<p>Aa1Bb2Cc3</p> 
+<h3><a id="9_381"></a>用例9</h3> 
+<p>Aa1#Bb2$Cc3%</p> 
+<h3><a id="10_386"></a>用例10</h3> 
+<p>Aa1#&lt;Bb2$&lt;Cc3%&lt;<br> </p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#100_3" rel="nofollow">题目描述：密码输入检测（本题分值100）</a></li><li><a href="#_22" rel="nofollow">输入描述</a></li><li><a href="#_26" rel="nofollow">输出描述</a></li><li><a href="#1_30" rel="nofollow">示例1</a></li><li><a href="#_54" rel="nofollow">解题思路</a></li><li><a href="#C_73" rel="nofollow">C++</a></li><li><a href="#Java_137" rel="nofollow">Java</a></li><li><a href="#javaScript_202" rel="nofollow">javaScript</a></li><li><a href="#Python_247" rel="nofollow">Python</a></li><li><a href="#C_292" rel="nofollow">C语言</a></li><li><a href="#_352" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_354" rel="nofollow">用例1</a></li><li><a href="#2_358" rel="nofollow">用例2</a></li><li><a href="#3_361" rel="nofollow">用例3</a></li><li><a href="#4_364" rel="nofollow">用例4</a></li><li><a href="#5_367" rel="nofollow">用例5</a></li><li><a href="#6_370" rel="nofollow">用例6</a></li><li><a href="#7_373" rel="nofollow">用例7</a></li><li><a href="#8_376" rel="nofollow">用例8</a></li><li><a href="#9_381" rel="nofollow">用例9</a></li><li><a href="#10_386" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/c642ba4672eeb69de0000eccb5a8d9b7.png" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

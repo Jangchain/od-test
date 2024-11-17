@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>假设知道某段连续时间内股票价格，计算通过买入卖出可获得的最大收益。</p> 
+<p>输入一个大小为 n 的数 price(p1,p2,p3,p4…….pn),pi 是第i天的股票价格。</p> 
+<p>pi 的格式为股票价格(非负整型)加上货币单位 Y 或者 S,其中 Y 代表人民币,S 代表美元,这里规定 1 美元可以兑换 7 人民币。</p> 
+<p>Pi 样例 1：123Y 代表 123 元人民币</p> 
+<p>pi 样例 2：123S 代表 123 元美元,可兑换 861 人民币。</p> 
+<p>假设你可以在任何一天买入或者卖出股票,也可以选择放弃交易,请计其在交易周期 n 天内你能获得的最大收(以人民币计算)。</p> 
+<h4><a id="_15"></a>输入描述</h4> 
+<p>输入一个包含交易周期内各天股票价格的字符串，以<strong>空格</strong>分隔。不考虑输入异常情况。</p> 
+<h4><a id="_19"></a>输出描述</h4> 
+<p>输出一个整型数代表在交易周期 n 天内你能获得的最大收益，n 不能超过 10000</p> 
+<p>备注：股票价格只会用 Y 人民币或 S 美元进行输入，不考虑其他情况。</p> 
+<h4><a id="_25"></a>用例</h4> 
+<p>输入：2Y 3S 4S 6Y 8S<br> 输出：76</p> 
+<h4><a id="_30"></a>解题思路</h4> 
+<ol><li>读取输入的股票价格字符串，其中包含股票价格和货币单位（Y代表人民币，S代表美元）。</li><li>使用空格分割输入字符串，将分割后的子字符串存储在一个变量<code>strVec</code>中。</li><li>遍历<code>strVec</code>，将每个股票价格字符串转换为人民币整数值。如果货币单位是美元（S），则将股票价格乘以7（1美元兑换7人民币）。将转换后的人民币整数值存储在一个变量<code>numVec</code>中。</li><li>初始化一个变量<code>profit</code>用于存储最大收益，初始值为0。</li><li>遍历<code>numVec</code>，从第二天开始（索引为1），计算每天的收益。收益等于当天股票价格减去前一天股票价格。</li><li>如果收益为正，说明在前一天买入股票并在当天卖出可以获得收益，将收益累加到<code>profit</code>中。</li><li>遍历完<code>numVec</code>后，<code>profit</code>中存储的值即为在交易周期内可以获得的最大收益。</li><li>输出最大收益。</li></ol> 
+<p>这个解题思路基于贪心算法，通过在每个可能的买入卖出时机累加正收益，从而实现在交易周期内获得最大收益。</p> 
+<h4><a id="C_43"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string inputStr<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> inputStr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取带空格的字符串输入</span>
+
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> strVec<span class="token punctuation">;</span>
+    <span class="token comment">// 使用空格分割字符串，并将分割后的子字符串添加到strVec中</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>inputStr<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span> <span class="token operator">!=</span> string<span class="token operator">::</span>npos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> found <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        strVec<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> found<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        inputStr <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>found <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    strVec<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> numVec<span class="token punctuation">;</span>
+    <span class="token comment">// 遍历strVec，将股票价格转换为人民币并添加到numVec中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> str <span class="token operator">:</span> strVec<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">[</span>str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'S'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> originNum <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            numVec<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>originNum <span class="token operator">*</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            numVec<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">stoi</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> profit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历numVec，计算每天的收益，如果收益为正，则累加到总收益中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numVec<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>numVec<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numVec<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            profit <span class="token operator">+=</span> numVec<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numVec<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 输出最大收益</span>
+    cout <span class="token operator">&lt;&lt;</span> profit <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JavaScript_93"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> inputStr <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当接收到一行输入时，将其添加到inputStr中</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  inputStr <span class="token operator">+=</span> line<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当输入结束时，执行以下操作</span>
+  <span class="token keyword">const</span> strVec <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 使用空格分割输入字符串</span>
+
+  <span class="token comment">// 将股票价格字符串转换为人民币整数值</span>
+  <span class="token keyword">const</span> numVec <span class="token operator">=</span> strVec<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">str</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">[</span>str<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token string">'S'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">const</span> originNum <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> str<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span> originNum <span class="token operator">*</span> <span class="token number">7</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> str<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> profit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token comment">// 遍历numVec，计算每天的收益，如果收益为正，则累加到总收益中</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numVec<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>numVec<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numVec<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      profit <span class="token operator">+=</span> numVec<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numVec<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 输出最大收益</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>profit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h4><a id="Java_134"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> inputStr <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取带空格的字符串输入</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> strList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 使用空格分割字符串，并将分割后的子字符串添加到strList中</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>inputStr<span class="token punctuation">.</span><span class="token function">indexOf</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> found <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">indexOf</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            strList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> found<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            inputStr <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span>found <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        strList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> numList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历strList，将股票价格转换为人民币并添加到numList中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> str <span class="token operator">:</span> strList<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'S'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> originNum <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                numList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>originNum <span class="token operator">*</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                numList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> str<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> profit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历numList，计算每天的收益，如果收益为正，则累加到总收益中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numList<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>numList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">-</span> numList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                profit <span class="token operator">+=</span> numList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">-</span> numList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 输出最大收益</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>profit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h4><a id="Python_181"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token comment"># 从输入中读取带空格的字符串，表示连续时间内的股票价格</span>
+input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 使用空格分割字符串，得到一个包含各天股票价格的列表</span>
+str_list <span class="token operator">=</span> input_str<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化一个空列表，用于存储转换为人民币的股票价格</span>
+num_list <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token comment"># 遍历原始股票价格列表</span>
+<span class="token keyword">for</span> s <span class="token keyword">in</span> str_list<span class="token punctuation">:</span>
+    <span class="token comment"># 如果股票价格以 'S' 结尾，表示单位是美元</span>
+    <span class="token keyword">if</span> s<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'S'</span><span class="token punctuation">:</span>
+        origin_num <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># 将美元转换为人民币（1美元 = 7人民币），并添加到 num_list 中</span>
+        num_list<span class="token punctuation">.</span>append<span class="token punctuation">(</span>origin_num <span class="token operator">*</span> <span class="token number">7</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果股票价格以 'Y' 结尾，表示单位是人民币，直接添加到 num_list 中</span>
+        num_list<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>s<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化利润为 0</span>
+profit <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 遍历转换为人民币的股票价格列表，从第二天开始</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>num_list<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果第 i 天的股票价格高于第 i-1 天的股票价格</span>
+    <span class="token keyword">if</span> num_list<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> num_list<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># 将差值累加到利润中</span>
+        profit <span class="token operator">+=</span> num_list<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> num_list<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 输出计算得到的最大利润</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>profit<span class="token punctuation">)</span>
+
+</code></pre> 
+<h4><a id="_217"></a>完整用例</h4> 
+<h5><a id="1_218"></a>用例1</h5> 
+<p>1Y 2Y 3Y 4Y 5Y</p> 
+<h5><a id="2_221"></a>用例2</h5> 
+<p>5Y 4Y 3Y 2Y 1Y</p> 
+<h5><a id="3_224"></a>用例3</h5> 
+<p>1Y 3Y 2Y 4Y 5Y</p> 
+<h5><a id="4_227"></a>用例4</h5> 
+<p>1S 2S 3S 4S 5S</p> 
+<h5><a id="5_230"></a>用例5</h5> 
+<p>5S 4S 3S 2S 1S</p> 
+<h5><a id="6_233"></a>用例6</h5> 
+<p>1S 3S 2S 4S 5S</p> 
+<h5><a id="7_236"></a>用例7</h5> 
+<p>1Y 2S 3Y 4S 5Y</p> 
+<h5><a id="8_239"></a>用例8</h5> 
+<p>5Y 4S 3Y 2S 1Y</p> 
+<h5><a id="9_244"></a>用例9</h5> 
+<p>1Y 1S 2Y 2S 3Y</p> 
+<h5><a id="10_249"></a>用例10</h5> 
+<p>3Y 2S 1Y 4S 5Y<br> </p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_15" rel="nofollow">输入描述</a></li><li><a href="#_19" rel="nofollow">输出描述</a></li><li><a href="#_25" rel="nofollow">用例</a></li><li><a href="#_30" rel="nofollow">解题思路</a></li><li><a href="#C_43" rel="nofollow">C++</a></li><li><a href="#JavaScript_93" rel="nofollow">JavaScript</a></li><li><a href="#Java_134" rel="nofollow">Java</a></li><li><a href="#Python_181" rel="nofollow">Python</a></li><li><a href="#_217" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_218" rel="nofollow">用例1</a></li><li><a href="#2_221" rel="nofollow">用例2</a></li><li><a href="#3_224" rel="nofollow">用例3</a></li><li><a href="#4_227" rel="nofollow">用例4</a></li><li><a href="#5_230" rel="nofollow">用例5</a></li><li><a href="#6_233" rel="nofollow">用例6</a></li><li><a href="#7_236" rel="nofollow">用例7</a></li><li><a href="#8_239" rel="nofollow">用例8</a></li><li><a href="#9_244" rel="nofollow">用例9</a></li><li><a href="#10_249" rel="nofollow">用例10</a></li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

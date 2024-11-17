@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h3><a id="_1"></a>题目</h3> 
+<p>唐僧师徒四人去西天取经，一路翻山越岭。一日，师徒四人途径一个mxn长方形区域，已知<br> 1.将取经队伍作为一个整体，4人行走相同路线。<br> 2.取经队伍的起点为该长方形区域的左上角，目的地为该长方形区域的右下角<br> 3.行走路线可以向前、后、左、右四个方向前进(不允许超出该长方形区域)<br> 4.输入包含该区域的长m和宽n、前后移动允许的高度差t，以及该长方形区域内各点的高度h。<br> 5.要求该区域内相邻两次移动的高度差在高度t范围以内。取经队伍最多有3次爆发机会，每使用一次爆发机会，可以让取经队伍一次移动突破高度差限制<br> 请问取经队伍通过该区域最小的移动次数是多少?返回-1表示师徒四人无法直接通过该区域。</p> 
+<h3><a id="_11"></a>输入描述</h3> 
+<p>输入第一行为三个整数，分别对应为长方形场地的两条边长，和前后移动允许的高度差。三个整数之间以空格分割。<br> 后面是m行，每行n列个数据，表示长方形场地各点的高度。数据之间以空格分割。<br> 0&lt;m，n&lt;=200，0&lt;t&lt;=20<br> 每个点的高度hin满足0&lt;=h[i,j]&lt;=4000，0&lt;=i&lt;m 0&lt;=j&lt;n。</p> 
+<h3><a id="_17"></a>输出描述</h3> 
+<p>一个整数表示通过该区域最小的移动次数。</p> 
+<h3><a id="1_21"></a>用例1</h3> 
+<p>输入：</p> 
+<pre><code> 4 4 10  
+ 10 20 30 40  
+ 100 120 140 160  
+ 200 230 260 290  
+ 300 400 500 600  
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-输出"> 6
+</code></pre> 
+<h3><a id="2_39"></a>用例2</h3> 
+<p>输入</p> 
+<pre><code> 1 10 1  
+ 11 12 200 14 15 16 317 18 19 20  
+</code></pre> 
+<p>输出</p> 
+<pre><code> -1
+</code></pre> 
+<h3><a id="_56"></a>思路</h3> 
+<p>这道题目可以使用深度优先遍历来解决，因为它需要找到所有的路径，所以深度优先遍历比较适合。</p> 
+<p>在深度优先遍历的过程中，我们需要记录当前的位置和当前的爆发能力使用次数，以及当前的移动步数。</p> 
+<p>在移动的过程中，我们需要判断当前的位置是否越界，是否已经被遍历过，以及当前的高度差是否在允许的范围内。</p> 
+<p>如果当前的高度差不在允许的范围内，我们需要判断当前爆发能力使用次数是否超过了3次，如果超过了3次，我们就不能继续往下遍历了。</p> 
+<p>如果当前的高度差在允许的范围内，我们就可以继续往下遍历，同时更新当前的位置和当前的移动步数。</p> 
+<p>当我们遍历到终点的时候，我们需要更新最小的移动步数。</p> 
+<p>最后，我们将最小的移动步数作为结果输出即可。</p> 
+<h3><a id="C_72"></a>C++</h3> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;climits&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义四个方向</span>
+vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> directions <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token comment">// 初始化最小步数为无穷大</span>
+<span class="token keyword">int</span> min_step <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span>
+<span class="token comment">// 记录当前步数</span>
+<span class="token keyword">int</span> cur_step <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token comment">// 记录是否已经访问过</span>
+vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;&gt;</span> visited<span class="token punctuation">;</span>
+<span class="token comment">// 记录当前使用的爆发能力次数</span>
+<span class="token keyword">int</span> times <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> m <span class="token operator">=</span> matrix<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 到达右下角，更新最小步数</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>x <span class="token operator">==</span> m<span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">==</span> n<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        min_step <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>min_step<span class="token punctuation">,</span> cur_step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 当前位置已经访问过，返回</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> d <span class="token operator">:</span> directions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x1 <span class="token operator">=</span> x <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> y1 <span class="token operator">=</span> y <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 判断是否越界</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>x1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x1 <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y1 <span class="token operator">&gt;=</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 判断高度差是否小于等于k</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">abs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>x1<span class="token punctuation">]</span><span class="token punctuation">[</span>y1<span class="token punctuation">]</span> <span class="token operator">-</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cur_step<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cur_step<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 判断是否还有爆发能力次数</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>times <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            times<span class="token operator">++</span><span class="token punctuation">;</span>
+            cur_step<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            times<span class="token operator">--</span><span class="token punctuation">;</span>
+            cur_step<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    <span class="token keyword">int</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> m <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> k<span class="token punctuation">;</span>
+    <span class="token comment">// 初始化visited</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token function">temp</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        visited<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 初始化矩阵</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">matrix</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> a<span class="token punctuation">;</span>
+            cin <span class="token operator">&gt;&gt;</span> a<span class="token punctuation">;</span>
+            matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> a<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 搜索</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 输出结果</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>min_step <span class="token operator">==</span> INT_MAX <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> min_step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h3><a id="Java_161"></a>Java</h3> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义四个方向</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> directions <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化最小步数为无穷大</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> min_step <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span>MAX_VALUE<span class="token punctuation">;</span>
+    <span class="token comment">// 记录当前步数</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> cur_step <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 记录是否已经访问过</span>
+    <span class="token keyword">static</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">;</span>
+    <span class="token comment">// 记录当前使用的爆发能力次数</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> times <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 深度优先搜索</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> m <span class="token operator">=</span> matrix<span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+        <span class="token comment">// 到达右下角，更新最小步数</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>x <span class="token operator">==</span> m<span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">==</span> n<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            min_step <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>min_step<span class="token punctuation">,</span> cur_step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 当前位置已经访问过，返回</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> d <span class="token operator">:</span> directions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x1 <span class="token operator">=</span> x <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> y1 <span class="token operator">=</span> y <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 判断是否越界</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>x1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x1 <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y1 <span class="token operator">&gt;=</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 判断高度差是否小于等于k</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>x1<span class="token punctuation">]</span><span class="token punctuation">[</span>y1<span class="token punctuation">]</span> <span class="token operator">-</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                cur_step<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                cur_step<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 判断是否还有爆发能力次数</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span>times <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                times<span class="token operator">++</span><span class="token punctuation">;</span>
+                cur_step<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                times<span class="token operator">--</span><span class="token punctuation">;</span>
+                cur_step<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 处理输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> m <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> k <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化visited</span>
+        visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化矩阵</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> a <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> a<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 搜索</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>min_step <span class="token operator">==</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span>MAX_VALUE <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> min_step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h3><a id="javaScript_246"></a>javaScript</h3> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义四个方向</span>
+<span class="token keyword">const</span> directions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token comment">// 初始化最小步数为无穷大</span>
+<span class="token keyword">let</span> min_step <span class="token operator">=</span> Number<span class="token punctuation">.</span><span class="token constant">MAX_SAFE_INTEGER</span><span class="token punctuation">;</span>
+<span class="token comment">// 记录当前步数</span>
+<span class="token keyword">let</span> cur_step <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token comment">// 记录是否已经访问过</span>
+<span class="token keyword">let</span> visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token comment">// 记录当前使用的爆发能力次数</span>
+<span class="token keyword">let</span> times <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">matrix<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> k</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> m <span class="token operator">=</span> matrix<span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+  <span class="token keyword">const</span> n <span class="token operator">=</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+  <span class="token comment">// 到达右下角，更新最小步数</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">===</span> m <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">===</span> n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    min_step <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>min_step<span class="token punctuation">,</span> cur_step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 当前位置已经访问过，返回</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> d <span class="token keyword">of</span> directions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> x1 <span class="token operator">=</span> x <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> y1 <span class="token operator">=</span> y <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 判断是否越界</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>x1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x1 <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y1 <span class="token operator">&gt;=</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">continue</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 判断高度差是否小于等于k</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>x1<span class="token punctuation">]</span><span class="token punctuation">[</span>y1<span class="token punctuation">]</span> <span class="token operator">-</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      cur_step<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      cur_step<span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 判断是否还有爆发能力次数</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>times <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">continue</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      times<span class="token operator">++</span><span class="token punctuation">;</span>
+      cur_step<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      times<span class="token operator">--</span><span class="token punctuation">;</span>
+      cur_step<span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化visited</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> temp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    visited<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token comment">// 初始化矩阵</span>
+  <span class="token keyword">const</span> matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> row <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    matrix<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">.</span>length <span class="token operator">===</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 搜索</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 输出结果</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>min_step <span class="token operator">===</span> Number<span class="token punctuation">.</span><span class="token constant">MAX_SAFE_INTEGER</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> min_step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h3><a id="python_334"></a>python</h3> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 定义四个方向</span>
+directions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+<span class="token comment"># 初始化最小步数为无穷大</span>
+min_step <span class="token operator">=</span> sys<span class="token punctuation">.</span>maxsize
+<span class="token comment"># 记录当前步数</span>
+cur_step <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 记录是否已经访问过</span>
+visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token comment"># 记录当前使用的爆发能力次数</span>
+times <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 深度优先搜索</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> min_step<span class="token punctuation">,</span> cur_step<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> times
+    m <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>matrix<span class="token punctuation">)</span>
+    n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token comment"># 到达右下角，更新最小步数</span>
+    <span class="token keyword">if</span> x <span class="token operator">==</span> m<span class="token operator">-</span><span class="token number">1</span> <span class="token keyword">and</span> y <span class="token operator">==</span> n<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">:</span>
+        min_step <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>min_step<span class="token punctuation">,</span> cur_step<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+    <span class="token comment"># 当前位置已经访问过，返回</span>
+    <span class="token keyword">if</span> visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+    <span class="token keyword">for</span> d <span class="token keyword">in</span> directions<span class="token punctuation">:</span>
+        x1 <span class="token operator">=</span> x <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        y1 <span class="token operator">=</span> y <span class="token operator">+</span> d<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token comment"># 判断是否越界</span>
+        <span class="token keyword">if</span> x1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token keyword">or</span> x1 <span class="token operator">&gt;=</span> m <span class="token keyword">or</span> y1 <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token keyword">or</span> y1 <span class="token operator">&gt;=</span> n<span class="token punctuation">:</span>
+            <span class="token keyword">continue</span>
+        <span class="token comment"># 判断高度差是否小于等于k</span>
+        <span class="token keyword">if</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>x1<span class="token punctuation">]</span><span class="token punctuation">[</span>y1<span class="token punctuation">]</span> <span class="token operator">-</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> k<span class="token punctuation">:</span>
+            cur_step <span class="token operator">+=</span> <span class="token number">1</span>
+            dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span>
+            cur_step <span class="token operator">-=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 判断是否还有爆发能力次数</span>
+            <span class="token keyword">if</span> times <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">:</span>
+                <span class="token keyword">continue</span>
+            times <span class="token operator">+=</span> <span class="token number">1</span>
+            cur_step <span class="token operator">+=</span> <span class="token number">1</span>
+            dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> k<span class="token punctuation">)</span>
+            times <span class="token operator">-=</span> <span class="token number">1</span>
+            cur_step <span class="token operator">-=</span> <span class="token number">1</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">False</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    <span class="token comment"># 处理输入</span>
+    m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 初始化visited</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        temp <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> n
+        visited<span class="token punctuation">.</span>append<span class="token punctuation">(</span>temp<span class="token punctuation">)</span>
+    <span class="token comment"># 初始化矩阵</span>
+    matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        row <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        matrix<span class="token punctuation">.</span>append<span class="token punctuation">(</span>row<span class="token punctuation">)</span>
+    <span class="token comment"># 搜索</span>
+    dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> k<span class="token punctuation">)</span>
+    <span class="token comment"># 输出结果</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span> <span class="token keyword">if</span> min_step <span class="token operator">==</span> sys<span class="token punctuation">.</span>maxsize <span class="token keyword">else</span> min_step<span class="token punctuation">)</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

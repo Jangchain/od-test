@@ -1,0 +1,463 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_0"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_4"></a>题目描述</h2> 
+<p>给出3组点坐标(x, y, w, h)，-1000&lt;x,y&lt;1000，w,h为正整数。</p> 
+<p>(x, y, w, h)表示平面直角坐标系中的一个矩形：</p> 
+<p>x, y为矩形左上角坐标点，w, h<strong>向右w</strong>，<strong>向下h</strong>。</p> 
+<p>(x, y, w, h)表示x轴(x, x+w)和y轴(y, y-h)围成的矩形区域；</p> 
+<p>(0, 0, 2, 2)表示 x轴(0, 2)和y 轴(0, -2)围成的矩形区域；</p> 
+<p>(3, 5, 4, 6)表示x轴(3, 7)和y轴(5, -1)围成的矩形区域；</p> 
+<p>求3组坐标构成的矩形区域重合部分的面积。</p> 
+<h2><a id="_20"></a>输入描述</h2> 
+<p>3行输入分别为3个矩形的位置，分别代表“左上角x坐标”，“左上角y坐标”，“矩形宽”，“矩形高” -1000 &lt;= x,y &lt; 1000</p> 
+<h2><a id="_26"></a>输出描述</h2> 
+<p>输出3个矩形相交的面积，不相交的输出0。</p> 
+<h2><a id="1_30"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>1 6 4 4
+3 5 3 4
+0 3 7 3
+</code></pre> 
+<p>输出</p> 
+<pre><code>2
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p><img src="https://i-blog.csdnimg.cn/blog_migrate/c037b901d4a12b4155647b69cd635d5f.png" alt=""></p> 
+</blockquote> 
+<h2><a id="_54"></a>解题思路</h2> 
+<ol><li> <p>三个矩形的左上角坐标 <code>(x1, y1)</code> 以及宽度 <code>w</code> 和高度 <code>h</code>。利用这些输入，计算出每个矩形的右下角坐标 <code>(x2, y2)</code>：</p> 
+  <ul><li><code>x2 = x1 + w</code>：右下角的 x 坐标是左上角 x 加上矩形的宽度。</li><li><code>y2 = y1 - h</code>：右下角的 y 坐标是左上角 y 减去矩形的高度（因为高度是向下的，所以用减法）。</li></ul> <p>这些计算结果存储在 <code>x_coords</code> 和 <code>y_coords</code> 两个列表中，分别保存所有的 x 和 y 坐标信息。</p> </li><li> <p><strong>确定最小和最大坐标</strong>：<br> 代码通过遍历 <code>x_coords</code> 和 <code>y_coords</code> 来确定x、y坐标的最小值和最大值。这些值用于构建包含所有矩形的二维数组，这样可以将坐标转换为一个可索引的数组形式，方便后续的重叠检测。</p> </li><li> <p><strong>偏移量的计算</strong>：<br> 为了确保坐标系可以从数组的索引 0 开始，代码计算了 <code>x_offset</code> 和 <code>y_offset</code>，这些偏移量用于将负数坐标平移到数组的有效范围内。</p> </li><li> <p><strong>构建二维数组表示区域并进行重叠检测</strong>：<br> 使用二维数组 <code>intersection_area</code> 来表示整个坐标系的矩形区域，每个位置（数组的元素）表示该位置被多少个矩形覆盖：</p> 
+  <ul><li>遍历每个矩形的左上角到右下角的范围，将这些区域的值在二维数组中加1，表示这些区域已被覆盖。</li><li>如果某个二维数组的值是3，说明该位置被三个矩形同时覆盖。</li></ul> </li><li> <p><strong>计算重叠区域</strong>：<br> 最后，遍历二维数组，统计值为3的区域数量，即为三个矩形重叠部分的面积。</p> </li></ol> 
+<h2><a id="Java_84"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> x_coords <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的x坐标</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> y_coords <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的y坐标</span>
+        <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> rectangles <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的左上角和右下角坐标</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x1 <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> y1 <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> w <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> h <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">int</span> x2 <span class="token operator">=</span> x1 <span class="token operator">+</span> w<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形的右上角x坐标</span>
+            <span class="token keyword">int</span> y2 <span class="token operator">=</span> y1 <span class="token operator">-</span> h<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形的右上角y坐标</span>
+            x_coords<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            x_coords<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            y_coords<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>y1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            y_coords<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>y2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            rectangles<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span>x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> x2<span class="token punctuation">,</span> y2<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> min_x_coord <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> max_x_coord <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MIN_VALUE</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> min_y_coord <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> max_y_coord <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MIN_VALUE</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> x <span class="token operator">:</span> x_coords<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            min_x_coord <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>min_x_coord<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            max_x_coord <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>max_x_coord<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> y <span class="token operator">:</span> y_coords<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            min_y_coord <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>min_y_coord<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            max_y_coord <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>max_y_coord<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> x_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_x_coord<span class="token punctuation">;</span>  <span class="token comment">// 计算x坐标的偏移量</span>
+        <span class="token keyword">int</span> y_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_y_coord<span class="token punctuation">;</span>  <span class="token comment">// 计算y坐标的偏移量</span>
+
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> intersection_area <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>max_x_coord <span class="token operator">-</span> min_x_coord<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>max_y_coord <span class="token operator">-</span> min_y_coord<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 创建表示矩形区域的二维数组</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> rectangle <span class="token operator">:</span> rectangles<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x1 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> y1 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> x2 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> y2 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">// 在相应的区域加1</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> ret <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> intersection_area<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> intersection_area<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 统计值为3的区域的个数</span>
+                    ret <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>ret<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 输出相交的面积</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="Python_157"></a>Python</h2> 
+<pre><code class="prism language-python">
+x_coords <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 存储所有矩形的x坐标</span>
+y_coords <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 存储所有矩形的y坐标</span>
+rectangles <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 存储所有矩形的左上角和右下角坐标</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> w<span class="token punctuation">,</span> h <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+    x2 <span class="token operator">=</span> x1 <span class="token operator">+</span> w  <span class="token comment"># 计算矩形的右上角x坐标</span>
+    y2 <span class="token operator">=</span> y1 <span class="token operator">-</span> h  <span class="token comment"># 计算矩形的右上角y坐标</span>
+    x_coords <span class="token operator">+=</span> <span class="token punctuation">[</span>x1<span class="token punctuation">,</span> x2<span class="token punctuation">]</span>
+    y_coords <span class="token operator">+=</span> <span class="token punctuation">[</span>y1<span class="token punctuation">,</span> y2<span class="token punctuation">]</span>
+    rectangles<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> x2<span class="token punctuation">,</span> y2<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+min_x_coord<span class="token punctuation">,</span> max_x_coord <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>x_coords<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token punctuation">(</span>x_coords<span class="token punctuation">)</span>  <span class="token comment"># 计算矩形区域的最小和最大x坐标</span>
+min_y_coord<span class="token punctuation">,</span> max_y_coord <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>y_coords<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token punctuation">(</span>y_coords<span class="token punctuation">)</span>  <span class="token comment"># 计算矩形区域的最小和最大y坐标</span>
+x_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_x_coord  <span class="token comment"># 计算x坐标的偏移量</span>
+y_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_y_coord  <span class="token comment"># 计算y坐标的偏移量</span>
+
+intersection_area <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>max_y_coord <span class="token operator">-</span> min_y_coord<span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">abs</span><span class="token punctuation">(</span>max_x_coord <span class="token operator">-</span> min_x_coord<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span>  <span class="token comment"># 创建表示矩形区域的二维数组</span>
+
+<span class="token keyword">for</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> x2<span class="token punctuation">,</span> y2 <span class="token keyword">in</span> rectangles<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">min</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">min</span><span class="token punctuation">(</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token punctuation">(</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span>  <span class="token comment"># 在相应的区域加1</span>
+
+ret <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>intersection_area<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>intersection_area<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">:</span>  <span class="token comment">#  区域值为3时表示3个矩形重合</span>
+            ret <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>ret<span class="token punctuation">)</span>  <span class="token comment"># 输出相交的面积</span>
+
+</code></pre> 
+<h2><a id="JavaScript_195"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">var</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建接口用于读取标准输入</span>
+<span class="token keyword">var</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span> <span class="token comment">// 输入来自标准输入（键盘输入）</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 输出到标准输出（控制台）</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">var</span> x_coords <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储所有矩形的x坐标</span>
+<span class="token keyword">var</span> y_coords <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储所有矩形的y坐标</span>
+<span class="token keyword">var</span> rectangles <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储每个矩形的左上角和右下角坐标</span>
+
+<span class="token comment">// 监听每行输入的事件</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将输入的每一行按空格分割，并将其转换为数字数组</span>
+  <span class="token keyword">var</span> inputs <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">var</span> x1 <span class="token operator">=</span> inputs<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 矩形左上角的x坐标</span>
+  <span class="token keyword">var</span> y1 <span class="token operator">=</span> inputs<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 矩形左上角的y坐标</span>
+  <span class="token keyword">var</span> w <span class="token operator">=</span> inputs<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 矩形的宽度</span>
+  <span class="token keyword">var</span> h <span class="token operator">=</span> inputs<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 矩形的高度</span>
+
+  <span class="token keyword">var</span> x2 <span class="token operator">=</span> x1 <span class="token operator">+</span> w<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形右下角的x坐标</span>
+  <span class="token keyword">var</span> y2 <span class="token operator">=</span> y1 <span class="token operator">-</span> h<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形右下角的y坐标</span>
+
+  <span class="token comment">// 将矩形的x坐标加入x_coords数组</span>
+  x_coords<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>x1<span class="token punctuation">,</span> x2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 将矩形的y坐标加入y_coords数组</span>
+  y_coords<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>y1<span class="token punctuation">,</span> y2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 将矩形的完整坐标（左上角和右下角）存入rectangles数组</span>
+  rectangles<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">[</span>x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> x2<span class="token punctuation">,</span> y2<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 当已经读取到三个矩形时，结束输入</span>
+  <span class="token keyword">if</span><span class="token punctuation">(</span>rectangles<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 关闭输入流</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当输入结束时触发此事件</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 计算所有矩形的x坐标中的最小值和最大值</span>
+  <span class="token keyword">var</span> min_x_coord <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token operator">...</span>x_coords<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">var</span> max_x_coord <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token operator">...</span>x_coords<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 计算所有矩形的y坐标中的最小值和最大值</span>
+  <span class="token keyword">var</span> min_y_coord <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token operator">...</span>y_coords<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">var</span> max_y_coord <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token operator">...</span>y_coords<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 计算x坐标和y坐标的偏移量，将所有坐标平移到非负范围</span>
+  <span class="token keyword">var</span> x_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_x_coord<span class="token punctuation">;</span>
+  <span class="token keyword">var</span> y_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_y_coord<span class="token punctuation">;</span>
+
+  <span class="token comment">// 创建一个二维数组 intersection_area，表示整个区域</span>
+  <span class="token comment">// 数组的大小为矩形的最大x和最小x之间的差值，以及最大y和最小y之间的差值</span>
+  <span class="token keyword">var</span> intersection_area <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>max_x_coord <span class="token operator">-</span> min_x_coord<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>max_y_coord <span class="token operator">-</span> min_y_coord<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历每个矩形</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">var</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rectangles<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">var</span> x1 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 矩形左上角的x坐标</span>
+    <span class="token keyword">var</span> y1 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 矩形左上角的y坐标</span>
+    <span class="token keyword">var</span> x2 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 矩形右下角的x坐标</span>
+    <span class="token keyword">var</span> y2 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 矩形右下角的y坐标</span>
+
+    <span class="token comment">// 遍历矩形的x坐标范围，填充到二维数组中</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">var</span> j <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">;</span> j <span class="token operator">&lt;</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 遍历矩形的y坐标范围，填充到二维数组中</span>
+      <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">var</span> k <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">;</span> k <span class="token operator">&lt;</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">;</span> k<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+        intersection_area<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 对应的二维数组位置计数加1，表示该区域被覆盖</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">var</span> ret <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储同时被三个矩形覆盖的区域的数量</span>
+
+  <span class="token comment">// 遍历整个二维数组，统计被三个矩形同时覆盖的区域</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">var</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> intersection_area<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">var</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> intersection_area<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">if</span><span class="token punctuation">(</span>intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果该区域被三个矩形覆盖</span>
+        ret<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 计数增加</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出最终结果，即重叠的面积</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>ret<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="C_287"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> x_coords<span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的x坐标</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> y_coords<span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的y坐标</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> rectangles<span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的左上角和右下角坐标</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> w<span class="token punctuation">,</span> h<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> x1 <span class="token operator">&gt;&gt;</span> y1 <span class="token operator">&gt;&gt;</span> w <span class="token operator">&gt;&gt;</span> h<span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> x2 <span class="token operator">=</span> x1 <span class="token operator">+</span> w<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形的右上角x坐标</span>
+        <span class="token keyword">int</span> y2 <span class="token operator">=</span> y1 <span class="token operator">-</span> h<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形的右上角y坐标</span>
+        x_coords<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>x1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        x_coords<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>x2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        y_coords<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>y1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        y_coords<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>y2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rectangles<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> x2<span class="token punctuation">,</span> y2<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> min_x_coord <span class="token operator">=</span> <span class="token operator">*</span><span class="token function">min_element</span><span class="token punctuation">(</span>x_coords<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> x_coords<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 计算矩形区域的最小x坐标</span>
+    <span class="token keyword">int</span> max_x_coord <span class="token operator">=</span> <span class="token operator">*</span><span class="token function">max_element</span><span class="token punctuation">(</span>x_coords<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> x_coords<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 计算矩形区域的最大x坐标</span>
+    <span class="token keyword">int</span> min_y_coord <span class="token operator">=</span> <span class="token operator">*</span><span class="token function">min_element</span><span class="token punctuation">(</span>y_coords<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> y_coords<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 计算矩形区域的最小y坐标</span>
+    <span class="token keyword">int</span> max_y_coord <span class="token operator">=</span> <span class="token operator">*</span><span class="token function">max_element</span><span class="token punctuation">(</span>y_coords<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> y_coords<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 计算矩形区域的最大y坐标</span>
+    <span class="token keyword">int</span> x_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_x_coord<span class="token punctuation">;</span>  <span class="token comment">// 计算x坐标的偏移量</span>
+    <span class="token keyword">int</span> y_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_y_coord<span class="token punctuation">;</span>  <span class="token comment">// 计算y坐标的偏移量</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">intersection_area</span><span class="token punctuation">(</span><span class="token function">abs</span><span class="token punctuation">(</span>max_x_coord <span class="token operator">-</span> min_x_coord<span class="token punctuation">)</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token function">abs</span><span class="token punctuation">(</span>max_y_coord <span class="token operator">-</span> min_y_coord<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 创建表示矩形区域的二维数组</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> rectangle <span class="token operator">:</span> rectangles<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x1 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> y1 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> x2 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> y2 <span class="token operator">=</span> rectangle<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">max</span><span class="token punctuation">(</span>x2<span class="token punctuation">,</span> x1<span class="token punctuation">)</span> <span class="token operator">+</span> x_offset<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token function">max</span><span class="token punctuation">(</span>y2<span class="token punctuation">,</span> y1<span class="token punctuation">)</span> <span class="token operator">+</span> y_offset<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">// 在相应的区域加1</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> ret <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> intersection_area<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> intersection_area<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 域值为3时表示3个矩形重合</span>
+                ret <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> ret <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>  <span class="token comment">// 输出相交的面积</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="C_349"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits.h&gt;</span>  <span class="token comment">// 用于定义最大和最小整数值</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_RECTANGLES</span> <span class="token expression"><span class="token number">3</span>  </span><span class="token comment">// 矩形数量</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> x_coords<span class="token punctuation">[</span>MAX_RECTANGLES <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的x坐标（每个矩形有2个x坐标）</span>
+    <span class="token keyword">int</span> y_coords<span class="token punctuation">[</span>MAX_RECTANGLES <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的y坐标（每个矩形有2个y坐标）</span>
+    <span class="token keyword">int</span> rectangles<span class="token punctuation">[</span>MAX_RECTANGLES<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有矩形的左上角和右下角坐标 (x1, y1, x2, y2)</span>
+    <span class="token keyword">int</span> x1<span class="token punctuation">,</span> y1<span class="token punctuation">,</span> w<span class="token punctuation">,</span> h<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> x2<span class="token punctuation">,</span> y2<span class="token punctuation">;</span>
+
+    <span class="token comment">// 输入三个矩形的信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_RECTANGLES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>x1<span class="token punctuation">,</span> <span class="token operator">&amp;</span>y1<span class="token punctuation">,</span> <span class="token operator">&amp;</span>w<span class="token punctuation">,</span> <span class="token operator">&amp;</span>h<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 读取每个矩形的左上角坐标和宽高</span>
+        x2 <span class="token operator">=</span> x1 <span class="token operator">+</span> w<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形的右下角x坐标</span>
+        y2 <span class="token operator">=</span> y1 <span class="token operator">-</span> h<span class="token punctuation">;</span>  <span class="token comment">// 计算矩形的右下角y坐标</span>
+
+        <span class="token comment">// 存储矩形的x坐标</span>
+        x_coords<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> x1<span class="token punctuation">;</span>
+        x_coords<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> x2<span class="token punctuation">;</span>
+
+        <span class="token comment">// 存储矩形的y坐标</span>
+        y_coords<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> y1<span class="token punctuation">;</span>
+        y_coords<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> y2<span class="token punctuation">;</span>
+
+        <span class="token comment">// 存储矩形的坐标 (x1, y1, x2, y2)</span>
+        rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> x1<span class="token punctuation">;</span>
+        rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> y1<span class="token punctuation">;</span>
+        rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> x2<span class="token punctuation">;</span>
+        rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">=</span> y2<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化最小和最大坐标值</span>
+    <span class="token keyword">int</span> min_x_coord <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> max_x_coord <span class="token operator">=</span> INT_MIN<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> min_y_coord <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> max_y_coord <span class="token operator">=</span> INT_MIN<span class="token punctuation">;</span>
+
+    <span class="token comment">// 寻找x轴的最小值和最大值</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_RECTANGLES <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> min_x_coord<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            min_x_coord <span class="token operator">=</span> x_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> max_x_coord<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            max_x_coord <span class="token operator">=</span> x_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 寻找y轴的最小值和最大值</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_RECTANGLES <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> min_y_coord<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            min_y_coord <span class="token operator">=</span> y_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> max_y_coord<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            max_y_coord <span class="token operator">=</span> y_coords<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算x和y的偏移量，将坐标平移至非负范围</span>
+    <span class="token keyword">int</span> x_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_x_coord<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> y_offset <span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">-</span> min_y_coord<span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算二维数组的大小</span>
+    <span class="token keyword">int</span> width <span class="token operator">=</span> <span class="token function">abs</span><span class="token punctuation">(</span>max_x_coord <span class="token operator">-</span> min_x_coord<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> height <span class="token operator">=</span> <span class="token function">abs</span><span class="token punctuation">(</span>max_y_coord <span class="token operator">-</span> min_y_coord<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 动态分配用于表示矩形区域的二维数组</span>
+    <span class="token keyword">int</span><span class="token operator">*</span><span class="token operator">*</span> intersection_area <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>width <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> width<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">calloc</span><span class="token punctuation">(</span>height<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 初始化数组元素为0</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历每个矩形，填充二维数组区域</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_RECTANGLES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> rect_x1 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> rect_y1 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> rect_x2 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> rect_y2 <span class="token operator">=</span> rectangles<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历每个矩形的区域，并在二维数组中标记被覆盖的区域</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> x <span class="token operator">=</span> <span class="token punctuation">(</span>rect_x1 <span class="token operator">+</span> x_offset<span class="token punctuation">)</span><span class="token punctuation">;</span> x <span class="token operator">&lt;</span> <span class="token punctuation">(</span>rect_x2 <span class="token operator">+</span> x_offset<span class="token punctuation">)</span><span class="token punctuation">;</span> x<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> y <span class="token operator">=</span> <span class="token punctuation">(</span>rect_y2 <span class="token operator">+</span> y_offset<span class="token punctuation">)</span><span class="token punctuation">;</span> y <span class="token operator">&lt;</span> <span class="token punctuation">(</span>rect_y1 <span class="token operator">+</span> y_offset<span class="token punctuation">)</span><span class="token punctuation">;</span> y<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                intersection_area<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">// 增加覆盖计数</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> ret <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 用于存储重叠的区域面积</span>
+
+    <span class="token comment">// 遍历二维数组，统计同时被三个矩形覆盖的区域数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> width<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> height<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 如果区域被三个矩形覆盖</span>
+                ret <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">// 增加计数</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> ret<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 释放二维数组的内存</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> width<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">free</span><span class="token punctuation">(</span>intersection_area<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>intersection_area<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b0d8ff6d53693bfcf6e1605b507f3ae3.png" alt="fengmian"></p> 
+<h4><a id="_470"></a>完整用例</h4> 
+<h5><a id="1_471"></a>用例1</h5> 
+<pre><code class="prism language-input1">1 6 4 4
+3 5 3 4
+0 3 7 3
+</code></pre> 
+<h5><a id="2_479"></a>用例2</h5> 
+<pre><code class="prism language-input2">0 0 3 3
+1 1 2 2
+2 2 3 3
+</code></pre> 
+<h5><a id="3_487"></a>用例3</h5> 
+<pre><code class="prism language-input3">-1 -1 3 3
+1 1 2 2
+-2 -2 4 4
+</code></pre> 
+<h5><a id="4_495"></a>用例4</h5> 
+<pre><code class="prism language-input4">-1 -1 3 3
+-2 -2 2 2
+-3 -3 1 1
+</code></pre> 
+<h5><a id="5_503"></a>用例5</h5> 
+<pre><code class="prism language-input5">-1 -1 3 3
+-2 -2 2 2
+-3 -3 3 3
+</code></pre> 
+<h5><a id="6_511"></a>用例6</h5> 
+<pre><code class="prism language-input6">-1000 -1000 2000 2000
+-1000 -1000 2000 2000
+-1000 -1000 2000 2000
+</code></pre> 
+<h5><a id="7_519"></a>用例7</h5> 
+<pre><code class="prism language-input7">-1000 -1000 2000 2000
+-1000 -1000 2000 2000
+0 0 2000 2000
+</code></pre> 
+<h5><a id="8_527"></a>用例8</h5> 
+<pre><code class="prism language-input8">-1000 -1000 2000 2000
+0 0 2000 2000
+1000 1000 2000 2000
+</code></pre> 
+<h5><a id="9_535"></a>用例9</h5> 
+<pre><code class="prism language-input9">0 0 1 1
+0 0 1 1
+0 0 1 1
+</code></pre> 
+<h5><a id="10_543"></a>用例10</h5> 
+<pre><code class="prism language-input10">0 0 1 1
+0 0 1 1
+0 0 2 2
+</code></pre>
+                </div>
+</body>
+</html>

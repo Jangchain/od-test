@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>当前IT部门支撑了子公司颗粒化业务，该部门需要实现为子公司快速开租建站的能力，建站是指在一个全新的环境部署一套IT服务。</p> 
+<ul><li>每个站点开站会由一系列部署任务项构成，每个任务项部署完成时间都是固定和相等的，设为1。</li><li>部署任务项之间可能存在依赖，假如任务2依赖任务1，那么等任务1部署完，任务2才能部署。</li><li>任务有多个依赖任务则需要等所有依赖任务都部署完该任务才能部署。</li><li>没有依赖的任务可以并行部署，优秀的员工们会做到完全并行无等待的部署。</li></ul> 
+<p>给定一个站点部署任务项和它们之间的依赖关系，请给出一个站点的最短开站时间。</p> 
+<h2><a id="_16"></a>输入描述</h2> 
+<p>第一行是任务数taskNum,第二行是任务的依赖关系数relationsNum</p> 
+<p>接下来 relationsNum 行，每行包含两个id，描述一个依赖关系，格式为：IDi IDj，表示部署任务i部署完成了，部署任务j才能部署，IDi 和 IDj 值的范围为：[0, taskNum)</p> 
+<p>注：输入保证部署任务之间的依赖不会存在环。</p> 
+<h4><a id="_24"></a>备注</h4> 
+<ul><li>1 ＜ taskNum ≤ 100</li><li>1 ≤ relationsNum ≤ 5000</li></ul> 
+<h2><a id="_30"></a>输出描述</h2> 
+<p>一个整数，表示一个站点的最短开站时间。</p> 
+<h2><a id="1_34"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>5
+5
+0 4
+1 2
+1 3
+2 3
+2 4
+</code></pre> 
+<p>输出</p> 
+<pre><code>3
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>有5个部署任务项，3个依赖关系。我们可以先同时部署任务项0和任务项1，然后部署任务项2，最后同时部署任务型3和任务型4.最短开战时间为3。</p> 
+</blockquote> 
+<h2><a id="2_58"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>5
+3
+0 3
+0 4
+1 3
+</code></pre> 
+<p>输出</p> 
+<pre><code>2
+</code></pre> 
+<blockquote> 
+ <p>有5个部署任务项，3个依赖关系。我们可以先同时部署任务型0，任务型1，任务项2。然后再同时部署任务型4.最短开站时间为2。</p> 
+</blockquote> 
+<h2><a id="_76"></a>解题思路</h2> 
+<p>题目要求是计算完成所有部署任务所需的最短时间。每个任务的部署时间是1个单位时间，但任务之间有依赖关系。只有在依赖的任务完成后，后续任务才能开始。因此，任务的顺序和是否能并行部署需要考虑任务之间的依赖关系。</p> 
+<h4><a id="_83"></a>题意解析</h4> 
+<ul><li><strong>任务数 (<code>taskNum</code>)</strong>: 表示需要部署的任务总数，范围为 [0, <code>taskNum</code> - 1]。</li><li><strong>依赖关系数 (<code>relationsNum</code>)</strong>: 描述任务之间的依赖关系的数量。</li><li>每个依赖关系由两个任务编号 <code>IDi IDj</code> 表示，表示 <code>IDi</code> 必须在 <code>IDj</code> 之前完成。</li><li><strong>目标</strong>: 找出完成所有任务的最短时间。</li></ul> 
+<h4><a id="_89"></a>问题的特点</h4> 
+<ul><li>任务之间的依赖关系构成一个<strong>有向无环图 (DAG)</strong>。</li><li>需要找到DAG的<strong>拓扑排序</strong>，并基于拓扑排序计算任务的最早完成时间。</li><li>可以并行部署没有相互依赖的任务。</li></ul> 
+<h4><a id="_94"></a>示例分析</h4> 
+<h5><a id="1_95"></a>示例1</h5> 
+<p><strong>输入</strong>:</p> 
+<pre><code>5
+5
+0 4
+1 2
+1 3
+2 3
+2 4
+</code></pre> 
+<p><strong>解释</strong>:</p> 
+<ul><li>任务0和任务1可以在第1个单位时间内同时部署（没有依赖）。</li><li>任务2必须等任务1完成后在第2个单位时间进行部署。</li><li>任务3依赖任务1和任务2，在第3个单位时间部署。</li><li>任务4依赖任务0和任务2，也在第3个单位时间部署。</li></ul> 
+<p><strong>输出</strong>:</p> 
+<pre><code>3
+</code></pre> 
+<h5><a id="2_117"></a>示例2</h5> 
+<p><strong>输入</strong>:</p> 
+<pre><code>5
+3
+0 3
+0 4
+1 3
+</code></pre> 
+<p><strong>解释</strong>:</p> 
+<ul><li>任务0、1和2可以在第1个单位时间同时部署。</li><li>任务3依赖任务0和任务1，任务4依赖任务0，在第2个单位时间部署。</li></ul> 
+<p><strong>输出</strong>:</p> 
+<pre><code>2
+</code></pre> 
+<h4><a id="_135"></a>解题思路</h4> 
+<ol><li> <p><strong>建图</strong>: 将任务及其依赖关系表示为图结构。</p> </li><li> <p><strong>拓扑排序</strong>: 使用拓扑排序算法找出任务的执行顺序。</p> </li></ol> 
+<h2><a id="Java_142"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> taskNum <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 任务数量</span>
+        <span class="token keyword">int</span> relationsNum <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 任务之间的依赖关系数量</span>
+
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> relations <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>relationsNum<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 依赖关系数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> relationsNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            relations<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 前置任务</span>
+            relations<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 后继任务</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 合并后的 getMinimumBuildTime 逻辑</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> adjList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 任务的后继任务表</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> inDegrees <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>taskNum<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的入度</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> taskTime <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>taskNum<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的完成时间</span>
+
+        <span class="token comment">// 构建图的邻接表和入度数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> relation <span class="token operator">:</span> relations<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> preTask <span class="token operator">=</span> relation<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> nextTask <span class="token operator">=</span> relation<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            adjList<span class="token punctuation">.</span><span class="token function">computeIfAbsent</span><span class="token punctuation">(</span>preTask<span class="token punctuation">,</span> k <span class="token operator">-&gt;</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">Queue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> queue <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">LinkedList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 初始化队列，将所有入度为0的任务入队，开始时间为1</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> taskNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                queue<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                taskTime<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 入度为0的任务最早时间为1</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> minBuildTime <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 处理拓扑排序</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>queue<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> task <span class="token operator">=</span> queue<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> currentTime <span class="token operator">=</span> taskTime<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>adjList<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> nextTask <span class="token operator">:</span> adjList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+
+                    <span class="token comment">// 更新后继任务的时间</span>
+                    taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token punctuation">,</span> currentTime <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        queue<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 更新总时间为当前的最大完成时间</span>
+            minBuildTime <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>minBuildTime<span class="token punctuation">,</span> currentTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>minBuildTime<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最短建站时间</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_213"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">from</span> collections <span class="token keyword">import</span> defaultdict<span class="token punctuation">,</span> deque
+
+<span class="token comment"># 读取输入的任务数量和依赖关系数量</span>
+task_num <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 任务数量</span>
+relations_num <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 依赖关系数量</span>
+
+<span class="token comment"># 读取依赖关系</span>
+relations <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>relations_num<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    pre_task <span class="token punctuation">,</span> next_task <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    relations<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>pre_task<span class="token punctuation">,</span> next_task<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 构建图的邻接表和入度数组</span>
+adj_list <span class="token operator">=</span> defaultdict<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">)</span>  <span class="token comment"># 任务的后继任务表</span>
+in_degrees <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> task_num  <span class="token comment"># 每个任务的入度</span>
+task_time <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> task_num  <span class="token comment"># 每个任务的完成时间</span>
+
+<span class="token keyword">for</span> pre_task<span class="token punctuation">,</span> next_task <span class="token keyword">in</span> relations<span class="token punctuation">:</span>
+    adj_list<span class="token punctuation">[</span>pre_task<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>next_task<span class="token punctuation">)</span>  <span class="token comment"># 添加后继任务</span>
+    in_degrees<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span>  <span class="token comment"># 增加后继任务的入度</span>
+
+<span class="token comment"># 初始化队列，将所有入度为0的任务入队，开始时间为1</span>
+queue <span class="token operator">=</span> deque<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>task_num<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> in_degrees<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        queue<span class="token punctuation">.</span>append<span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+        task_time<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>  <span class="token comment"># 入度为0的任务最早时间为1</span>
+
+min_build_time <span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token comment"># 处理拓扑排序</span>
+<span class="token keyword">while</span> queue<span class="token punctuation">:</span>
+    task <span class="token operator">=</span> queue<span class="token punctuation">.</span>popleft<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    current_time <span class="token operator">=</span> task_time<span class="token punctuation">[</span>task<span class="token punctuation">]</span>
+
+    <span class="token keyword">if</span> task <span class="token keyword">in</span> adj_list<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> next_task <span class="token keyword">in</span> adj_list<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            in_degrees<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>  <span class="token comment"># 减少后继任务的入度</span>
+
+            <span class="token comment"># 更新后继任务的时间</span>
+            task_time<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>task_time<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span><span class="token punctuation">,</span> current_time <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+            <span class="token keyword">if</span> in_degrees<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                queue<span class="token punctuation">.</span>append<span class="token punctuation">(</span>next_task<span class="token punctuation">)</span>
+
+    <span class="token comment"># 更新总时间为当前的最大完成时间</span>
+    min_build_time <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>min_build_time<span class="token punctuation">,</span> current_time<span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>min_build_time<span class="token punctuation">)</span>  <span class="token comment"># 输出最短建站时间</span>
+</code></pre> 
+<h2><a id="JavaScript_266"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"readline"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> inputLines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储输入的所有行</span>
+<span class="token keyword">let</span> taskNum<span class="token punctuation">,</span> relationsNum<span class="token punctuation">;</span> <span class="token comment">// 任务数和依赖关系数</span>
+
+<span class="token comment">// 监听输入流的每一行</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  inputLines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>inputLines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 获取任务数和依赖关系数</span>
+    taskNum <span class="token operator">=</span> <span class="token function">Number</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    relationsNum <span class="token operator">=</span> <span class="token function">Number</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>relationsNum <span class="token operator">&amp;&amp;</span> inputLines<span class="token punctuation">.</span>length <span class="token operator">===</span> relationsNum <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将依赖关系转换为二维数组</span>
+    <span class="token keyword">const</span> relations <span class="token operator">=</span> inputLines<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span>
+      line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">getMinBuildTime</span><span class="token punctuation">(</span>relations<span class="token punctuation">,</span> taskNum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最短建站时间</span>
+    inputLines<span class="token punctuation">.</span>length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 清空 inputLines</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// getMinBuildTime 函数用于计算最短建站时间</span>
+<span class="token keyword">function</span> <span class="token function">getMinBuildTime</span><span class="token punctuation">(</span><span class="token parameter">relations<span class="token punctuation">,</span> taskNum</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> adjList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 邻接表</span>
+  <span class="token keyword">const</span> inDegrees <span class="token operator">=</span> <span class="token function">Array</span><span class="token punctuation">(</span>taskNum<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 入度数组</span>
+  <span class="token keyword">const</span> taskTime <span class="token operator">=</span> <span class="token function">Array</span><span class="token punctuation">(</span>taskNum<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的完成时间</span>
+
+  <span class="token comment">// 构建邻接表和入度数组</span>
+  relations<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">[</span>preTask<span class="token punctuation">,</span> nextTask<span class="token punctuation">]</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>adjList<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>preTask<span class="token punctuation">)</span><span class="token punctuation">)</span> adjList<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>preTask<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    adjList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>preTask<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> queue <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 队列，存储所有入度为 0 的任务</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> taskNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      queue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      taskTime<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 入度为 0 的任务最早开始时间为 1</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">let</span> minBuildTime <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最短建站时间</span>
+
+  <span class="token comment">// 处理拓扑排序</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>queue<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> task <span class="token operator">=</span> queue<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> currentTime <span class="token operator">=</span> taskTime<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>adjList<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      adjList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">nextTask</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少后继任务的入度</span>
+
+        <span class="token comment">// 更新后继任务的时间</span>
+        taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token punctuation">,</span> currentTime <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          queue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 更新总时间为当前的最大完成时间</span>
+    minBuildTime <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>minBuildTime<span class="token punctuation">,</span> currentTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">return</span> minBuildTime<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_348"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> taskNum<span class="token punctuation">,</span> relationsNum<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> taskNum <span class="token operator">&gt;&gt;</span> relationsNum<span class="token punctuation">;</span> <span class="token comment">// 输入任务数量和依赖关系数量</span>
+
+    vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">relations</span><span class="token punctuation">(</span>relationsNum<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 依赖关系数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> relationsNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> relations<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>first <span class="token operator">&gt;&gt;</span> relations<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>second<span class="token punctuation">;</span> <span class="token comment">// 输入每个依赖关系的前置和后继任务</span>
+    <span class="token punctuation">}</span>
+
+    unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> adjList<span class="token punctuation">;</span> <span class="token comment">// 任务的后继任务表</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">inDegrees</span><span class="token punctuation">(</span>taskNum<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的入度</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">taskTime</span><span class="token punctuation">(</span>taskNum<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的完成时间</span>
+
+    <span class="token comment">// 构建图的邻接表和入度数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> relation <span class="token operator">:</span> relations<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> preTask <span class="token operator">=</span> relation<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> nextTask <span class="token operator">=</span> relation<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+        adjList<span class="token punctuation">[</span>preTask<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 添加后继任务</span>
+        inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 增加后继任务的入度</span>
+    <span class="token punctuation">}</span>
+
+    queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> q<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> taskNum<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+            taskTime<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 入度为0的任务最早时间为1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> minBuildTime <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 处理拓扑排序</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>q<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> task <span class="token operator">=</span> q<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        q<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> currentTime <span class="token operator">=</span> taskTime<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>adjList<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> nextTask <span class="token operator">:</span> adjList<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少后继任务的入度</span>
+
+                <span class="token comment">// 更新后继任务的时间</span>
+                taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token punctuation">,</span> currentTime <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        minBuildTime <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>minBuildTime<span class="token punctuation">,</span> currentTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> minBuildTime <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出最短建站时间</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_416"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_TASKS</span> <span class="token expression"><span class="token number">1000</span></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> taskNum<span class="token punctuation">,</span> relationsNum<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>taskNum<span class="token punctuation">,</span> <span class="token operator">&amp;</span>relationsNum<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入任务数量和依赖关系数量</span>
+
+    <span class="token keyword">int</span> adjList<span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 任务的后继任务表</span>
+    <span class="token keyword">int</span> inDegrees<span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的入度</span>
+    <span class="token keyword">int</span> taskTime<span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 每个任务的完成时间</span>
+    <span class="token keyword">int</span> queue<span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 队列</span>
+    <span class="token keyword">int</span> front <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> rear <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取并构建依赖关系图</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> relationsNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> preTask<span class="token punctuation">,</span> nextTask<span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>preTask<span class="token punctuation">,</span> <span class="token operator">&amp;</span>nextTask<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入前置任务和后继任务</span>
+        adjList<span class="token punctuation">[</span>preTask<span class="token punctuation">]</span><span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 添加后继任务</span>
+        inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 增加后继任务的入度</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> taskNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            queue<span class="token punctuation">[</span>rear<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 入度为0的任务入队</span>
+            taskTime<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 入度为0的任务最早时间为1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> minBuildTime <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 处理拓扑排序</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>front <span class="token operator">&lt;</span> rear<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> task <span class="token operator">=</span> queue<span class="token punctuation">[</span>front<span class="token operator">++</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> currentTime <span class="token operator">=</span> taskTime<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> nextTask <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> nextTask <span class="token operator">&lt;</span> taskNum<span class="token punctuation">;</span> nextTask<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>adjList<span class="token punctuation">[</span>task<span class="token punctuation">]</span><span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少后继任务的入度</span>
+
+                <span class="token comment">// 更新后继任务的时间</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">&lt;</span> currentTime <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    taskTime<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">=</span> currentTime <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegrees<span class="token punctuation">[</span>nextTask<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    queue<span class="token punctuation">[</span>rear<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> nextTask<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        minBuildTime <span class="token operator">=</span>
+ <span class="token punctuation">(</span>minBuildTime <span class="token operator">&lt;</span> currentTime<span class="token punctuation">)</span> <span class="token operator">?</span> currentTime <span class="token operator">:</span> minBuildTime<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> minBuildTime<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最短建站时间</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1900d86e997c8861f5e0c02113a605a3.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

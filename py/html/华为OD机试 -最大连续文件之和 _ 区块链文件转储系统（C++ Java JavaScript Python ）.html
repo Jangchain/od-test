@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>区块链底层存储是一个链式文件系统，由顺序的N个文件组成，每个文件的大小不一，依次为F1,F2,…,Fn。随着时间的推移，所占存储会越来越大。</p> 
+<p>云平台考虑将区块链按文件转储到廉价的SATA盘，只有连续的区块链文件才能转储到SATA盘上，且转储的文件之和不能超过SATA盘的容量。</p> 
+<p>假设每块SATA盘容量为M，求能转储的最大连续文件之和。</p> 
+<h4><a id="_9"></a>输入描述</h4> 
+<p>第一行为SATA盘容量M，1000 ≤ M ≤ 1000000</p> 
+<p>第二行为区块链文件大小序列F1,F2,…,Fn。其中 1 ≤ n ≤ 100000，1 ≤ Fi ≤ 500</p> 
+<h4><a id="_15"></a>输出描述</h4> 
+<p>求能转储的最大连续文件大小之和</p> 
+<h4><a id="_19"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>1000<br>100 300 500 400 400 150 100</td></tr><tr><td>输出</td><td>950</td></tr><tr><td>说明</td><td>最大序列和为950，序列为[400,400,150]</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>1000<br>100 500 400 150 500 100</td></tr><tr><td>输出</td><td>1000</td></tr><tr><td>说明</td><td>最大序列和为1000，序列为[100,500,400]</td></tr></tbody></table> 
+<h4><a id="_25"></a>题目解析</h4> 
+<p>本质上就是求解连续子数组的和，如果满足最接近最大值M，则输出这个连续子数组。</p> 
+<p>本题的滑动窗口的左边界l,右边界r的运动逻辑如下：</p> 
+<ul><li>如果滑动窗口内部和 &lt; m，则r++</li><li>如果滑动窗口内部和 &gt; m，则l++</li><li>如果滑动窗口内部和 = m，则已得到最大值，直接返回m即可。</li></ul> 
+<h4><a id="_37"></a>代码思路</h4> 
+<p>这是一道滑动窗口的题目，滑动窗口的思路是维护一个窗口，窗口内的元素满足一定的条件，然后通过移动窗口的左右边界来得到满足条件的子序列/子数组。</p> 
+<p>对于这道题目，我们需要维护一个窗口，窗口内的元素的和不超过SATA盘的容量M。我们从左到右扫描整个序列，维护一个窗口，窗口的右边界不断向右移动，如果窗口内的元素的和超过了M，那么窗口的左边界向右移动，直到窗口内的元素的和小于等于M。在这个过程中，我们需要记录窗口内元素的和的最大值，最后返回这个最大值即可。</p> 
+<h4><a id="C_43"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    <span class="token keyword">int</span> M<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> M<span class="token punctuation">;</span> <span class="token comment">// SATA盘容量</span>
+    cin<span class="token punctuation">.</span><span class="token function">ignore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    stringstream <span class="token function">ss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> F<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> num<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>ss <span class="token operator">&gt;&gt;</span> num<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        F<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 窗口左右边界</span>
+    <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> right <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 窗口和</span>
+    <span class="token keyword">int</span> window_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 最大窗口和</span>
+    <span class="token keyword">int</span> window_max <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">&lt;</span> F<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        window_sum <span class="token operator">+=</span> F<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将当前文件大小加入窗口和</span>
+
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>window_sum <span class="token operator">&gt;</span> M<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当窗口和大于SATA盘容量时，移动窗口左边界</span>
+            window_sum <span class="token operator">-=</span> F<span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将左边界对应的文件大小从窗口和中减去</span>
+            left<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 移动左边界</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>window_sum <span class="token operator">==</span> M<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果窗口和等于SATA盘容量，直接输出并返回</span>
+            cout <span class="token operator">&lt;&lt;</span> M <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        window_max <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>window_sum<span class="token punctuation">,</span> window_max<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大窗口和</span>
+        right<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 移动右边界</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> window_max <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出最大窗口和</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JavaScript_96"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> <span class="token constant">M</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> <span class="token constant">F</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token constant">M</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token constant">M</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token constant">F</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">let</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> right <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> window_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> window_max <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">&lt;</span> <span class="token constant">F</span><span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      window_sum <span class="token operator">+=</span> <span class="token constant">F</span><span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>window_sum <span class="token operator">&gt;</span> <span class="token constant">M</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        window_sum <span class="token operator">-=</span> <span class="token constant">F</span><span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        left<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>window_sum <span class="token operator">===</span> <span class="token constant">M</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token constant">M</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      window_max <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>window_sum<span class="token punctuation">,</span> window_max<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      right<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>window_max<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="Java_142"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 处理输入</span>
+        <span class="token class-name">Scanner</span> in <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">M</span> <span class="token operator">=</span>in<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// SATA盘容量</span>
+        in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token class-name">F</span> <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">::</span><span class="token keyword">new</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 区块链文件大小序列</span>
+        <span class="token comment">// 窗口左右边界</span>
+        <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> right <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 窗口和</span>
+        <span class="token keyword">int</span> window_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 最大窗口和</span>
+        <span class="token keyword">int</span> window_max <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">&lt;</span> <span class="token class-name">F</span><span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            window_sum <span class="token operator">+=</span> <span class="token class-name">F</span><span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将当前文件大小加入窗口和</span>
+
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>window_sum <span class="token operator">&gt;</span> <span class="token class-name">M</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当窗口和大于SATA盘容量时，移动窗口左边界</span>
+                window_sum <span class="token operator">-=</span> <span class="token class-name">F</span><span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将左边界对应的文件大小从窗口和中减去</span>
+                left<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 移动左边界</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>window_sum <span class="token operator">==</span> <span class="token class-name">M</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果窗口和等于SATA盘容量，直接输出并返回</span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">M</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            window_max <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>window_sum<span class="token punctuation">,</span> window_max<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大窗口和</span>
+            right<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 移动右边界</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>window_max<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最大窗口和</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_183"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+M <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># SATA盘容量</span>
+F <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># 区块链文件大小序列</span>
+
+<span class="token comment"># 窗口左右边界</span>
+left <span class="token operator">=</span> <span class="token number">0</span>
+right <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 窗口和</span>
+window_sum <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 最大窗口和</span>
+window_max <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token keyword">while</span> right <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>F<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    window_sum <span class="token operator">+=</span> F<span class="token punctuation">[</span>right<span class="token punctuation">]</span> <span class="token comment"># 将当前文件大小加入窗口和</span>
+
+    <span class="token keyword">while</span> window_sum <span class="token operator">&gt;</span> M<span class="token punctuation">:</span> <span class="token comment"># 当窗口和大于SATA盘容量时，移动窗口左边界</span>
+        window_sum <span class="token operator">-=</span> F<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token comment"># 将左边界对应的文件大小从窗口和中减去</span>
+        left <span class="token operator">+=</span> <span class="token number">1</span> <span class="token comment"># 移动左边界</span>
+
+    <span class="token keyword">if</span> window_sum <span class="token operator">==</span> M<span class="token punctuation">:</span> <span class="token comment"># 如果窗口和等于SATA盘容量，直接输出并返回</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span>
+        sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    window_max <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>window_sum<span class="token punctuation">,</span> window_max<span class="token punctuation">)</span> <span class="token comment"># 更新最大窗口和</span>
+    right <span class="token operator">+=</span> <span class="token number">1</span> <span class="token comment"># 移动右边界</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>window_max<span class="token punctuation">)</span> <span class="token comment"># 输出最大窗口和</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_15" rel="nofollow">输出描述</a></li><li><a href="#_19" rel="nofollow">用例</a></li><li><a href="#_25" rel="nofollow">题目解析</a></li><li><a href="#_37" rel="nofollow">代码思路</a></li><li><a href="#C_43" rel="nofollow">C++</a></li><li><a href="#JavaScript_96" rel="nofollow">JavaScript</a></li><li><a href="#Java_142" rel="nofollow">Java</a></li><li><a href="#Python_183" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>小华按照地图去寻宝，地图上被划分成 m 行和 n 列的方格，横纵坐标范围分别是 [0, n-1] 和 [0, m-1]。</p> 
+<p>在横坐标和纵坐标的数位之和不大于 k 的方格中存在黄金（每个方格中仅存在一克黄金），但横坐标和纵坐标数位之和大于 k 的方格存在危险不可进入。小华从入口 (0,0) 进入，任何时候只能向左，右，上，下四个方向移动一格。</p> 
+<p>请问小华最多能获得多少克黄金？</p> 
+<h2><a id="_11"></a>输入描述</h2> 
+<p>坐标取值范围如下：</p> 
+<ul><li>0 ≤ m ≤ 50</li><li>0 ≤ n ≤ 50</li></ul> 
+<p>k 的取值范围如下：</p> 
+<ul><li>0 ≤ k ≤ 100</li></ul> 
+<p>输入中包含3个字数，分别是m, n, k</p> 
+<h2><a id="_24"></a>输出描述</h2> 
+<p>输出小华最多能获得多少克黄金</p> 
+<h2><a id="_28"></a>用例</h2> 
+<table><thead><tr><th>输入</th><th>40 40 18</th></tr></thead><tbody><tr><td>输出</td><td>1484</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<table><thead><tr><th>输入</th><th>5 4 7</th></tr></thead><tbody><tr><td>输出</td><td>20</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h2><a id="_42"></a>解题思路</h2> 
+<ol><li> <p><strong>边界条件</strong>: 在 <code>dfs</code> 函数中，首先检查当前坐标是否越界，是否已经被访问过，以及当前坐标的数位和是否大于 <code>k</code>。如果满足这些条件中的任何一个，当前方格不可访问，返回 <code>0</code>。</p> </li><li> <p><strong>标记访问</strong>: 创建一个二维布尔数组 <code>visited</code> 来跟踪每个方格是否已经被访问过。这是为了防止在搜索过程中重复访问相同的方格。</p> </li><li> <p><strong>递归搜索</strong>: 从当前方格出发，递归地向四个方向（上、下、左、右）进行搜索。每次递归调用返回时，将返回值累加，表示可以收集到的黄金数量。每个可访问的方格代表一克黄金，所以在每次递归调用的返回值中加 <code>1</code>。</p> </li></ol> 
+<h2><a id="C_56"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 定义地图的行数m、列数n以及数位和限制k</span>
+<span class="token keyword">int</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">;</span>
+vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;&gt;</span> visited<span class="token punctuation">;</span>
+<span class="token comment">// 计算一个数字的数位和</span>
+<span class="token keyword">int</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span><span class="token keyword">int</span> num<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数位和为0</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>num <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当数字大于0时循环</span>
+        sum <span class="token operator">+=</span> num <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 取数字的最后一位加到数位和中</span>
+        num <span class="token operator">/=</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 去掉数字的最后一位</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> sum<span class="token punctuation">;</span> <span class="token comment">// 返回计算出的数位和</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 判断坐标(x, y)是否越界，或者已经被访问过，或者数位和大于k</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y <span class="token operator">&gt;=</span> n <span class="token operator">||</span> visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token operator">&gt;</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果是，则返回0，表示这个格子不能访问</span>
+    <span class="token punctuation">}</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span> <span class="token comment">// 标记当前格子为已访问</span>
+    <span class="token comment">// 递归搜索当前格子的上下左右四个方向，并将结果累加，1表示当前格子的黄金</span>
+    <span class="token keyword">return</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 使用标准输入读取行数m、列数n和数位和限制k</span>
+    cin <span class="token operator">&gt;&gt;</span> m <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> k<span class="token punctuation">;</span>
+    visited<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化访问标记数组</span>
+
+    <span class="token comment">// 从(0,0)开始进行深度优先搜索，并打印能够收集到的最大黄金数量</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_99"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义地图的行数m、列数n以及数位和限制k</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">;</span>
+    <span class="token comment">// 定义一个二维数组visited，用于标记格子是否已经被访问过</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 使用Scanner类读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        m <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取行数m</span>
+        n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取列数n</span>
+        k <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取数位和限制k</span>
+        visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 初始化访问标记数组</span>
+
+        <span class="token comment">// 从(0,0)开始进行深度优先搜索，并打印能够收集到的最大黄金数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 深度优先搜索函数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 判断坐标(x, y)是否越界，或者已经被访问过，或者数位和大于k</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y <span class="token operator">&gt;=</span> n <span class="token operator">||</span> visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token operator">&gt;</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果是，则返回0，表示这个格子不能访问</span>
+        <span class="token punctuation">}</span>
+        visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前格子为已访问</span>
+        <span class="token comment">// 递归搜索当前格子的上下左右四个方向，并将结果累加，1表示当前格子的黄金</span>
+        <span class="token keyword">return</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算一个数字的数位和</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span><span class="token keyword">int</span> num<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数位和为0</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>num <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当数字大于0时循环</span>
+            sum <span class="token operator">+=</span> num <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 取数字的最后一位加到数位和中</span>
+            num <span class="token operator">/=</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 去掉数字的最后一位</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> sum<span class="token punctuation">;</span> <span class="token comment">// 返回计算出的数位和</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_145"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入的行数m、列数n和数位和限制k</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> visited <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">length</span><span class="token operator">:</span> m <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token function">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 判断坐标(x, y)是否越界，或者已经被访问过，或者数位和大于k</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y <span class="token operator">&gt;=</span> n <span class="token operator">||</span> visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token operator">&gt;</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果是，则返回0，表示这个格子不能访问</span>
+  <span class="token punctuation">}</span>
+  visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前格子为已访问</span>
+  <span class="token comment">// 递归搜索当前格子的上下左右四个方向，并将结果累加，1表示当前格子的黄金</span>
+  <span class="token keyword">return</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span> <span class="token operator">+</span>
+             <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算一个数字的数位和</span>
+<span class="token keyword">function</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span><span class="token parameter">num</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">let</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数位和为0</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>num <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当数字大于0时循环</span>
+    sum <span class="token operator">+=</span> num <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 取数字的最后一位加到数位和中</span>
+    num <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>num <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 去掉数字的最后一位</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> sum<span class="token punctuation">;</span> <span class="token comment">// 返回计算出的数位和</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_189"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 设置递归的最大深度为10000</span>
+在Python中，默认的最大递归深度是比较小的（通常是<span class="token number">1000</span>），这意味着如果一个递归函数调用自身超过<span class="token number">1000</span>次，Python解释器会抛出一个`RecursionError`错误。这是为了防止无限递归导致的栈溢出，从而可能会破坏程序或操作系统的稳定性。
+ 
+sys<span class="token punctuation">.</span>setrecursionlimit<span class="token punctuation">(</span><span class="token number">10000</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 定义一个函数，用于计算一个整数的数位之和</span>
+<span class="token keyword">def</span> <span class="token function">sum_of_digits</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token builtin">sum</span> <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 初始化数位和为0</span>
+    <span class="token keyword">while</span> num <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>  <span class="token comment"># 当数字大于0时循环</span>
+        <span class="token builtin">sum</span> <span class="token operator">+=</span> num <span class="token operator">%</span> <span class="token number">10</span>  <span class="token comment"># 将数字的最后一位加到数位和中</span>
+        num <span class="token operator">//=</span> <span class="token number">10</span>  <span class="token comment"># 使用整除去掉数字的最后一位</span>
+    <span class="token keyword">return</span> <span class="token builtin">sum</span>  <span class="token comment"># 返回计算出的数位和</span>
+
+<span class="token comment"># 定义深度优先搜索函数</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 判断坐标(x, y)是否越界，或者已经被访问过，或者(x, y)的数位和大于k</span>
+    <span class="token keyword">if</span> x <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token keyword">or</span> y <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token keyword">or</span> x <span class="token operator">&gt;=</span> m <span class="token keyword">or</span> y <span class="token operator">&gt;=</span> n <span class="token keyword">or</span> visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token keyword">or</span> sum_of_digits<span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> sum_of_digits<span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token operator">&gt;</span> k<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>  <span class="token comment"># 如果是，则返回0，表示这个格子不能访问</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>  <span class="token comment"># 标记当前格子为已访问</span>
+    <span class="token comment"># 递归搜索当前格子的上下左右四个方向，并将结果累加，1表示当前格子可以访问</span>
+    <span class="token keyword">return</span> <span class="token number">1</span> <span class="token operator">+</span> dfs<span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span> <span class="token operator">+</span> dfs<span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span> <span class="token operator">+</span> dfs<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span> <span class="token operator">+</span> dfs<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span>
+
+<span class="token comment"># 从标准输入读取行数m、列数n和数位和限制k</span>
+m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 初始化访问标记数组，初始值为False，表示没有格子被访问过</span>
+visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token boolean">False</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 从(0,0)开始进行深度优先搜索，并打印能够访问的格子数量</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>dfs<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">,</span> visited<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_227"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdbool.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_M</span> <span class="token expression"><span class="token number">50</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_N</span> <span class="token expression"><span class="token number">50</span></span></span>
+
+<span class="token comment">// 全局变量定义</span>
+<span class="token keyword">int</span> m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> k<span class="token punctuation">;</span>
+bool visited<span class="token punctuation">[</span>MAX_M<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>false<span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 访问标记数组</span>
+
+<span class="token comment">// 计算一个数字的数位和</span>
+<span class="token keyword">int</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span><span class="token keyword">int</span> num<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数位和为0</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>num <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当数字大于0时循环</span>
+        sum <span class="token operator">+=</span> num <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 取数字的最后一位加到数位和中</span>
+        num <span class="token operator">/=</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 去掉数字的最后一位</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> sum<span class="token punctuation">;</span> <span class="token comment">// 返回计算出的数位和</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 判断坐标(x, y)是否越界，或者已经被访问过，或者数位和大于k</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">&gt;=</span> m <span class="token operator">||</span> y <span class="token operator">&gt;=</span> n <span class="token operator">||</span> visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">sumOfDigits</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span> <span class="token operator">&gt;</span> k<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果是，则返回0，表示这个格子不能访问</span>
+    <span class="token punctuation">}</span>
+    visited<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span> <span class="token comment">// 标记当前格子为已访问</span>
+    <span class="token comment">// 递归搜索当前格子的上下左右四个方向，并将结果累加，1表示当前格子的黄金</span>
+    <span class="token keyword">return</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 使用标准输入读取行数m、列数n和数位和限制k</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">,</span> <span class="token operator">&amp;</span>k<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 从(0,0)开始进行深度优先搜索，并打印能够收集到的最大黄金数量</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_274"></a>完整用例</h2> 
+<h3><a id="1_275"></a>用例1</h3> 
+<pre><code class="prism language-input1">1 1 0
+</code></pre> 
+<h3><a id="2_281"></a>用例2</h3> 
+<pre><code class="prism language-input2">10 10 5
+</code></pre> 
+<h3><a id="3_287"></a>用例3</h3> 
+<pre><code class="prism language-input3">20 20 10
+</code></pre> 
+<h3><a id="4_293"></a>用例4</h3> 
+<pre><code class="prism language-input4">30 30 15
+</code></pre> 
+<h3><a id="5_299"></a>用例5</h3> 
+<pre><code class="prism language-input5">50 50 20
+</code></pre> 
+<h3><a id="6_305"></a>用例6</h3> 
+<pre><code class="prism language-input6">50 50 25
+</code></pre> 
+<h3><a id="7_311"></a>用例7</h3> 
+<pre><code class="prism language-input7">50 50 30
+</code></pre> 
+<h3><a id="8_317"></a>用例8</h3> 
+<pre><code class="prism language-input8">50 50 35
+</code></pre> 
+<h3><a id="9_323"></a>用例9</h3> 
+<pre><code class="prism language-input9">35 45 20
+</code></pre> 
+<h3><a id="10_329"></a>用例10</h3> 
+<pre><code class="prism language-input10">15 25 5
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_11" rel="nofollow">输入描述</a></li><li><a href="#_24" rel="nofollow">输出描述</a></li><li><a href="#_28" rel="nofollow">用例</a></li><li><a href="#_42" rel="nofollow">解题思路</a></li><li><a href="#C_56" rel="nofollow">C++</a></li><li><a href="#Java_99" rel="nofollow">Java</a></li><li><a href="#javaScript_145" rel="nofollow">javaScript</a></li><li><a href="#Python_189" rel="nofollow">Python</a></li><li><a href="#C_227" rel="nofollow">C语言</a></li><li><a href="#_274" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_275" rel="nofollow">用例1</a></li><li><a href="#2_281" rel="nofollow">用例2</a></li><li><a href="#3_287" rel="nofollow">用例3</a></li><li><a href="#4_293" rel="nofollow">用例4</a></li><li><a href="#5_299" rel="nofollow">用例5</a></li><li><a href="#6_305" rel="nofollow">用例6</a></li><li><a href="#7_311" rel="nofollow">用例7</a></li><li><a href="#8_317" rel="nofollow">用例8</a></li><li><a href="#9_323" rel="nofollow">用例9</a></li><li><a href="#10_329" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/5df62c328957468c5e5d9a37e3dbff0b.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

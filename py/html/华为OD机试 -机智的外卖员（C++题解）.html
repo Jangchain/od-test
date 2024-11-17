@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h3><a id="_2"></a>题目</h3> 
+<p>外卖员每天在大厦中送外卖，大厦共有L层（0&lt;L&lt;=10^5），当他处于第N层楼时，可以每分钟通过步行梯向上达到N+1层，或向下达到N-1层，或者乘坐<a href="https://so.csdn.net/so/search?q=%E7%94%B5%E6%A2%AF&amp;spm=1001.2101.3001.7020">电梯</a>达到2*N层。给定他所处位置N，以及外卖配送的目的楼层M，计算他送达的最短时间。</p> 
+<h3><a id="_6"></a>输入描述</h3> 
+<p>当前所处楼层N和外卖配送的目的楼层M</p> 
+<h3><a id="_10"></a>输出描述</h3> 
+<p>送达的最短时间</p> 
+<h3><a id="1_13"></a>用例1：</h3> 
+<p>输入</p> 
+<pre><code> 5 17
+</code></pre> 
+<p>输出</p> 
+<pre><code> 4
+</code></pre> 
+<p><strong>说明：</strong></p> 
+<p>当前处于5层，目标楼层17层，最快的方式是</p> 
+<p>步行下一层 - 4层</p> 
+<p>电梯 - 8层</p> 
+<p>电梯 - 16层</p> 
+<p>步行上一层 - 17层</p> 
+<p>共需要4分钟。</p> 
+<h3><a id="_41"></a>思路</h3> 
+<p>1：一个比较简单的<a href="https://so.csdn.net/so/search?q=%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92&amp;spm=1001.2101.3001.7020">动态规划</a>问题。dp[i]表示到达i层需要的最短时间。</p> 
+<p>2:初始化的时候，到N层以下需要的时间，都减去相应的楼层，即步行向下</p> 
+<pre><code class="prism language-java"><span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  
+    dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">N</span> <span class="token operator">-</span> i<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p>2：转移方程：</p> 
+<p>偶数层：dp[i] = min(dp[i - 1] + 1, dp[i / 2] + 1)<br> 奇数层：dp[i] = min(dp[i - 1] + 1, dp[(i + 1) / 2] + 2)</p> 
+<h3><a id="C_61"></a>C++</h3> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> currentFloor<span class="token punctuation">,</span> targetFloor<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> currentFloor <span class="token operator">&gt;&gt;</span> targetFloor<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentFloor <span class="token operator">&gt;=</span> targetFloor<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 特判无需移动的情况</span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token number">0</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">int</span> dp<span class="token punctuation">[</span>targetFloor <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// dp[i]表示到达第i层的最短时间</span>
+    <span class="token function">fill</span><span class="token punctuation">(</span>dp<span class="token punctuation">,</span> dp <span class="token operator">+</span> targetFloor <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 初始值为0</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> currentFloor<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 初始化到N层以下需要的时间</span>
+        dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> currentFloor <span class="token operator">-</span> i<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> currentFloor <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> targetFloor<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 计算从N层到M层的最短时间</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 偶数层可以直接到2*i，时间加1</span>
+            dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span>i <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 奇数层需要先上或者先下，再到2*(i+1)，时间加2</span>
+            dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    cout <span class="token operator">&lt;&lt;</span> dp<span class="token punctuation">[</span>targetFloor<span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>  <span class="token comment">// 输出到达目标楼层的最短时间</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><a href="#_2" rel="nofollow">题目</a></li><li><a href="#_6" rel="nofollow">输入描述</a></li><li><a href="#_10" rel="nofollow">输出描述</a></li><li><a href="#1_13" rel="nofollow">用例1：</a></li><li><a href="#_41" rel="nofollow">思路</a></li><li><a href="#C_61" rel="nofollow">C++</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

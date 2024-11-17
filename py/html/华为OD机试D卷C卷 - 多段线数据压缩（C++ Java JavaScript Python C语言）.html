@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>下图中，每个方块代表一个像素，每个像素用其行号和列号表示。为简化处理，多段线的走向只能是水平、竖直、斜向45度。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/b357149be3586906be71e8ef33342411.png" alt="image-20231210160526758"></p> 
+<p>上图中的多段线可以用下面的坐标串表示：(2, 8), (3, 7), (3, 6), (3, 5), (4, 4), (5, 3), (6, 2), (7, 3), (8, 4), (7, 5)。</p> 
+<p>但可以发现，这种表示不是最简的，其实只需要存储6个蓝色的关键点即可，它们是线段的起点、拐点、终点，而剩下4个点是冗余的。</p> 
+<blockquote> 
+ <p>即可以简化为：（2,8）、（3,7）、（3,5）、（6,2）、（8,4）、（7,5）</p> 
+</blockquote> 
+<p>现在，请根据输入的包含有冗余数据的多段线坐标列表，输出其最简化的结果。</p> 
+<h2><a id="_21"></a>输入描述</h2> 
+<p>2 8 3 7 3 6 3 5 4 4 5 3 6 2 7 3 8 4 7 5</p> 
+<p>1、所有数字以空格分隔，每两个数字一组，第一个数字是行号，第二个数字是列号；</p> 
+<p>2、行号和列号范围为[0,64)，用例输入保证不会越界，考生不必检查；</p> 
+<p>3、输入数据至少包含两个坐标点。</p> 
+<h2><a id="_31"></a>输出描述</h2> 
+<p>2 8 3 7 3 5 6 2 8 4 7 5</p> 
+<p>压缩后的最简化坐标列表，和输入数据的格式相同。</p> 
+<p>备注: 输出的坐标相对顺序不能变化。</p> 
+<h2><a id="_39"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>2 8 3 7 3 6 3 5 4 4 5 3 6 2 7 3 8 4 7 5
+</code></pre> 
+<p>输出</p> 
+<pre><code>2 8 3 7 3 5 6 2 8 4 7 5
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>如上图所示，6个蓝色像素的坐标依次是（2,8）、（3,7）、（3,5）、（6,2）、（8,4）、（7,5）。</p> 
+</blockquote> 
+<h2><a id="_57"></a>解题思路</h2> 
+<p><strong>遍历输入的坐标点列表，对于每个当前考察的点 <code>curr</code>，检查它是否是拐点。为此，比较它与前一个点 <code>prev</code> 以及后一个点 <code>next</code> 形成的两个向量。如果这两个向量不共线（即它们的叉积不为零），则当前点是一个拐点。</strong></p> 
+<p>向量和向量的叉积（cross product）。</p> 
+<ol><li> <p>向量：在二维平面中，向量可以用来表示两点之间的方向和距离。在这段代码中，向量是由两个点确定的，例如，向量 <code>(dx1, dy1)</code> 是由点 <code>prev</code> 指向点 <code>curr</code> 的向量，而向量 <code>(dx2, dy2)</code> 是由点 <code>curr</code> 指向点 <code>next</code> 的向量。</p> </li><li> <p>向量的叉积：在二维空间中，两个向量 <code>a(x1, y1)</code> 和 <code>b(x2, y2)</code> 的叉积定义为 <code>a.x * b.y - a.y * b.x</code>，即 <code>x1 * y2 - y1 * x2</code>。叉积的结果是一个标量，它的绝对值等于以这两个向量为边的平行四边形的面积。叉积的符号表示这两个向量的相对方向，如果叉积为正，则 <code>b</code> 向量在 <code>a</code> 向量的逆时针方向；如果叉积为负，则 <code>b</code> 向量在 <code>a</code> 向量的顺时针方向；如果叉积为零，则两个向量共线。</p> </li></ol> 
+<p>下面的代码中，叉积用于判断三个连续的点 <code>prev</code>、<code>curr</code>、<code>next</code> 是否构成一个拐点。如果 <code>prev</code> 到 <code>curr</code> 的向量 <code>(dx1, dy1)</code> 与 <code>curr</code> 到 <code>next</code> 的向量 <code>(dx2, dy2)</code> 的叉积不为零，即 <code>dx1 * dy2 != dy1 * dx2</code>，则说明这两个向量不共线，即 <code>curr</code> 点是一个拐点。如果叉积为零，则表示这三个点共线，<code>curr</code> 点不是拐点。</p> 
+<h2><a id="C_73"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 判断当前点是否为拐点</span>
+bool <span class="token function">isTurningPoint</span><span class="token punctuation">(</span><span class="token keyword">const</span> pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> prev<span class="token punctuation">,</span> <span class="token keyword">const</span> pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> curr<span class="token punctuation">,</span> <span class="token keyword">const</span> pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> next<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 计算向量</span>
+    <span class="token keyword">int</span> dx1 <span class="token operator">=</span> curr<span class="token punctuation">.</span>first <span class="token operator">-</span> prev<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dy1 <span class="token operator">=</span> curr<span class="token punctuation">.</span>second <span class="token operator">-</span> prev<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dx2 <span class="token operator">=</span> next<span class="token punctuation">.</span>first <span class="token operator">-</span> curr<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dy2 <span class="token operator">=</span> next<span class="token punctuation">.</span>second <span class="token operator">-</span> curr<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果两个向量不在同一直线上，则为拐点</span>
+    <span class="token keyword">return</span> dx1 <span class="token operator">*</span> dy2 <span class="token operator">!=</span> dy1 <span class="token operator">*</span> dx2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 简化路径</span>
+vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">simplifyPath</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> points<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> result<span class="token punctuation">;</span>
+    <span class="token comment">// 至少需要两个点才能形成路径</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>points<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">return</span> points<span class="token punctuation">;</span>
+
+    <span class="token comment">// 添加起点</span>
+    result<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有点，找出拐点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> points<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isTurningPoint</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 添加终点</span>
+    result<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>points<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> points<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> x<span class="token punctuation">,</span> y<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取输入的坐标点</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>cin <span class="token operator">&gt;&gt;</span> x <span class="token operator">&gt;&gt;</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        points<span class="token punctuation">.</span><span class="token function">emplace_back</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 简化路径</span>
+    vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> simplifiedPoints <span class="token operator">=</span> <span class="token function">simplifyPath</span><span class="token punctuation">(</span>points<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出简化后的路径</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> simplifiedPoints<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> simplifiedPoints<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>first <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> simplifiedPoints<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> simplifiedPoints<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_138"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">SimplifyPath</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取输入的坐标点</span>
+        <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> points <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">hasNextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> y <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            points<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span>x<span class="token punctuation">,</span> y<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 简化路径</span>
+        <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> simplifiedPoints <span class="token operator">=</span> <span class="token function">simplifyPath</span><span class="token punctuation">(</span>points<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出简化后的路径</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> simplifiedPoints<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>simplifiedPoints<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> simplifiedPoints<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> simplifiedPoints<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> <span class="token function">simplifyPath</span><span class="token punctuation">(</span><span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> points<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 至少需要两个点才能形成路径</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>points<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">return</span> points<span class="token punctuation">;</span>
+
+        <span class="token comment">// 添加起点</span>
+        result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>points<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历所有点，找出拐点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> points<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> prev <span class="token operator">=</span> points<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> curr <span class="token operator">=</span> points<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> next <span class="token operator">=</span> points<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果当前点是拐点，则加入结果列表</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isTurningPoint</span><span class="token punctuation">(</span>prev<span class="token punctuation">,</span> curr<span class="token punctuation">,</span> next<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>curr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 添加终点</span>
+        result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>points<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>points<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 判断当前点是否为拐点</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">isTurningPoint</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> prev<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> curr<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> next<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算向量</span>
+        <span class="token keyword">int</span> dx1 <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> prev<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> dy1 <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> prev<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> dx2 <span class="token operator">=</span> next<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> dy2 <span class="token operator">=</span> next<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果两个向量不在同一直线上，则为拐点</span>
+        <span class="token keyword">return</span> dx1 <span class="token operator">*</span> dy2 <span class="token operator">!=</span> dy1 <span class="token operator">*</span> dx2<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_210"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// Node.js</span>
+
+<span class="token comment">// 使用 readline 模块来处理输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 判断当前点是否为拐点</span>
+<span class="token keyword">function</span> <span class="token function">isTurningPoint</span><span class="token punctuation">(</span><span class="token parameter">prev<span class="token punctuation">,</span> curr<span class="token punctuation">,</span> next</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 计算向量</span>
+  <span class="token keyword">const</span> dx1 <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> prev<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> dy1 <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> prev<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> dx2 <span class="token operator">=</span> next<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> dy2 <span class="token operator">=</span> next<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 如果两个向量不在同一直线上，则为拐点</span>
+  <span class="token keyword">return</span> dx1 <span class="token operator">*</span> dy2 <span class="token operator">!==</span> dy1 <span class="token operator">*</span> dx2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 简化路径</span>
+<span class="token keyword">function</span> <span class="token function">simplifyPath</span><span class="token punctuation">(</span><span class="token parameter">points</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 至少需要两个点才能形成路径</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>points<span class="token punctuation">.</span>length <span class="token operator">&lt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">return</span> points<span class="token punctuation">;</span>
+
+  <span class="token comment">// 添加起点</span>
+  <span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token punctuation">[</span>points<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历所有点，找出拐点</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> points<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isTurningPoint</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      result<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 添加终点</span>
+  result<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span>points<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">const</span> points <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> nums <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> nums<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    points<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">[</span>nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> nums<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 简化路径</span>
+  <span class="token keyword">const</span> simplifiedPoints <span class="token operator">=</span> <span class="token function">simplifyPath</span><span class="token punctuation">(</span>points<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出简化后的路径</span>
+  <span class="token keyword">const</span> output <span class="token operator">=</span> simplifiedPoints<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">point</span> <span class="token operator">=&gt;</span> point<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>output<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_276"></a>Python</h2> 
+<pre><code class="prism language-python">
+ 
+<span class="token comment"># 判断当前点是否为拐点</span>
+<span class="token keyword">def</span> <span class="token function">is_turning_point</span><span class="token punctuation">(</span>prev<span class="token punctuation">,</span> curr<span class="token punctuation">,</span> <span class="token builtin">next</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 计算向量</span>
+    dx1 <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> prev<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    dy1 <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> prev<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+    dx2 <span class="token operator">=</span> <span class="token builtin">next</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    dy2 <span class="token operator">=</span> <span class="token builtin">next</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 如果两个向量不在同一直线上，则为拐点</span>
+    <span class="token keyword">return</span> dx1 <span class="token operator">*</span> dy2 <span class="token operator">!=</span> dy1 <span class="token operator">*</span> dx2
+
+<span class="token comment"># 简化路径</span>
+<span class="token keyword">def</span> <span class="token function">simplify_path</span><span class="token punctuation">(</span>points<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 至少需要两个点才能形成路径</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>points<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">2</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> points
+
+    <span class="token comment"># 添加起点</span>
+    result <span class="token operator">=</span> <span class="token punctuation">[</span>points<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 遍历所有点，找出拐点</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>points<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> is_turning_point<span class="token punctuation">(</span>points<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            result<span class="token punctuation">.</span>append<span class="token punctuation">(</span>points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 添加终点</span>
+    result<span class="token punctuation">.</span>append<span class="token punctuation">(</span>points<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> result
+
+
+ 
+<span class="token comment"># 读取输入的坐标点</span>
+points <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+line <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    points<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>line<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>line<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+ 
+    <span class="token keyword">pass</span>
+
+<span class="token comment"># 简化路径</span>
+simplified_points <span class="token operator">=</span> simplify_path<span class="token punctuation">(</span>points<span class="token punctuation">)</span>
+
+<span class="token comment"># 输出简化后的路径</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>x<span class="token punctuation">}</span></span><span class="token string"> </span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>y<span class="token punctuation">}</span></span><span class="token string">"</span></span> <span class="token keyword">for</span> x<span class="token punctuation">,</span> y <span class="token keyword">in</span> simplified_points<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_329"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 定义坐标点的结构</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> x<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> y<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> Point<span class="token punctuation">;</span>
+
+<span class="token comment">// 判断当前点是否为拐点</span>
+<span class="token keyword">int</span> <span class="token function">isTurningPoint</span><span class="token punctuation">(</span>Point prev<span class="token punctuation">,</span> Point curr<span class="token punctuation">,</span> Point next<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 计算向量</span>
+    <span class="token keyword">int</span> dx1 <span class="token operator">=</span> curr<span class="token punctuation">.</span>x <span class="token operator">-</span> prev<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dy1 <span class="token operator">=</span> curr<span class="token punctuation">.</span>y <span class="token operator">-</span> prev<span class="token punctuation">.</span>y<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dx2 <span class="token operator">=</span> next<span class="token punctuation">.</span>x <span class="token operator">-</span> curr<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dy2 <span class="token operator">=</span> next<span class="token punctuation">.</span>y <span class="token operator">-</span> curr<span class="token punctuation">.</span>y<span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果两个向量不在同一直线上，则为拐点</span>
+    <span class="token keyword">return</span> dx1 <span class="token operator">*</span> dy2 <span class="token operator">!=</span> dy1 <span class="token operator">*</span> dx2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Point points<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 假设最多有1000个点</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 点的数量</span>
+    <span class="token keyword">int</span> x<span class="token punctuation">,</span> y<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取输入的坐标点</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>x<span class="token punctuation">,</span> <span class="token operator">&amp;</span>y<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        points<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">.</span>x <span class="token operator">=</span> x<span class="token punctuation">;</span>
+        points<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">.</span>y <span class="token operator">=</span> y<span class="token punctuation">;</span>
+        n<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 至少需要两个点才能形成路径</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">&lt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出起点</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>x<span class="token punctuation">,</span> points<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有点，找出并输出拐点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isTurningPoint</span><span class="token punctuation">(</span>points<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">" %d %d"</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>x<span class="token punctuation">,</span> points<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出终点</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">" %d %d\n"</span><span class="token punctuation">,</span> points<span class="token punctuation">[</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>x<span class="token punctuation">,</span> points<span class="token punctuation">[</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_385"></a>完整用例</h2> 
+<h3><a id="1_387"></a>用例1</h3> 
+<pre><code class="prism language-input1">0 0 0 1 0 2 0 3
+</code></pre> 
+<h3><a id="2_393"></a>用例2</h3> 
+<pre><code class="prism language-input2">0 0 1 0 2 0 3 0
+</code></pre> 
+<h3><a id="3_399"></a>用例3</h3> 
+<pre><code class="prism language-input3">0 0 1 1 2 2 3 3
+</code></pre> 
+<h3><a id="4_405"></a>用例4</h3> 
+<pre><code class="prism language-input4">0 0 0 1 1 1 1 2
+</code></pre> 
+<h3><a id="5_411"></a>用例5</h3> 
+<pre><code class="prism language-input5">0 0 1 0 1 1 2 1
+</code></pre> 
+<h3><a id="6_417"></a>用例6</h3> 
+<pre><code class="prism language-input6">0 0 1 1 1 2 2 3
+</code></pre> 
+<h3><a id="7_423"></a>用例7</h3> 
+<pre><code class="prism language-input7">0 0 1 1 2 1 3 2
+</code></pre> 
+<h3><a id="8_429"></a>用例8</h3> 
+<pre><code class="prism language-input8">0 0 1 1 2 2 2 3 3 3
+</code></pre> 
+<h3><a id="9_435"></a>用例9</h3> 
+<pre><code class="prism language-input9">0 0 0 2 2 2 2 0
+</code></pre> 
+<h3><a id="10_441"></a>用例10</h3> 
+<pre><code class="prism language-input10">0 0 2 2 3 1 5 3
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_21" rel="nofollow">输入描述</a></li><li><a href="#_31" rel="nofollow">输出描述</a></li><li><a href="#_39" rel="nofollow">用例</a></li><li><a href="#_57" rel="nofollow">解题思路</a></li><li><a href="#C_73" rel="nofollow">C++</a></li><li><a href="#Java_138" rel="nofollow">Java</a></li><li><a href="#javaScript_210" rel="nofollow">javaScript</a></li><li><a href="#Python_276" rel="nofollow">Python</a></li><li><a href="#C_329" rel="nofollow">C语言</a></li><li><a href="#_385" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_387" rel="nofollow">用例1</a></li><li><a href="#2_393" rel="nofollow">用例2</a></li><li><a href="#3_399" rel="nofollow">用例3</a></li><li><a href="#4_405" rel="nofollow">用例4</a></li><li><a href="#5_411" rel="nofollow">用例5</a></li><li><a href="#6_417" rel="nofollow">用例6</a></li><li><a href="#7_423" rel="nofollow">用例7</a></li><li><a href="#8_429" rel="nofollow">用例8</a></li><li><a href="#9_435" rel="nofollow">用例9</a></li><li><a href="#10_441" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/4e0bdaae7d2f6d0ea4f3bc9efb82ccb3.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

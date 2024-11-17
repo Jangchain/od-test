@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>幼儿园组织活动，老师布置了一个任务：</p> 
+<p>每个小朋友去了解与自己同一个小区的小朋友还有几个。</p> 
+<p>我们将这些数量汇总到数组 garden 中。</p> 
+<p>请根据这些小朋友给出的信息，计算最少有多少个小朋友？</p> 
+<h2><a id="_14"></a>输入描述</h2> 
+<p>输入：garden[] = {2, 2, 3}</p> 
+<ul><li>garden 数组长度最大为 999</li><li>每个小区的小朋友数量最多 1000 人，也就是 garden[i] 的范围为 [0, 999]</li></ul> 
+<h2><a id="_21"></a>输出描述</h2> 
+<p>输出：7</p> 
+<h2><a id="_25"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>2 2 3
+</code></pre> 
+<p>输出</p> 
+<pre><code>7
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>第一个小朋友反馈有两个小朋友和自己同一小区，即此小区有3个小朋友。<br> 第二个小朋友反馈有两个小朋友和自己同一小区，即此小区有3个小朋友。<br> 这两个小朋友，可能是同一小区的，且此小区的小朋友只有3个人。<br> 第三个小区反馈还有3个小朋友与自己同一小区，则这些小朋友只能是另外一个小区的。这个小区有4个小朋友。</p> 
+</blockquote> 
+<h2><a id="_46"></a>解题思路</h2> 
+<p>题目要求计算的是班级小朋友至少来自几个小区，但实际上根据上面的用例看：本题的输出其实是至少的小朋友数量</p> 
+<p>如果两个小朋友反馈的同小区人数相同，我们可以假设他们来自同一个小区，并且将他们的小区视为一个整体进行计算。这样，我们可以通过合并相同反馈的小朋友来减少总的小区数，从而得出至少有多少小朋友的估计。</p> 
+<p>具体来说，如果有多个小朋友反馈了相同的同小区人数，我们可以将他们分成若干组，每组包含 y+1 个小朋友（因为每个小朋友包括他自己在内的小区总人数是 y+1）。</p> 
+<p>如果小朋友的数量不是 y+1 的整数倍，那么最后一组将包含不足 y+1 的小朋友，但仍然被视为一个独立的小区。因此，我们可以通过向上取整 x / (y+1) 来计算至少的小区数，其中 x 是反馈相同人数 y 的小朋友数量。</p> 
+<p>这种方法的关键在于，我们尽可能地将反馈相同的小朋友合并为同一个小区，以最小化小区的数量。通过这种策略，我们可以得出一个保守估计，即至少有多少小朋友参与了活动。</p> 
+<ol><li> <p>为了解释这个过程，我们可以使用一个更复杂的用例：</p> <p>假设我们有以下的报告情况：</p> 
+  <ul><li>有8个小朋友报告说有2个其他孩子和他们同一个小区</li><li>有5个小朋友报告说有4个其他孩子和他们同一个小区</li><li>有2个小朋友报告说有6个其他孩子和他们同一个小区</li></ul> <p>我们的目标是计算至少有多少个小区。</p> <p>对于第一种情况 ：</p> 
+  <ul><li>每个报告实际上代表 <code>y + 1 = 3</code> 个孩子。</li><li>有8个报告，所以我们有 <code>8 * 3 = 24</code> 个孩子。</li><li>这24个孩子至少来自 <code>ceil(8 / 3) = 3</code> 个小区，因为每3个孩子至少来自1个小区。</li></ul> <p>对于第二种情况 ：</p> 
+  <ul><li>每个报告实际上代表 <code>y + 1 = 5</code> 个孩子。</li><li>有5个报告，所以我们有 <code>5 * 5 = 25</code> 个孩子。</li><li>这25个孩子至少来自 <code>ceil(5 / 5) = 1</code> 个小区，因为每5个孩子至少来自1个小区。</li></ul> <p>对于第三种情况 ：</p> 
+  <ul><li>每个报告实际上代表 <code>y + 1 = 7</code> 个孩子。</li><li>有2个报告，所以我们有 <code>2 * 7 = 14</code> 个孩子。</li><li>这14个孩子至少来自 <code>ceil(2 / 7) = 1</code> 个小区，因为每7个孩子至少来自1个小区。</li></ul> <p>将三种情况相加，我们得到至少有 <code>3 + 1 + 1 = 5</code> 个小区。</p> </li></ol> 
+<h2><a id="C_98"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cmath&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 使用字符串流读取一行输入并按空格分割</span>
+   string line<span class="token punctuation">;</span>
+   <span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   string child<span class="token punctuation">;</span>
+    <span class="token comment">// 创建一个vector用于存储每个小区的孩子数量</span>
+   vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> counts<span class="token punctuation">;</span>
+    <span class="token comment">// 初始化结果变量为0，用于存储最终的小区数量</span>
+    <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历输入的孩子数量</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> child<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将字符串转换为整数表示孩子数量</span>
+        <span class="token keyword">int</span> children <span class="token operator">=</span><span class="token function">stoi</span><span class="token punctuation">(</span>child<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 确保counts向量的长度足够</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>children <span class="token operator">&gt;=</span> counts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果不够，则在counts向量末尾添加0</span>
+            counts<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 在对应的索引位置增加孩子数量</span>
+        counts<span class="token punctuation">[</span>children<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历counts向量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> counts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前索引位置的值大于0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>counts<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算每个小区的实际大小（孩子数量加上自己）</span>
+            <span class="token keyword">int</span> districtSize <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token comment">// 使用ceil进行向上取整计算至少需要的小区数量，并累加到结果变量中</span>
+            result <span class="token operator">+=</span><span class="token function">ceil</span><span class="token punctuation">(</span>static_cast<span class="token operator">&lt;</span><span class="token keyword">double</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>counts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">/</span> districtSize<span class="token punctuation">)</span> <span class="token operator">*</span> districtSize<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终计算的小区数量</span>
+   cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span>endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_149"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于读取标准输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入并按空格分割</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> input <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个ArrayList用于存储每个小区的孩子数量</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> counts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化结果变量为0，用于存储最终的小区数量</span>
+        <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历输入的孩子数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> child <span class="token operator">:</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将字符串转换为整数表示孩子数量</span>
+            <span class="token keyword">int</span> children <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>child<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 确保counts列表的长度足够</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>children <span class="token operator">&gt;=</span> counts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果不够，则在counts列表末尾添加0</span>
+                counts<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 在对应的索引位置增加孩子数量</span>
+            counts<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>children<span class="token punctuation">,</span> counts<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>children<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 遍历counts列表</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> counts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前索引位置的值大于0</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>counts<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算每个小区的实际大小（孩子数量加上自己）</span>
+                <span class="token keyword">int</span> districtSize <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token comment">// 使用Math.ceil进行向上取整计算至少需要的小区数量，并累加到结果变量中</span>
+                result <span class="token operator">+=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">ceil</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span>counts<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">/</span> districtSize<span class="token punctuation">)</span> <span class="token operator">*</span> districtSize<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最终计算的小区数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_195"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取一行输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 按空格分割输入的字符串</span>
+  <span class="token keyword">const</span> input <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 创建一个数组用于存储每个小区的孩子数量</span>
+  <span class="token keyword">const</span> counts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化结果变量为0，用于存储最终的小区数量</span>
+  <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历输入的孩子数量</span>
+  input<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">child</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将字符串转换为整数表示孩子数量</span>
+    <span class="token keyword">const</span> children <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>child<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 确保counts数组的长度足够</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>children <span class="token operator">&gt;=</span> counts<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 如果不够，则在counts数组末尾添加0</span>
+      counts<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 在对应的索引位置增加孩子数量</span>
+    counts<span class="token punctuation">[</span>children<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历counts数组</span>
+  counts<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">count<span class="token punctuation">,</span> i</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前索引位置的值大于0</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 计算每个小区的实际大小（孩子数量加上自己）</span>
+      <span class="token keyword">const</span> districtSize <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+      <span class="token comment">// 使用Math.ceil进行向上取整计算至少需要的小区数量，并累加到结果变量中</span>
+      result <span class="token operator">+=</span> Math<span class="token punctuation">.</span><span class="token function">ceil</span><span class="token punctuation">(</span>count <span class="token operator">/</span> districtSize<span class="token punctuation">)</span> <span class="token operator">*</span> districtSize<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出最终计算的小区数量</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 关闭readline接口实例</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_248"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 读取一行输入并按空格分割</span>
+input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span>
+<span class="token comment"># 创建一个列表用于存储每个小区的孩子数量</span>
+counts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token comment"># 初始化结果变量为0，用于存储最终的小区数量</span>
+result <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 遍历输入的孩子数量</span>
+<span class="token keyword">for</span> child <span class="token keyword">in</span> input_str<span class="token punctuation">:</span>
+    <span class="token comment"># 将字符串转换为整数表示孩子数量</span>
+    children <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>child<span class="token punctuation">)</span>
+    <span class="token comment"># 确保counts列表的长度足够</span>
+    <span class="token keyword">while</span> children <span class="token operator">&gt;=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>counts<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果不够，则在counts列表末尾添加0</span>
+        counts<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token comment"># 在对应的索引位置增加孩子数量</span>
+    counts<span class="token punctuation">[</span>children<span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 遍历counts列表</span>
+<span class="token keyword">for</span> i<span class="token punctuation">,</span> count <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>counts<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果当前索引位置的值大于0</span>
+    <span class="token keyword">if</span> count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># 计算每个小区的实际大小（孩子数量加上自己）</span>
+        districtSize <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span>
+        <span class="token comment"># 使用ceil进行向上取整计算至少需要的小区数量，并累加到结果变量中</span>
+        result <span class="token operator">+=</span> <span class="token operator">-</span><span class="token punctuation">(</span><span class="token operator">-</span>count <span class="token operator">//</span> districtSize<span class="token punctuation">)</span> <span class="token operator">*</span> districtSize
+
+<span class="token comment"># 输出最终计算的小区数量</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_284"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 主函数</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义变量</span>
+    <span class="token keyword">int</span> garden<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储每个小区的孩子数量</span>
+    <span class="token keyword">int</span> counts<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>  <span class="token comment">// 记录每个数量出现的次数</span>
+    <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 存储最终的小区数量</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> i<span class="token punctuation">;</span>  <span class="token comment">// n为数组garden的实际长度，i用于循环</span>
+    <span class="token keyword">int</span> children<span class="token punctuation">;</span>  <span class="token comment">// 临时变量，存储输入的孩子数量</span>
+
+    <span class="token comment">// 读取输入并存入数组garden</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>children<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token constant">EOF</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        garden<span class="token punctuation">[</span>n<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> children<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历garden数组，计算每个数量出现的次数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        children <span class="token operator">=</span> garden<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        
+        counts<span class="token punctuation">[</span>children<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>  <span class="token comment">// 增加对应数量的计数</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历counts数组，计算至少需要的小区数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">1000</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>counts<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算每个小区的实际大小（孩子数量加上自己）</span>
+            <span class="token keyword">int</span> districtSize <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token comment">// 使用ceil进行向上取整计算至少需要的小区数量，并累加到结果变量中</span>
+            result <span class="token operator">+=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>counts<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> districtSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> districtSize<span class="token punctuation">)</span> <span class="token operator">*</span> districtSize<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终计算的小区数量</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_328"></a>完整用例</h2> 
+<h3><a id="1_330"></a>用例1</h3> 
+<pre><code class="prism language-input1">1 1 1
+</code></pre> 
+<h3><a id="2_336"></a>用例2</h3> 
+<pre><code class="prism language-input2">0 0 0
+</code></pre> 
+<h3><a id="3_342"></a>用例3</h3> 
+<pre><code class="prism language-input3">2 2 2
+</code></pre> 
+<h3><a id="4_348"></a>用例4</h3> 
+<pre><code class="prism language-input4">3 3 3 3
+</code></pre> 
+<h3><a id="5_354"></a>用例5</h3> 
+<pre><code class="prism language-input5">1 2 1
+</code></pre> 
+<h3><a id="6_360"></a>用例6</h3> 
+<pre><code class="prism language-input6">4 4 2
+</code></pre> 
+<h3><a id="7_366"></a>用例7</h3> 
+<pre><code class="prism language-input7">3 0 3
+</code></pre> 
+<h3><a id="8_372"></a>用例8</h3> 
+<pre><code class="prism language-input8">1 3 5
+</code></pre> 
+<h3><a id="9_378"></a>用例9</h3> 
+<pre><code class="prism language-input9">7 8 9
+</code></pre> 
+<h3><a id="10_384"></a>用例10</h3> 
+<pre><code class="prism language-input10">0 1 0
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_21" rel="nofollow">输出描述</a></li><li><a href="#_25" rel="nofollow">用例</a></li><li><a href="#_46" rel="nofollow">解题思路</a></li><li><a href="#C_98" rel="nofollow">C++</a></li><li><a href="#Java_149" rel="nofollow">Java</a></li><li><a href="#javaScript_195" rel="nofollow">javaScript</a></li><li><a href="#Python_248" rel="nofollow">Python</a></li><li><a href="#C_284" rel="nofollow">C语言</a></li><li><a href="#_328" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_330" rel="nofollow">用例1</a></li><li><a href="#2_336" rel="nofollow">用例2</a></li><li><a href="#3_342" rel="nofollow">用例3</a></li><li><a href="#4_348" rel="nofollow">用例4</a></li><li><a href="#5_354" rel="nofollow">用例5</a></li><li><a href="#6_360" rel="nofollow">用例6</a></li><li><a href="#7_366" rel="nofollow">用例7</a></li><li><a href="#8_372" rel="nofollow">用例8</a></li><li><a href="#9_378" rel="nofollow">用例9</a></li><li><a href="#10_384" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/d24f1d7cf87dd2c38ce7ddb68df2a3b1.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

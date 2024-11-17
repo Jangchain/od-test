@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_0"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>M（1&lt;=M&lt;=20）辆车需要在一条不能超车的单行道到达终点，起点到终点的距离为N（1&lt;=N&lt;=400）。速度快的车追上前车后，只能以前车的速度继续行驶。求最后一车辆到达目的地花费的时间。</p> 
+<p>注：每辆车固定间隔一小时出发，比如第一辆车0时出发，第二辆车1时出发，以此类推</p> 
+<h2><a id="_11"></a>输入描述</h2> 
+<p>第一行两个数字：M N分别代表车辆数和到终点的距离，以空格分隔。</p> 
+<p>接下来M行，每行1个数字S，代表每辆车的速度。0&lt;S&lt;30。</p> 
+<h2><a id="_17"></a>输出描述</h2> 
+<p>最后一辆车到达目的地花费的时间</p> 
+<h2><a id="_21"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>2 11
+3
+2
+</code></pre> 
+<p>输出</p> 
+<pre><code>5.5
+</code></pre> 
+<h2><a id="_33"></a>解题思路</h2> 
+<p>参考代码注释</p> 
+<h2><a id="_38"></a>！！！</h2> 
+<p>请注意，本题的答案可能是小数。由于题目未指定保留小数点后几位，<strong>我的代码就只根据用例1的格式四舍五入输出1位小数。</strong> 实际考试中，请根据情况以及具体要求调整。</p> 
+<h2><a id="C_40"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iomanip&gt;</span> <span class="token comment">// 包含对输出格式控制的函数</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 获取车辆数M和终点距离N</span>
+    <span class="token keyword">int</span> M<span class="token punctuation">,</span> N<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> M <span class="token operator">&gt;&gt;</span> N<span class="token punctuation">;</span>
+
+    <span class="token comment">// 获取每辆车的速度并存储在vector speeds中</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">speeds</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化arrivalTimes vector，其中存储第一辆车到达目的地的时间</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">double</span><span class="token operator">&gt;</span> <span class="token function">arrivalTimes</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    arrivalTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span> N <span class="token operator">/</span> speeds<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对于剩余的车辆，循环计算每辆车到达目的地的时间</span>
+    <span class="token comment">// 如果当前车辆比前一辆车更晚到达或与前一辆车同时到达，则更新时间并添加到arrivalTimes</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算第index辆车单独行驶到目的地的时间，即终点距离N除以车速speeds[index]</span>
+        <span class="token comment">// 由于车辆是依次出发的，所以还需要加上车辆的出发延迟时间index</span>
+        <span class="token keyword">double</span> estimatedTime <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span> N <span class="token operator">/</span> speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">+</span> index<span class="token punctuation">;</span>
+
+        <span class="token comment">// 比较当前车辆计算出的到达时间estimatedTime和前一辆车的到达时间arrivalTimes[index - 1]</span>
+        <span class="token comment">// 使用max函数确保当前车辆的到达时间不会早于前一辆车</span>
+        <span class="token keyword">double</span> adjustedTime <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>estimatedTime<span class="token punctuation">,</span> arrivalTimes<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        arrivalTimes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> adjustedTime<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最后一辆车到达目的地的时间，但减去M再加1（这是因为车辆从0开始计数，而时间是从1开始计数）</span>
+    cout <span class="token operator">&lt;&lt;</span> fixed <span class="token operator">&lt;&lt;</span> <span class="token function">setprecision</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> arrivalTimes<span class="token punctuation">[</span>M <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> M <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_86"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> inputLine <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取车辆数M和终点距离N</span>
+        <span class="token keyword">int</span> <span class="token class-name">M</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>inputLine<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>inputLine<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 获取每辆车的速度并存储在数组speeds中</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> speeds <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">M</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> <span class="token class-name">M</span><span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化arrivalTimes数组，其中存储第一辆车到达目的地的时间</span>
+        <span class="token keyword">double</span><span class="token punctuation">[</span><span class="token punctuation">]</span> arrivalTimes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">double</span><span class="token punctuation">[</span><span class="token class-name">M</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        arrivalTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span> <span class="token class-name">N</span> <span class="token operator">/</span> speeds<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 对于剩余的车辆，循环计算每辆车到达目的地的时间</span>
+        <span class="token comment">// 如果当前车辆比前一辆车更晚到达或与前一辆车同时到达，则更新时间并添加到arrivalTimes</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> <span class="token class-name">M</span><span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">double</span> estimatedTime <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span> <span class="token class-name">N</span> <span class="token operator">/</span> speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">+</span> index<span class="token punctuation">;</span>
+            <span class="token keyword">double</span> adjustedTime <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>estimatedTime<span class="token punctuation">,</span> arrivalTimes<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            arrivalTimes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> adjustedTime<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最后一辆车到达目的地的时间，但减去M再加1（这是因为车辆从0开始计数，而时间是从1开始计数）</span>
+        <span class="token comment">// 使用printf方法输出一位小数，四舍五入</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%.1f\n"</span><span class="token punctuation">,</span> arrivalTimes<span class="token punctuation">[</span><span class="token class-name">M</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token class-name">M</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_124"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 解析输入数据</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span><span class="token constant">M</span><span class="token punctuation">,</span> <span class="token constant">N</span><span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  <span class="token comment">// 获取每辆车的速度并存储在数组speeds中</span>
+  <span class="token keyword">const</span> speeds <span class="token operator">=</span> lines<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token constant">M</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化arrivalTimes数组，其中存储第一辆车到达目的地的时间</span>
+  <span class="token keyword">const</span> arrivalTimes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token constant">M</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  arrivalTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token constant">N</span> <span class="token operator">/</span> speeds<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 对于剩余的车辆，循环计算每辆车到达目的地的时间</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> index <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> <span class="token constant">M</span><span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 计算第index辆车单独行驶到目的地的时间</span>
+    <span class="token keyword">const</span> estimatedTime <span class="token operator">=</span> <span class="token constant">N</span> <span class="token operator">/</span> speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">+</span> index<span class="token punctuation">;</span>
+
+    <span class="token comment">// 比较当前车辆计算出的到达时间和前一辆车的到达时间</span>
+    <span class="token keyword">const</span> adjustedTime <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>estimatedTime<span class="token punctuation">,</span> arrivalTimes<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    arrivalTimes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> adjustedTime<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出最后一辆车到达目的地的时间，减去M再加1</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token punctuation">(</span>arrivalTimes<span class="token punctuation">[</span><span class="token constant">M</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token constant">M</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toFixed</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_164"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入必要的库</span>
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取输入：车辆数M和终点距离N</span>
+    M<span class="token punctuation">,</span> N <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 获取每辆车的速度并存储在列表speeds中</span>
+    speeds <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 初始化arrivalTimes列表，其中存储第一辆车到达目的地的时间</span>
+    arrivalTimes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> M
+    arrivalTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> N <span class="token operator">/</span> speeds<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 对于剩余的车辆，计算每辆车到达目的地的时间</span>
+    <span class="token keyword">for</span> index <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> M<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 计算第index辆车单独行驶到目的地的时间</span>
+        estimatedTime <span class="token operator">=</span> N <span class="token operator">/</span> speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">+</span> index
+
+        <span class="token comment"># 比较当前车辆计算出的到达时间和前一辆车的到达时间</span>
+        adjustedTime <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>estimatedTime<span class="token punctuation">,</span> arrivalTimes<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        arrivalTimes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> adjustedTime
+
+    <span class="token comment"># 输出最后一辆车到达目的地的时间，减去M再加1</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>arrivalTimes<span class="token punctuation">[</span>M <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> M <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">:</span><span class="token format-spec">.1f</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_199"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> M<span class="token punctuation">,</span> N<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取输入：车辆数M和终点距离N</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>M<span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 获取每辆车的速度并存储在数组speeds中</span>
+    <span class="token keyword">int</span> speeds<span class="token punctuation">[</span>M<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化arrivalTimes数组，其中存储第一辆车到达目的地的时间</span>
+    <span class="token keyword">double</span> arrivalTimes<span class="token punctuation">[</span>M<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    arrivalTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span> N <span class="token operator">/</span> speeds<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对于剩余的车辆，计算每辆车到达目的地的时间</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> index <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> index<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算第index辆车单独行驶到目的地的时间</span>
+        <span class="token keyword">double</span> estimatedTime <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span> N <span class="token operator">/</span> speeds<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">+</span> index<span class="token punctuation">;</span>
+
+        <span class="token comment">// 比较当前车辆计算出的到达时间和前一辆车的到达时间</span>
+        <span class="token keyword">double</span> adjustedTime <span class="token operator">=</span> estimatedTime <span class="token operator">&gt;</span> arrivalTimes<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">?</span> estimatedTime <span class="token operator">:</span> arrivalTimes<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        arrivalTimes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> adjustedTime<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最后一辆车到达目的地的时间，减去M再加1</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%.1f\n"</span><span class="token punctuation">,</span> arrivalTimes<span class="token punctuation">[</span>M <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> M <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/c5a74cc06a78a9908446a89ec6a92097.png" alt="fengmian"></p> 
+<h2><a id="_238"></a>完整用例</h2> 
+<h3><a id="1_240"></a>用例1</h3> 
+<pre><code class="prism language-input1">3 100
+10
+10
+10
+</code></pre> 
+<h3><a id="2_249"></a>用例2</h3> 
+<pre><code class="prism language-input2">4 120
+5
+10
+15
+20
+</code></pre> 
+<h3><a id="3_259"></a>用例3</h3> 
+<pre><code class="prism language-input3">4 120
+20
+15
+10
+5
+</code></pre> 
+<h3><a id="4_269"></a>用例4</h3> 
+<pre><code class="prism language-input4">5 400
+1
+1
+1
+1
+1
+</code></pre> 
+<h3><a id="5_280"></a>用例5</h3> 
+<pre><code class="prism language-input5">5 400
+29
+29
+29
+29
+29
+</code></pre> 
+<h3><a id="6_291"></a>用例6</h3> 
+<pre><code class="prism language-input6">5 200
+5
+20
+10
+15
+25
+</code></pre> 
+<h3><a id="7_302"></a>用例7</h3> 
+<pre><code class="prism language-input7">10 10
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</code></pre> 
+<h3><a id="8_318"></a>用例8</h3> 
+<pre><code class="prism language-input8">3 90
+2
+3
+30
+</code></pre> 
+<h3><a id="9_327"></a>用例9</h3> 
+<pre><code class="prism language-input9">4 80
+8
+7
+6
+5
+</code></pre> 
+<h3><a id="10_337"></a>用例10</h3> 
+<pre><code class="prism language-input10">9 10
+8
+18
+9
+12
+27
+17
+9
+25
+27
+</code></pre>
+                </div>
+</body>
+</html>

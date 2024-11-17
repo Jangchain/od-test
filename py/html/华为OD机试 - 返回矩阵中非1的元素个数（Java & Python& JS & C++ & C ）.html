@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>存在一个m*n的二维数组，其成员取值范围为0，1，2。</p> 
+<p>其中值为1的元素具备同化特性，每经过1S，将上下左右值为0的元素同化为1。</p> 
+<p>而值为2的元素，免疫同化。</p> 
+<p>将数组所有成员随机初始化为0或2，再将矩阵的[0, 0]元素修改成1，在经过足够长的时间后求矩阵中有多少个元素是0或2（即0和2数量之和）。</p> 
+<h2><a id="_15"></a>输入描述</h2> 
+<p>输入的前两个数字是矩阵大小。后面是数字矩阵内容。</p> 
+<h2><a id="_20"></a>输出描述</h2> 
+<p>返回矩阵中非1的元素个数。</p> 
+<h2><a id="1_24"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>4 4
+0 0 0 0
+0 2 2 2
+0 2 0 0
+0 2 0 0
+</code></pre> 
+<p>输出</p> 
+<pre><code>4 4
+0 0 0 0
+0 2 2 2
+0 2 0 0
+0 2 0 0
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>输入数字前两个数字是矩阵大小。后面的数字是矩阵内容。</p> 
+ <p>起始位置(0,0)被修改为1后，最终只能同化矩阵为：</p> 
+ <p>1 1 1 1</p> 
+ <p>1 2 2 2</p> 
+ <p>1 2 0 0</p> 
+ <p>1 2 0 0</p> 
+ <p>所以矩阵中非1的元素个数为9</p> 
+</blockquote> 
+<h2><a id="_67"></a>解题思路</h2> 
+<p>题目的要求是模拟一个在二维数组中进行的“同化”过程。</p> 
+<ol><li> <p><strong>二维数组的初始化</strong>：</p> 
+  <ul><li>给定一个大小为 <span class="katex--inline"><span class="katex"><span class="katex-mathml"> 
+        
+         
+          
+          
+            m 
+           
+          
+            × 
+           
+          
+            n 
+           
+          
+         
+           m \times n 
+          
+         
+       </span><span class="katex-html"><span class="base"><span class="strut" style="height: 0.6667em; vertical-align: -0.0833em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right: 0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.2222em;"></span></span><span class="base"><span class="strut" style="height: 0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span></span> 的二维数组，每个元素的取值范围为 <code>0</code>、<code>1</code> 或 <code>2</code>。</li><li>值为 <code>1</code> 的元素表示同化源，会将相邻的 <code>0</code> 元素同化为 <code>1</code>。</li><li>值为 <code>2</code> 的元素对同化免疫，无法被同化。</li></ul> </li><li> <p><strong>同化过程</strong>：</p> 
+  <ul><li>从矩阵的左上角元素 <code>[0, 0]</code> 开始，将其设为 <code>1</code>，作为初始同化源。</li><li>在接下来的每秒钟内，所有为 <code>1</code> 的元素会尝试同化它的上、下、左、右相邻的 <code>0</code> 元素，将其变为 <code>1</code>。</li><li><code>2</code> 元素则不会被同化，也不会对周围元素产生影响。</li></ul> </li><li> <p><strong>目标</strong>：</p> 
+  <ul><li>经过足够长时间的同化过程后，矩阵中会有一部分元素被同化成 <code>1</code>，无法被同化的 <code>0</code> 和 <code>2</code> 元素将保持原状。</li><li>最后，计算矩阵中非 <code>1</code> 元素的个数（即 <code>0</code> 和 <code>2</code> 的数量）。</li></ul> </li></ol> 
+<h2><a id="Java_90"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">MatrixAssimilationDFS</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输入矩阵大小</span>
+    <span class="token keyword">int</span> rows <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cols <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建并初始化矩阵</span>
+    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>rows<span class="token punctuation">]</span><span class="token punctuation">[</span>cols<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> cols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 使用 DFS 从 (0, 0) 开始同化区域</span>
+    matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将起始点设为 1</span>
+    <span class="token keyword">int</span> assimilatedCount <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算非 1 元素的个数</span>
+    <span class="token keyword">int</span> nonAssimilatedCount <span class="token operator">=</span> rows <span class="token operator">*</span> cols <span class="token operator">-</span> assimilatedCount<span class="token punctuation">;</span>
+    <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>nonAssimilatedCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// DFS 方法</span>
+  <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> rows<span class="token punctuation">,</span> <span class="token keyword">int</span> cols<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 当前坐标已被同化为 1</span>
+
+    <span class="token comment">// 定义四个方向偏移量</span>
+    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> directions <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> direction <span class="token operator">:</span> directions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">int</span> newX <span class="token operator">=</span> x <span class="token operator">+</span> direction<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">int</span> newY <span class="token operator">=</span> y <span class="token operator">+</span> direction<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 检查新坐标是否在范围内并且值为 0</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isValid</span><span class="token punctuation">(</span>newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        matrix<span class="token punctuation">[</span>newX<span class="token punctuation">]</span><span class="token punctuation">[</span>newY<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 同化新坐标</span>
+        count <span class="token operator">+=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归同化相连区域</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 辅助方法：检查坐标是否合法且矩阵值为 0</span>
+  <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> rows<span class="token punctuation">,</span> <span class="token keyword">int</span> cols<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> x <span class="token generics"><span class="token punctuation">&lt;</span> rows <span class="token operator">&amp;</span><span class="token operator">&amp;</span> y <span class="token punctuation">&gt;</span></span><span class="token operator">=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> cols <span class="token operator">&amp;&amp;</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_147"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 检查坐标是否合法且矩阵值为 0</span>
+<span class="token keyword">def</span> <span class="token function">is_valid</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> x <span class="token operator">&lt;</span> rows <span class="token keyword">and</span> <span class="token number">0</span> <span class="token operator">&lt;=</span> y <span class="token operator">&lt;</span> cols <span class="token keyword">and</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span>
+
+<span class="token comment"># DFS 方法</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    count <span class="token operator">=</span> <span class="token number">1</span>  <span class="token comment"># 当前坐标已被同化为 1</span>
+
+    <span class="token comment"># 定义四个方向偏移量</span>
+    directions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 遍历四个方向</span>
+    <span class="token keyword">for</span> dx<span class="token punctuation">,</span> dy <span class="token keyword">in</span> directions<span class="token punctuation">:</span>
+        new_x<span class="token punctuation">,</span> new_y <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">,</span> y <span class="token operator">+</span> dy
+
+        <span class="token comment"># 检查新坐标是否在范围内并且值为 0</span>
+        <span class="token keyword">if</span> is_valid<span class="token punctuation">(</span>new_x<span class="token punctuation">,</span> new_y<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            matrix<span class="token punctuation">[</span>new_x<span class="token punctuation">]</span><span class="token punctuation">[</span>new_y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>  <span class="token comment"># 同化新坐标</span>
+            count <span class="token operator">+=</span> dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> new_x<span class="token punctuation">,</span> new_y<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span>  <span class="token comment"># 递归同化相连区域</span>
+
+    <span class="token keyword">return</span> count
+
+<span class="token comment"># 主函数</span>
+rows<span class="token punctuation">,</span> cols <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 创建并初始化矩阵</span>
+matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>rows<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    matrix<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>  <span class="token comment"># 将起始点设为 1</span>
+assimilated_count <span class="token operator">=</span> dfs<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span>
+
+<span class="token comment"># 计算非 1 元素的个数</span>
+non_assimilated_count <span class="token operator">=</span> rows <span class="token operator">*</span> cols <span class="token operator">-</span> assimilated_count
+<span class="token keyword">print</span><span class="token punctuation">(</span>non_assimilated_count<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="JavaScript_187"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> m <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> n <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 检查坐标是否合法且矩阵值为 0</span>
+<span class="token keyword">function</span> <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">return</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> x <span class="token operator">&lt;</span> rows <span class="token operator">&amp;&amp;</span> y <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> cols <span class="token operator">&amp;&amp;</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// DFS 方法</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">matrix<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">let</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 当前坐标已被同化为 1</span>
+
+  <span class="token comment">// 定义四个方向偏移量</span>
+  <span class="token keyword">const</span> directions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历四个方向</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token punctuation">[</span>dx<span class="token punctuation">,</span> dy<span class="token punctuation">]</span> <span class="token keyword">of</span> directions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> newX <span class="token operator">=</span> x <span class="token operator">+</span> dx<span class="token punctuation">;</span>
+    <span class="token keyword">const</span> newY <span class="token operator">=</span> y <span class="token operator">+</span> dy<span class="token punctuation">;</span>
+
+    <span class="token comment">// 检查新坐标是否在范围内并且值为 0</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isValid</span><span class="token punctuation">(</span>newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      matrix<span class="token punctuation">[</span>newX<span class="token punctuation">]</span><span class="token punctuation">[</span>newY<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 同化新坐标</span>
+      count <span class="token operator">+=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归同化相连区域</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 逐行读取输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>m <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 第一行获取矩阵大小</span>
+    <span class="token punctuation">[</span>m<span class="token punctuation">,</span> n<span class="token punctuation">]</span> <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">.</span>length <span class="token operator">&lt;</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 后续行填充矩阵</span>
+    matrix<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">.</span>length <span class="token operator">===</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 当矩阵填充完毕时，开始处理数据</span>
+      matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将起始点设为 1</span>
+      <span class="token keyword">const</span> assimilatedCount <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> m<span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 计算非 1 元素的个数</span>
+      <span class="token keyword">const</span> nonAssimilatedCount <span class="token operator">=</span> m <span class="token operator">*</span> n <span class="token operator">-</span> assimilatedCount<span class="token punctuation">;</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>nonAssimilatedCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 关闭输入流</span>
+      rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="C_250"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 检查坐标是否合法且矩阵值为 0</span>
+bool <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> rows<span class="token punctuation">,</span> <span class="token keyword">int</span> cols<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> matrix<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> x <span class="token operator">&lt;</span> rows <span class="token operator">&amp;&amp;</span> y <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> cols <span class="token operator">&amp;&amp;</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// DFS 方法</span>
+<span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> rows<span class="token punctuation">,</span> <span class="token keyword">int</span> cols<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 当前坐标已被同化为 1</span>
+
+    <span class="token comment">// 定义四个方向偏移量</span>
+    <span class="token keyword">int</span> directions<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历四个方向</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span><span class="token operator">&amp;</span> direction <span class="token operator">:</span> directions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> newX <span class="token operator">=</span> x <span class="token operator">+</span> direction<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> newY <span class="token operator">=</span> y <span class="token operator">+</span> direction<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查新坐标是否在范围内并且值为 0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isValid</span><span class="token punctuation">(</span>newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            matrix<span class="token punctuation">[</span>newX<span class="token punctuation">]</span><span class="token punctuation">[</span>newY<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 同化新坐标</span>
+            count <span class="token operator">+=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归同化相连区域</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">;</span>
+    <span class="token comment">// 输入矩阵大小</span>
+    cin <span class="token operator">&gt;&gt;</span> rows <span class="token operator">&gt;&gt;</span> cols<span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建并初始化矩阵</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">matrix</span><span class="token punctuation">(</span>rows<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>cols<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> cols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cin <span class="token operator">&gt;&gt;</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 使用 DFS 从 (0, 0) 开始同化区域</span>
+    matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将起始点设为 1</span>
+    <span class="token keyword">int</span> assimilatedCount <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算非 1 元素的个数</span>
+    <span class="token keyword">int</span> nonAssimilatedCount <span class="token operator">=</span> rows <span class="token operator">*</span> cols <span class="token operator">-</span> assimilatedCount<span class="token punctuation">;</span>
+    cout <span class="token operator">&lt;&lt;</span> nonAssimilatedCount <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_308"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_SIZE</span> <span class="token expression"><span class="token number">100</span></span></span>
+
+<span class="token comment">// 检查坐标是否合法且矩阵值为 0</span>
+<span class="token keyword">int</span> <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> rows<span class="token punctuation">,</span> <span class="token keyword">int</span> cols<span class="token punctuation">,</span> <span class="token keyword">int</span> matrix<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> x <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> x <span class="token operator">&lt;</span> rows <span class="token operator">&amp;&amp;</span> y <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> cols <span class="token operator">&amp;&amp;</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// DFS 方法</span>
+<span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> matrix<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span> rows<span class="token punctuation">,</span> <span class="token keyword">int</span> cols<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 当前坐标已被同化为 1</span>
+
+    <span class="token comment">// 定义四个方向偏移量</span>
+    <span class="token keyword">int</span> directions<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历四个方向</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> newX <span class="token operator">=</span> x <span class="token operator">+</span> directions<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> newY <span class="token operator">=</span> y <span class="token operator">+</span> directions<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查新坐标是否在范围内并且值为 0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isValid</span><span class="token punctuation">(</span>newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">,</span> matrix<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            matrix<span class="token punctuation">[</span>newX<span class="token punctuation">]</span><span class="token punctuation">[</span>newY<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 同化新坐标</span>
+            count <span class="token operator">+=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> newX<span class="token punctuation">,</span> newY<span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归同化相连区域</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> matrix<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输入矩阵大小</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>rows<span class="token punctuation">,</span> <span class="token operator">&amp;</span>cols<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建并初始化矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> cols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 使用 DFS 从 (0, 0) 开始同化区域</span>
+    matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 将起始点设为 1</span>
+    <span class="token keyword">int</span> assimilatedCount <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算非 1 元素的个数</span>
+    <span class="token keyword">int</span> nonAssimilatedCount <span class="token operator">=</span> rows <span class="token operator">*</span> cols <span class="token operator">-</span> assimilatedCount<span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> nonAssimilatedCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/4fec7c37c086de4a3dec65dec800fb2d.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

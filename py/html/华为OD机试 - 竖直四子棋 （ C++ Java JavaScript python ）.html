@@ -1,0 +1,458 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>竖直四子棋的棋盘是竖立起来的，双方轮流选择棋盘的一列下子，棋子因重力落到棋盘底部或者其他棋子之上，当一列的棋子放满时，无法再在这列上下子。</p> 
+<p>一方的4个棋子横、竖或者斜方向连成一线时获胜。</p> 
+<p>现给定一个棋盘和红蓝对弈双方的下子步骤，判断红方或蓝方是否在某一步获胜。</p> 
+<p>下面以一个6×5的棋盘图示说明落子过程：</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/4c314f124a5ec8d36bac1adaa8ed2400.png" alt="image-20230403215715092"></p> 
+<p>下面给出横、竖和斜方向四子连线的图示：</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/6eb17cdbfa057d8c84799fcbaddbc70b.png" alt="image-20230403215724498"></p> 
+<h4><a id="_17"></a>输入描述</h4> 
+<p>输入为2行，第一行指定棋盘的宽和高，为空格分隔的两个数字；</p> 
+<p>第二行依次间隔指定红蓝双方的落子步骤，第1步为红方的落子，第2步为蓝方的落子，第3步为红方的落子，以此类推。</p> 
+<p>步骤由空格分隔的一组数字表示，每个数字为落子的列的编号（最左边的列编号为1，往右递增）。用例保证数字均为32位有符号数。</p> 
+<h4><a id="_25"></a>输出描述</h4> 
+<p>如果落子过程中红方获胜，输出 N,red ；</p> 
+<p>如果落子过程中蓝方获胜，输出 N,blue ；</p> 
+<p>如果出现非法的落子步骤，输出 N,error。</p> 
+<p>N为落子步骤的序号，从1开始。如果双方都没有获胜，输出 0,draw 。</p> 
+<p>非法落子步骤有两种，一是列的编号超过棋盘范围，二是在一个已经落满子的列上落子。</p> 
+<p>N和单词red、blue、draw、error之间是英文逗号连接。</p> 
+<h4><a id="1_39"></a>用例1</h4> 
+<p>输入</p> 
+<pre><code>5 5
+1 1 2 2 3 3 4 4
+</code></pre> 
+<p>输出</p> 
+<pre><code>7,red
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>在第7步，红方在第4列落下一子后，红方的四个子在第一行连成一线，故红方获胜，输出 7,red。</p> 
+</blockquote> 
+<h4><a id="2_53"></a>用例2</h4> 
+<p>输入</p> 
+<pre><code>5 5
+0 1 2 2 3 3 4 4
+</code></pre> 
+<p>输出</p> 
+<pre><code>1,error
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>第1步的列序号为0，超出有效列编号的范围，故输出 1,error。</p> 
+</blockquote> 
+<h4><a id="C_67"></a>C++</h4> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+bool <span class="token function">isWin</span><span class="token punctuation">(</span><span class="token keyword">int</span> row<span class="token punctuation">,</span> <span class="token keyword">int</span> col<span class="token punctuation">,</span> <span class="token keyword">int</span> player<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> board<span class="token punctuation">,</span> <span class="token keyword">int</span> height<span class="token punctuation">,</span> <span class="token keyword">int</span> width<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> offsets <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> offset <span class="token operator">:</span> offsets<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> newRow <span class="token operator">=</span> row <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> newCol <span class="token operator">=</span> col <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newRow <span class="token operator">&lt;=</span> height <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&lt;=</span> width <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">==</span> player<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span>
+            newRow <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            newCol <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        newRow <span class="token operator">=</span> row <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        newCol <span class="token operator">=</span> col <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newRow <span class="token operator">&lt;=</span> height <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&lt;=</span> width <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">==</span> player<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span>
+            newRow <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            newCol <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">==</span> <span class="token number">4</span><span class="token punctuation">)</span> <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> board<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> width<span class="token punctuation">,</span> height<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> width <span class="token operator">&gt;&gt;</span> height<span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> height <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">row</span><span class="token punctuation">(</span>width <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        board<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> step<span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> steps<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> step<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        steps<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>step<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> steps<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> width<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token string">",error"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>board<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token string">",error"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> player <span class="token operator">=</span> i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> row <span class="token operator">=</span> height<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> col <span class="token operator">=</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            row<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>row <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                cout <span class="token operator">&lt;&lt;</span> i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token string">",error"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+                <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> player<span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">6</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isWin</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> player<span class="token punctuation">,</span> board<span class="token punctuation">,</span> height<span class="token punctuation">,</span> width<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token string">","</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>player <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token string">"red"</span> <span class="token operator">:</span> <span class="token string">"blue"</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> <span class="token string">"0,draw"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="java_160"></a>java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取棋盘的宽和高</span>
+    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> size <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> width <span class="token operator">=</span> size<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> height <span class="token operator">=</span> size<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取落子步骤</span>
+    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> steps <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化棋盘</span>
+    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> board <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>height <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>width <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> steps<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 判断落子列是否合法或已满</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> width <span class="token operator">||</span> board<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token string">",error"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token comment">// 确定当前玩家</span>
+      <span class="token keyword">int</span> player <span class="token operator">=</span> i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 落子</span>
+      <span class="token keyword">int</span> row <span class="token operator">=</span> height<span class="token punctuation">;</span>
+      <span class="token keyword">int</span> col <span class="token operator">=</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>row <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        row<span class="token operator">--</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>row <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token string">",error"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> player<span class="token punctuation">;</span>
+
+      <span class="token comment">// 判断是否获胜</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">6</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isWin</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> player<span class="token punctuation">,</span> board<span class="token punctuation">,</span> height<span class="token punctuation">,</span> width<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> <span class="token punctuation">(</span>player <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token string">"red"</span> <span class="token operator">:</span> <span class="token string">"blue"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"0,draw"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 方向数组，表示横、竖和斜方向的偏移量</span>
+  <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> offsets <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">isWin</span><span class="token punctuation">(</span><span class="token keyword">int</span> row<span class="token punctuation">,</span> <span class="token keyword">int</span> col<span class="token punctuation">,</span> <span class="token keyword">int</span> player<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> board<span class="token punctuation">,</span> <span class="token keyword">int</span> height<span class="token punctuation">,</span> <span class="token keyword">int</span> width<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> offset <span class="token operator">:</span> offsets<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 向一个方向遍历，统计相同颜色棋子的数量</span>
+      <span class="token keyword">int</span> newRow <span class="token operator">=</span> row <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">int</span> newCol <span class="token operator">=</span> col <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newRow <span class="token operator">&lt;=</span> height <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&lt;=</span> width <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">==</span> player<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        count<span class="token operator">++</span><span class="token punctuation">;</span>
+        newRow <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        newCol <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token comment">// 向相反的方向遍历，统计相同颜色棋子的数量</span>
+      newRow <span class="token operator">=</span> row <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      newCol <span class="token operator">=</span> col <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newRow <span class="token operator">&lt;=</span> height <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&lt;=</span> width <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">==</span> player<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        count<span class="token operator">++</span><span class="token punctuation">;</span>
+        newRow <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        newCol <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token comment">// 如果有四个连续的棋子，则获胜</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">==</span> <span class="token number">4</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="python_250"></a>python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">from</span> typing <span class="token keyword">import</span> List
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取棋盘的宽和高</span>
+    size <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    width <span class="token operator">=</span> size<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    height <span class="token operator">=</span> size<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 读取落子步骤</span>
+    steps <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 初始化棋盘</span>
+    board <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>width <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>height <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>steps<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 判断落子列是否合法或已满</span>
+        <span class="token keyword">if</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token keyword">or</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> width <span class="token keyword">or</span> board<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"error"</span><span class="token punctuation">,</span>sep<span class="token operator">=</span><span class="token string">','</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span>
+
+        <span class="token comment"># 确定当前玩家</span>
+        player <span class="token operator">=</span> <span class="token number">1</span> <span class="token keyword">if</span> i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">else</span> <span class="token number">2</span>
+
+        <span class="token comment"># 落子</span>
+        row <span class="token operator">=</span> height
+        col <span class="token operator">=</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token keyword">while</span> row <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token keyword">and</span> board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            row <span class="token operator">-=</span> <span class="token number">1</span>
+        <span class="token keyword">if</span> row <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"error"</span><span class="token punctuation">,</span>sep<span class="token operator">=</span><span class="token string">','</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span>
+        board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> player
+
+        <span class="token comment"># 判断是否获胜</span>
+        <span class="token keyword">if</span> i <span class="token operator">&gt;=</span> <span class="token number">6</span> <span class="token keyword">and</span> isWin<span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> player<span class="token punctuation">,</span> board<span class="token punctuation">,</span> height<span class="token punctuation">,</span> width<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"red"</span> <span class="token keyword">if</span> player <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">else</span> <span class="token string">"blue"</span><span class="token punctuation">,</span>sep<span class="token operator">=</span><span class="token string">','</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"0,draw"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 方向数组，表示横、竖和斜方向的偏移量</span>
+offsets <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+
+<span class="token keyword">def</span> <span class="token function">isWin</span><span class="token punctuation">(</span>row<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> col<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> player<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> board<span class="token punctuation">:</span> List<span class="token punctuation">[</span>List<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> height<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> width<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token builtin">bool</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> offset <span class="token keyword">in</span> offsets<span class="token punctuation">:</span>
+        count <span class="token operator">=</span> <span class="token number">1</span>
+
+        <span class="token comment"># 向一个方向遍历，统计相同颜色棋子的数量</span>
+        newRow <span class="token operator">=</span> row <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        newCol <span class="token operator">=</span> col <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token keyword">while</span> newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token keyword">and</span> newRow <span class="token operator">&lt;=</span> height <span class="token keyword">and</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token keyword">and</span> newCol <span class="token operator">&lt;=</span> width <span class="token keyword">and</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">==</span> player<span class="token punctuation">:</span>
+            count <span class="token operator">+=</span> <span class="token number">1</span>
+            newRow <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+            newCol <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+        <span class="token comment"># 向相反的方向遍历，统计相同颜色棋子的数量</span>
+        newRow <span class="token operator">=</span> row <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        newCol <span class="token operator">=</span> col <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token keyword">while</span> newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token keyword">and</span> newRow <span class="token operator">&lt;=</span> height <span class="token keyword">and</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token keyword">and</span> newCol <span class="token operator">&lt;=</span> width <span class="token keyword">and</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">==</span> player<span class="token punctuation">:</span>
+            count <span class="token operator">+=</span> <span class="token number">1</span>
+            newRow <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+            newCol <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+        <span class="token comment"># 如果有四个连续的棋子，则获胜</span>
+        <span class="token keyword">if</span> count <span class="token operator">==</span> <span class="token number">4</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+
+</code></pre> 
+<h4><a id="javascript_331"></a>javascript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取棋盘的宽和高</span>
+<span class="token keyword">let</span> size<span class="token punctuation">;</span>
+<span class="token comment">// 读取落子步骤</span>
+<span class="token keyword">let</span> steps <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    size <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    steps <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">playGame</span><span class="token punctuation">(</span>size<span class="token punctuation">,</span> steps<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">playGame</span><span class="token punctuation">(</span><span class="token parameter">size<span class="token punctuation">,</span> steps</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> width <span class="token operator">=</span> size<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> height <span class="token operator">=</span> size<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化棋盘</span>
+  <span class="token keyword">const</span> board <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>height <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>width <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> steps<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 判断落子列是否合法或已满</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> width <span class="token operator">||</span> board<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token string">",error"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 确定当前玩家</span>
+    <span class="token keyword">const</span> player <span class="token operator">=</span> i <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">===</span> <span class="token number">0</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 落子</span>
+    <span class="token keyword">let</span> row <span class="token operator">=</span> height<span class="token punctuation">;</span>
+    <span class="token keyword">let</span> col <span class="token operator">=</span> steps<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>row <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      row<span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>row <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token string">",error"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    board<span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span> <span class="token operator">=</span> player<span class="token punctuation">;</span>
+
+    <span class="token comment">// 判断是否获胜</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">6</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isWin</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> player<span class="token punctuation">,</span> board<span class="token punctuation">,</span> height<span class="token punctuation">,</span> width<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> <span class="token punctuation">(</span>player <span class="token operator">===</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token string">"red"</span> <span class="token operator">:</span> <span class="token string">"blue"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"0,draw"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 方向数组，表示横、竖和斜方向的偏移量</span>
+<span class="token keyword">const</span> offsets <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">isWin</span><span class="token punctuation">(</span><span class="token parameter">row<span class="token punctuation">,</span> col<span class="token punctuation">,</span> player<span class="token punctuation">,</span> board<span class="token punctuation">,</span> height<span class="token punctuation">,</span> width</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> offset <span class="token keyword">of</span> offsets<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> count <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 向一个方向遍历，统计相同颜色棋子的数量</span>
+    <span class="token keyword">let</span> newRow <span class="token operator">=</span> row <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> newCol <span class="token operator">=</span> col <span class="token operator">+</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newRow <span class="token operator">&lt;=</span> height <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&lt;=</span> width <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">===</span> player<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      count<span class="token operator">++</span><span class="token punctuation">;</span>
+      newRow <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      newCol <span class="token operator">+=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 向相反的方向遍历，统计相同颜色棋子的数量</span>
+    newRow <span class="token operator">=</span> row <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    newCol <span class="token operator">=</span> col <span class="token operator">-</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>newRow <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newRow <span class="token operator">&lt;=</span> height <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> newCol <span class="token operator">&lt;=</span> width <span class="token operator">&amp;&amp;</span> board<span class="token punctuation">[</span>newRow<span class="token punctuation">]</span><span class="token punctuation">[</span>newCol<span class="token punctuation">]</span> <span class="token operator">===</span> player<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      count<span class="token operator">++</span><span class="token punctuation">;</span>
+      newRow <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      newCol <span class="token operator">-=</span> offset<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果有四个连续的棋子，则获胜</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">===</span> <span class="token number">4</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<blockquote> 
+ <p></p> 
+ <div class="toc"> 
+  <h4>文章目录</h4> 
+  <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_17" rel="nofollow">输入描述</a></li><li><a href="#_25" rel="nofollow">输出描述</a></li><li><a href="#1_39" rel="nofollow">用例1</a></li><li><a href="#2_53" rel="nofollow">用例2</a></li><li><a href="#C_67" rel="nofollow">C++</a></li><li><a href="#java_160" rel="nofollow">java</a></li><li><a href="#python_250" rel="nofollow">python</a></li><li><a href="#javascript_331" rel="nofollow">javascript</a></li><li><a href="#_437" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_438" rel="nofollow">用例1</a></li><li><a href="#2_445" rel="nofollow">用例2</a></li><li><a href="#3_452" rel="nofollow">用例3</a></li><li><a href="#4_459" rel="nofollow">用例4</a></li><li><a href="#5_466" rel="nofollow">用例5</a></li><li><a href="#6_473" rel="nofollow">用例6</a></li><li><a href="#7_480" rel="nofollow">用例7</a></li><li><a href="#8_487" rel="nofollow">用例8</a></li><li><a href="#9_494" rel="nofollow">用例9</a></li><li><a href="#10_501" rel="nofollow">用例10</a></li></ul> 
+    </li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </div> 
+ <p></p> 
+</blockquote> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p> 
+<h4><a id="_437"></a>完整用例</h4> 
+<h5><a id="1_438"></a>用例1</h5> 
+<pre><code class="prism language-input1">5 5
+1 1 2 2 3 3 4 4
+</code></pre> 
+<h5><a id="2_445"></a>用例2</h5> 
+<pre><code class="prism language-input2">5 5
+0 1 2 2 3 3 4 4
+</code></pre> 
+<h5><a id="3_452"></a>用例3</h5> 
+<pre><code class="prism language-input3">5 5
+2 2 3 3 4 4 5 5
+</code></pre> 
+<h5><a id="4_459"></a>用例4</h5> 
+<pre><code class="prism language-input4">4 3
+1 1 1 1 1 1 1 1
+</code></pre> 
+<h5><a id="5_466"></a>用例5</h5> 
+<pre><code class="prism language-input5">6 5
+3 4 5 3 4 5 3 4
+</code></pre> 
+<h5><a id="6_473"></a>用例6</h5> 
+<pre><code class="prism language-input6">6 7
+1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6
+</code></pre> 
+<h5><a id="7_480"></a>用例7</h5> 
+<pre><code class="prism language-input7">4 4
+1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4
+</code></pre> 
+<h5><a id="8_487"></a>用例8</h5> 
+<pre><code class="prism language-input8">10 10
+1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 9 9 10 10
+</code></pre> 
+<h5><a id="9_494"></a>用例9</h5> 
+<pre><code class="prism language-input9">7 6
+1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7 1 2 3 4 5 6 7
+</code></pre> 
+<h5><a id="10_501"></a>用例10</h5> 
+<pre><code class="prism language-input10">4 4
+1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4
+</code></pre>
+                </div>
+</body>
+</html>

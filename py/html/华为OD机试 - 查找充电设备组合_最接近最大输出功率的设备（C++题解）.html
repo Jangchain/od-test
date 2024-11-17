@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>某个充电站，可提供n个充电设备，每个充电设备均有对应的输出功率。任意个充电设备组合的输出功率总和，均构成功率集合P的1个元素。功率集合P的最优元素，表示最接近充电站最大输出功率p_max的元素。</p> 
+<h4><a id="_5"></a>输入描述</h4> 
+<p>输入为3行：</p> 
+<ul><li>第1行为充电设备个数n</li><li>第2行为每个充电设备的输出功率</li><li>第3行为充电站最大输出功率p_max</li></ul> 
+<h4><a id="_13"></a>输出描述</h4> 
+<p>功率集合P的最优元素</p> 
+<h4><a id="_17"></a>备注</h4> 
+<ul><li>充电设备个数 n &gt; 0</li><li>最优元素必须小于或等于充电站最大输出功率p_max</li></ul> 
+<h4><a id="_22"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>4<br>50 20 20 60<br>90</td></tr><tr><td>输出</td><td>90</td></tr><tr><td>说明</td><td>当充电设备输出功率50、20、20组合时，其输出功率总和为90，最接近充电站最大充电输出功率，因此最优元素为90。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>2<br>50 40<br>30</td></tr><tr><td>输出</td><td>0</td></tr><tr><td>说明</td><td>所有充电设备的输出功率组合，均大于充电站最大充电输出功率30，此时最优元素值为0。</td></tr></tbody></table> 
+<h4><a id="_28"></a>题目解析</h4> 
+<p>本题可以看作是01背包问题。具体来说：</p> 
+<p>第3行中的充电站最大输出功率p_max可以看作是背包的最大承重；</p> 
+<p>第2行中每个充电设备的输出功率可以看作是不同物品的重量和价值，即重量=价值。</p> 
+<p>因此，现在需要求出在背包承重下能够装入的最大价值。</p> 
+<h4><a id="_40"></a>代码思路</h4> 
+<p>这是一道01背包的题目。题目要求任意个充电设备组合的输出功率总和，均构成功率集合P的1个元素。因此，我们可以将问题转化为求解最接近充电站最大输出功率p_max的元素。</p> 
+<p>我们可以使用一个二维数组dp[i][j]表示前i个充电设备中，总功率不超过j时的最大功率。其中，i表示前i个充电设备，j表示总功率不超过j。</p> 
+<p>对于每个充电设备，我们可以选择选或不选。如果当前充电设备的功率大于当前总功率j，那么不能选，我们就不选当前充电设备。如果当前充电设备的功率小于等于当前总功率j，那么我们可以选择选或不选当前充电设备。如果选当前充电设备，那么当前总功率就是当前充电设备的功率加上前i-1个充电设备中总功率不超过j-当前充电设备功率的最大值，即dp[i-1][j-power[i-1]]+power[i-1]；如果不选当前充电设备，那么当前总功率就是前i-1个充电设备中总功率不超过j的最大值，即dp[i-1][j]。因此，我们可以得到状态转移方程：dp[i][j] = max(dp[i-1][j], dp[i-1][j-power[i-1]]+power[i-1])。</p> 
+<p>最终，dp[n][p_max]就是最大功率，即功率集合P的最优元素。</p> 
+<h4><a id="C_50"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token comment">// 本题使用动态规划求解，dp[i][j]表示前i个充电设备中，总功率不超过j时的最大功率</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span> <span class="token comment">// 充电设备个数</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> power<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 每个充电设备的输出功率</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> p_max<span class="token punctuation">;</span> <span class="token comment">// 充电站最大输出功率</span>
+    cin <span class="token operator">&gt;&gt;</span> p_max<span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> dp<span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>p_max <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 初始化为0</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> p_max<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当前充电设备的功率大于当前总功率j，不能选</span>
+                dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 不选当前充电设备</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>j <span class="token operator">-</span> power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 选或不选当前充电设备</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">[</span>p_max<span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出最大功率</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_5" rel="nofollow">输入描述</a></li><li><a href="#_13" rel="nofollow">输出描述</a></li><li><a href="#_17" rel="nofollow">备注</a></li><li><a href="#_22" rel="nofollow">用例</a></li><li><a href="#_28" rel="nofollow">题目解析</a></li><li><a href="#_40" rel="nofollow">代码思路</a></li><li><a href="#C_50" rel="nofollow">C++</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e9413fcd109f2f3d7297192eab0c0b2a.gif" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

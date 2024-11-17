@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>在某个项目中有多个任务(用tasks数组表示)需要您进行处理，其中tasks[i]=[si,ei],你可以在si &lt;= day &lt;= ei中的任意一天处理该任务，请返回你可以处理的最大任务数</p> 
+<h2><a id="_5"></a>输入描述</h2> 
+<p>第一行为任务数量n，1 &lt;=n&lt;= 100000。后面n行表示各个任务的开始时间和终止时间，使用si,ei表示,1 &lt;= si &lt;= ei &lt;= 100000</p> 
+<h2><a id="_9"></a>输出描述</h2> 
+<p>输出为一个整数，表示可以处理的最大任务数。</p> 
+<h2><a id="_13"></a>用例</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c"><span class="token number">3</span>
+<span class="token number">1</span> <span class="token number">1</span>
+<span class="token number">1</span> <span class="token number">2</span>
+<span class="token number">1</span> <span class="token number">3</span>
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-c"><span class="token number">3</span>
+</code></pre> 
+<h2><a id="_32"></a>解题思路</h2> 
+<ol><li> <p><strong>贪心算法原则</strong>：每一步选择当前情况下最优的选择（这里是选择结束时间最早的任务），以达到全局最优解。这种方法适用于任务调度问题，因为优先完成结束时间早的任务可以为后续任务腾出更多时间。</p> </li><li> <p><strong>使用优先队列</strong>：</p> 
+  <ul><li><strong>优先队列特性</strong>：自动根据任务的结束时间进行排序，保证每次取出的都是结束时间最早的任务。</li><li><strong>应用</strong>：在处理任务时，将所有任务按开始时间存入列表（数组的每个元素是一个列表，对应于该开始时间的所有任务）。然后，遍历每个时间点，将该时间点开始的所有任务加入优先队列。这样，优先队列总是包含当前可执行的任务，且队首是最优先执行的任务。</li></ul> </li><li> <p><strong>任务调度</strong>：</p> 
+  <ul><li><strong>移除过期任务</strong>：在每个时间点，首先检查优先队列中是否有已经结束的任务（即结束时间小于当前时间的任务），将这些任务从队列中移除。这一步确保队列中的任务都是未完成且可执行的。</li><li><strong>加入新任务</strong>：将当前时间点开始的所有任务加入优先队列。这些任务现在是候选任务，准备被执行。</li><li><strong>执行任务</strong>：如果优先队列不为空，说明有可执行的任务。从队列中取出（移除）一个任务执行，即完成一个任务，完成任务的计数加一。按照贪心原则，这个任务是当前所有可执行任务中结束时间最早的。</li></ul> </li><li> <p><strong>总结</strong>：通过贪心算法选择每一步的最优解（结束时间最早的任务），并利用优先队列自动维护任务的执行顺序，可以有效地解决任务调度问题，最大化完成的任务数量。</p> </li></ol> 
+<h2><a id="C_48"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;functional&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 定义一个Task结构体来存储每个任务的开始时间和结束时间</span>
+<span class="token keyword">struct</span> <span class="token class-name">Task</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> startTime<span class="token punctuation">;</span>  <span class="token comment">// 任务开始时间</span>
+    <span class="token keyword">int</span> endTime<span class="token punctuation">;</span>    <span class="token comment">// 任务结束时间</span>
+
+    <span class="token comment">// Task结构体的构造函数，用于初始化任务的开始时间和结束时间</span>
+    <span class="token function">Task</span><span class="token punctuation">(</span><span class="token keyword">int</span> start<span class="token punctuation">,</span> <span class="token keyword">int</span> end<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">startTime</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">endTime</span><span class="token punctuation">(</span>end<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于优先队列根据任务的结束时间进行排序</span>
+<span class="token keyword">struct</span> <span class="token class-name">compare</span> <span class="token punctuation">{<!-- --></span>
+    bool <span class="token function">operator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">const</span> Task<span class="token operator">&amp;</span> a<span class="token punctuation">,</span> <span class="token keyword">const</span> Task<span class="token operator">&amp;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span>endTime <span class="token operator">&gt;</span> b<span class="token punctuation">.</span>endTime<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span> <span class="token comment">// 读取任务的总数</span>
+
+    <span class="token comment">// 使用vector来动态存储任务列表，每个时间点对应一个任务列表</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>Task<span class="token operator">&gt;&gt;</span> <span class="token function">tasks</span><span class="token punctuation">(</span><span class="token number">100001</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取每个任务的开始时间和结束时间，并将其添加到对应的任务列表中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> startTime<span class="token punctuation">,</span> endTime<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> startTime <span class="token operator">&gt;&gt;</span> endTime<span class="token punctuation">;</span>
+        tasks<span class="token punctuation">[</span>startTime<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">emplace_back</span><span class="token punctuation">(</span>startTime<span class="token punctuation">,</span> endTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    priority_queue<span class="token operator">&lt;</span>Task<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>Task<span class="token operator">&gt;</span><span class="token punctuation">,</span> compare<span class="token operator">&gt;</span> pq<span class="token punctuation">;</span> <span class="token comment">// 创建一个优先队列</span>
+
+    <span class="token keyword">int</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 用于记录能完成的任务数量</span>
+
+    <span class="token comment">// 遍历每个时间点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">100001</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果优先队列不为空且队列顶部的任务结束时间小于当前时间，则将其移除</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>pq<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> pq<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>endTime <span class="token operator">&lt;</span> i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            pq<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 将当前时间点的所有任务加入优先队列</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> task <span class="token operator">:</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            pq<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果优先队列不为空，则从队列中移除一个任务，并将完成任务的数量加一</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>pq<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            ans<span class="token operator">++</span><span class="token punctuation">;</span>
+            pq<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> ans <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出能完成的任务数量</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_115"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义一个Task类来存储每个任务的开始时间和结束时间</span>
+    <span class="token keyword">static</span> <span class="token keyword">class</span> <span class="token class-name">Task</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> startTime<span class="token punctuation">;</span>  <span class="token comment">// 任务开始时间</span>
+        <span class="token keyword">int</span> endTime<span class="token punctuation">;</span>    <span class="token comment">// 任务结束时间</span>
+
+        <span class="token comment">// Task类的构造函数，用于初始化任务的开始时间和结束时间</span>
+        <span class="token class-name">Task</span><span class="token punctuation">(</span><span class="token keyword">int</span> startTime<span class="token punctuation">,</span> <span class="token keyword">int</span> endTime<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>startTime <span class="token operator">=</span> startTime<span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>endTime <span class="token operator">=</span> endTime<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 创建一个List数组，用于存储所有的任务，每个时间点对应一个任务列表</span>
+    <span class="token keyword">static</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Task</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">[</span><span class="token punctuation">]</span> a <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">List</span><span class="token punctuation">[</span><span class="token number">100001</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取任务的总数</span>
+        
+        <span class="token comment">// 初始化任务列表数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">100001</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            a<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取每个任务的开始时间和结束时间，并将其添加到对应的任务列表中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> 
+            <span class="token keyword">int</span> x <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 任务开始时间</span>
+            <span class="token keyword">int</span> y <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 任务结束时间</span>
+            a<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Task</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建任务并添加到任务列表中</span>
+        <span class="token punctuation">}</span>
+
+         
+        <span class="token keyword">int</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 用于记录能完成的任务数量</span>
+        <span class="token comment">// 创建一个优先队列，根据任务的结束时间进行排序，确保每次都处理结束时间最早的任务</span>
+        <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Task</span><span class="token punctuation">&gt;</span></span> pq <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token class-name">Comparator</span><span class="token punctuation">.</span><span class="token function">comparingInt</span><span class="token punctuation">(</span>t <span class="token operator">-&gt;</span> t<span class="token punctuation">.</span>endTime<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历每个时间点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">100001</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果优先队列不为空且队列顶部的任务结束时间小于当前时间，则将其移除</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>pq<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> pq<span class="token punctuation">.</span><span class="token function">peek</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>endTime <span class="token operator">&lt;</span> i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                pq<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 如果当前时间点有任务</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 将当前时间点的所有任务加入优先队列</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Task</span> task <span class="token operator">:</span> a<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    pq<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 如果优先队列不为空，则从队列中移除一个任务，并将完成任务的数量加一</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>pq<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                ans<span class="token operator">++</span><span class="token punctuation">;</span>
+                pq<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出能完成的任务数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_185"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块以从标准输入读取数据</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span> <span class="token comment">// 标准输入流</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 标准输出流</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 用于存储输入行的数组</span>
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token comment">// 监听输入行，每当接收到一行输入，就将其添加到lines数组中</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当输入流关闭时，执行以下代码</span>
+  <span class="token comment">// 初始化一个长度为100001的数组，每个元素都是一个空数组，用于存储任务</span>
+  <span class="token keyword">const</span> tasks <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">length</span><span class="token operator">:</span> <span class="token number">100001</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 解析第一行输入为整数n，表示任务总数</span>
+  <span class="token keyword">const</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历输入的每个任务</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将每行输入的两个数字（开始时间和结束时间）解析为整数</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>x<span class="token punctuation">,</span> y<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 将任务添加到对应开始时间的数组中</span>
+    tasks<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">startTime</span><span class="token operator">:</span> x<span class="token punctuation">,</span> <span class="token literal-property property">endTime</span><span class="token operator">:</span> y <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 初始化完成任务的数量为0</span>
+  <span class="token keyword">let</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化一个空数组作为优先队列，用于存储任务</span>
+  <span class="token keyword">const</span> pq <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">// 遍历每个可能的时间点</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">100001</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果优先队列中有任务，并且队首任务的结束时间小于当前时间，则将其移除</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>pq<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> pq<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>endTime <span class="token operator">&lt;</span> i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      pq<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 模拟优先队列的poll操作</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果当前时间点有任务</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 将所有当前时间点的任务加入优先队列，并按结束时间排序</span>
+      tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">task</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        pq<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        pq<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a<span class="token punctuation">.</span>endTime <span class="token operator">-</span> b<span class="token punctuation">.</span>endTime<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 保持优先队列按结束时间排序</span>
+      <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果优先队列中有任务，则完成一个任务，并将完成任务的数量加一</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pq<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      ans<span class="token operator">++</span><span class="token punctuation">;</span>
+      pq<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 模拟优先队列的poll操作</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出能完成的任务数量</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_249"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> heapq  <span class="token comment"># 导入heapq模块用于实现优先队列</span>
+
+<span class="token comment"># 定义一个Task类来存储每个任务的开始时间和结束时间</span>
+<span class="token keyword">class</span> <span class="token class-name">Task</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> startTime<span class="token punctuation">,</span> endTime<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>startTime <span class="token operator">=</span> startTime  <span class="token comment"># 任务开始时间</span>
+        self<span class="token punctuation">.</span>endTime <span class="token operator">=</span> endTime      <span class="token comment"># 任务结束时间</span>
+
+    <span class="token keyword">def</span> <span class="token function">__lt__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> other<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 定义小于操作，用于优先队列中比较Task对象，根据结束时间进行排序</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>endTime <span class="token operator">&lt;</span> other<span class="token punctuation">.</span>endTime
+
+<span class="token comment"># 创建一个列表，用于存储所有的任务，每个时间点对应一个任务列表</span>
+a <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">100001</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 读取任务的总数</span>
+n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 读取每个任务的开始时间和结束时间，并将其添加到对应的任务列表中</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    x<span class="token punctuation">,</span> y <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取任务开始时间和结束时间</span>
+    a<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>Task<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 创建任务并添加到任务列表中</span>
+
+ans <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 用于记录能完成的任务数量</span>
+<span class="token comment"># 创建一个优先队列，根据任务的结束时间进行排序，确保每次都处理结束时间最早的任务</span>
+pq <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 遍历每个时间点</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">100001</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果优先队列不为空且队列顶部的任务结束时间小于当前时间，则将其移除</span>
+    <span class="token keyword">while</span> pq <span class="token keyword">and</span> pq<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>endTime <span class="token operator">&lt;</span> i<span class="token punctuation">:</span>
+        heapq<span class="token punctuation">.</span>heappop<span class="token punctuation">(</span>pq<span class="token punctuation">)</span>
+
+    <span class="token comment"># 如果当前时间点有任务</span>
+    <span class="token keyword">for</span> task <span class="token keyword">in</span> a<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># 将当前时间点的所有任务加入优先队列</span>
+        heapq<span class="token punctuation">.</span>heappush<span class="token punctuation">(</span>pq<span class="token punctuation">,</span> task<span class="token punctuation">)</span>
+
+    <span class="token comment"># 如果优先队列不为空，则从队列中移除一个任务，并将完成任务的数量加一</span>
+    <span class="token keyword">if</span> pq<span class="token punctuation">:</span>
+        ans <span class="token operator">+=</span> <span class="token number">1</span>
+        heapq<span class="token punctuation">.</span>heappop<span class="token punctuation">(</span>pq<span class="token punctuation">)</span>
+
+<span class="token comment"># 输出能完成的任务数量</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_299"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 定义任务结构体，用于存储每个任务的开始时间和结束时间</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> startTime<span class="token punctuation">;</span>  <span class="token comment">// 任务开始时间</span>
+    <span class="token keyword">int</span> endTime<span class="token punctuation">;</span>    <span class="token comment">// 任务结束时间</span>
+<span class="token punctuation">}</span> Task<span class="token punctuation">;</span>
+
+<span class="token comment">// 优先队列的比较函数，用于比较两个任务的结束时间</span>
+<span class="token keyword">int</span> <span class="token function">cmp</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Task <span class="token operator">*</span>taskA <span class="token operator">=</span> <span class="token punctuation">(</span>Task <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    Task <span class="token operator">*</span>taskB <span class="token operator">=</span> <span class="token punctuation">(</span>Task <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> taskA<span class="token operator">-&gt;</span>endTime <span class="token operator">-</span> taskB<span class="token operator">-&gt;</span>endTime<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 定义任务列表，每个时间点对应一个任务列表</span>
+Task <span class="token operator">*</span>tasks<span class="token punctuation">[</span><span class="token number">100001</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> taskCounts<span class="token punctuation">[</span><span class="token number">100001</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 存储每个时间点任务的数量</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span> <span class="token comment">// 任务总数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取每个任务的开始时间和结束时间，并将其添加到对应的任务列表中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x<span class="token punctuation">,</span> y<span class="token punctuation">;</span> <span class="token comment">// 任务开始时间和结束时间</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>x<span class="token punctuation">,</span> <span class="token operator">&amp;</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        Task newTask <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>x<span class="token punctuation">,</span> y<span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 创建新任务</span>
+        tasks<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>Task <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">realloc</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>taskCounts<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Task<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 为新任务分配空间</span>
+        tasks<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>taskCounts<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> newTask<span class="token punctuation">;</span> <span class="token comment">// 将新任务添加到列表中</span>
+        taskCounts<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 更新任务数量</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 用于记录能完成的任务数量</span>
+    Task pq<span class="token punctuation">[</span><span class="token number">100001</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个优先队列</span>
+    <span class="token keyword">int</span> pqSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 优先队列的大小</span>
+
+    <span class="token comment">// 遍历每个时间点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">100001</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果优先队列不为空且队列顶部的任务结束时间小于当前时间，则将其移除</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>pqSize <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> pq<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>endTime <span class="token operator">&lt;</span> i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            pq<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> pq<span class="token punctuation">[</span><span class="token operator">--</span>pqSize<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 移除队列顶部的任务</span>
+            <span class="token function">qsort</span><span class="token punctuation">(</span>pq<span class="token punctuation">,</span> pqSize<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Task<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 重新排序优先队列</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果当前时间点有任务</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>taskCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将当前时间点的所有任务加入优先队列</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> taskCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                pq<span class="token punctuation">[</span>pqSize<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token function">qsort</span><span class="token punctuation">(</span>pq<span class="token punctuation">,</span> pqSize<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Task<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 重新排序优先队列</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果优先队列不为空，则从队列中移除一个任务，并将完成任务的数量加一</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pqSize <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            ans<span class="token operator">++</span><span class="token punctuation">;</span>
+            pq<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> pq<span class="token punctuation">[</span><span class="token operator">--</span>pqSize<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 移除队列顶部的任务</span>
+            <span class="token function">qsort</span><span class="token punctuation">(</span>pq<span class="token punctuation">,</span> pqSize<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Task<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 重新排序优先队列</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出能完成的任务数量</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_372"></a>完整用例</h2> 
+<h3><a id="1_373"></a>用例1</h3> 
+<pre><code class="prism language-input1">2
+1 2
+2 3
+</code></pre> 
+<h3><a id="2_381"></a>用例2</h3> 
+<pre><code class="prism language-input2">3
+1 3
+2 4
+3 5
+</code></pre> 
+<h3><a id="3_390"></a>用例3</h3> 
+<pre><code class="prism language-input3">4
+1 10
+2 9
+3 8
+4 7
+</code></pre> 
+<h3><a id="4_400"></a>用例4</h3> 
+<pre><code class="prism language-input4">5
+1 5
+6 10
+11 15
+16 20
+21 25
+</code></pre> 
+<h3><a id="5_411"></a>用例5</h3> 
+<pre><code class="prism language-input5">3
+1 3
+2 2
+3 5
+</code></pre> 
+<h3><a id="6_420"></a>用例6</h3> 
+<pre><code class="prism language-input6">2
+1 100000
+1 100000
+</code></pre> 
+<h3><a id="7_428"></a>用例7</h3> 
+<pre><code class="prism language-input7">3
+1 2
+3 4
+5 6
+</code></pre> 
+<h3><a id="8_437"></a>用例8</h3> 
+<pre><code class="prism language-input8">6
+1 3
+4 6
+7 9
+10 12
+13 15
+16 18
+</code></pre> 
+<h3><a id="9_449"></a>用例9</h3> 
+<pre><code class="prism language-input9">2
+1 50
+51 100
+</code></pre> 
+<h3><a id="10_457"></a>用例10</h3> 
+<pre><code class="prism language-input10">3
+1 100
+50 150
+100 200
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/688fe371ffe1a8b4885c1f8dfe095763.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

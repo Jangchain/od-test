@@ -1,0 +1,556 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_2"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>需要在某城市进行5G网络建设，已经选取N个地点设置5G基站，编号固定为1到N，接下来需要各个基站之间使用光纤进行连接以确保基站能互联互通，不同基站之间假设光纤的成本各不相同，且有些节点之间已经存在光纤相连。</p> 
+<p>请你设计算法，计算出能联通这些基站的最小成本是多少。</p> 
+<p>注意：基站的联通具有传递性，比如基站A与基站B架设了光纤，基站B与基站C也架设了光纤，则基站A与基站C视为可以互相联通。</p> 
+<h2><a id="_14"></a>输入描述</h2> 
+<p>第一行输入表示基站的个数N，其中：</p> 
+<ul><li> <p>0 &lt; N ≤ 20<br> 第二行输入表示具备光纤直连条件的基站对的数目M，其中：</p> </li><li> <p>0 &lt; M &lt; N * (N - 1) / 2<br> 从第三行开始连续输入M行数据，格式为</p> </li></ul> 
+<pre><code>X Y Z P
+</code></pre> 
+<p>其中：</p> 
+<p>X，Y 表示基站的编号</p> 
+<ul><li> <p>0 &lt; X ≤ N</p> </li><li> <p>0 &lt; Y ≤ N</p> </li><li> <p>X ≠ Y<br> Z 表示在 X、Y之间架设光纤的成本</p> </li><li> <p>0 &lt; Z &lt; 100</p> </li></ul> 
+<p>P 表示是否已存在光纤连接，0 表示未连接，1表示已连接</p> 
+<h2><a id="_39"></a>输出描述</h2> 
+<p>如果给定条件，可以建设成功互联互通的5G网络，则输出最小的建设成本</p> 
+<p>如果给定条件，无法建设成功互联互通的5G网络，则输出 -1</p> 
+<h2><a id="1_45"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>3
+3
+1 2 3 0
+1 3 1 0
+2 3 5 0
+</code></pre> 
+<p>输出</p> 
+<pre><code>4
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>只需要在1，2以及1，3基站之间铺设光纤，其成本为3+1=4</p> 
+</blockquote> 
+<h2><a id="2_62"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>3
+1
+1 2 5 0
+</code></pre> 
+<p>输出</p> 
+<pre><code>-1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>3基站无法与其他基站连接，输出-1</p> 
+</blockquote> 
+<h2><a id="3_77"></a>用例3</h2> 
+<p>输入</p> 
+<pre><code>3
+3
+1 2 3 0
+1 3 1 0
+2 3 5 1
+</code></pre> 
+<p>输出</p> 
+<pre><code>1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>2，3基站已有光纤相连，只要在1，3基站之间铺设光纤，其成本为1</p> 
+</blockquote> 
+<h2><a id="_94"></a>解题思路</h2> 
+<p>这个问题可以使用最小生成树算法（如Prim算法或Kruskal算法）来解决。在这个问题中，基站可以看作是图的顶点，光纤可以看作是图的边，光纤的成本可以看作是边的权重。已经存在的光纤可以看作是权重为0的边。我们的目标是找到一个最小生成树，即一个包含所有顶点且边的权重之和最小的树。</p> 
+<h2><a id="C_98"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+ 
+
+<span class="token comment">// 定义边的结构体</span>
+<span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> u<span class="token punctuation">,</span> v<span class="token punctuation">,</span> cost<span class="token punctuation">,</span> pre<span class="token punctuation">;</span>
+    <span class="token comment">// 构造函数</span>
+    <span class="token function">Edge</span><span class="token punctuation">(</span><span class="token keyword">int</span> u<span class="token punctuation">,</span> <span class="token keyword">int</span> v<span class="token punctuation">,</span> <span class="token keyword">int</span> cost<span class="token punctuation">,</span> <span class="token keyword">int</span> pre<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">u</span><span class="token punctuation">(</span>u<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">v</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">cost</span><span class="token punctuation">(</span>cost<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">pre</span><span class="token punctuation">(</span>pre<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 并查集数组</span>
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> parent<span class="token punctuation">;</span>
+
+<span class="token comment">// 并查集查找函数，用于查找x所在的集合</span>
+<span class="token keyword">int</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果x不是自己的父节点，那么就让x的父节点为x的父节点的父节点（路径压缩）</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">!=</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 返回x的父节点</span>
+    <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 并查集合并函数，用于合并x和y所在的集合</span>
+<span class="token keyword">void</span> <span class="token function">unionSet</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到x的根节点</span>
+    <span class="token keyword">int</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到y的根节点</span>
+    <span class="token comment">// 如果x和y的根节点不同，那么就将x的根节点的父节点设为y的根节点</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!=</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>rootX<span class="token punctuation">]</span> <span class="token operator">=</span> rootY<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">,</span> M<span class="token punctuation">;</span> <span class="token comment">// 基站的个数和具备光纤直连条件的基站对的数目</span>
+    cin <span class="token operator">&gt;&gt;</span> N <span class="token operator">&gt;&gt;</span> M<span class="token punctuation">;</span>
+    parent<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化并查集数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 初始时每个节点的父节点就是自己</span>
+    <span class="token punctuation">}</span>
+    vector<span class="token operator">&lt;</span>Edge<span class="token operator">&gt;</span> edges<span class="token punctuation">;</span> <span class="token comment">// 存储所有的边</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> X<span class="token punctuation">,</span> Y<span class="token punctuation">,</span> Z<span class="token punctuation">,</span> P<span class="token punctuation">;</span> <span class="token comment">// 基站X，基站Y，架设光纤的成本，是否已存在光纤连接</span>
+        cin <span class="token operator">&gt;&gt;</span> X <span class="token operator">&gt;&gt;</span> Y <span class="token operator">&gt;&gt;</span> Z <span class="token operator">&gt;&gt;</span> P<span class="token punctuation">;</span>
+        edges<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">Edge</span><span class="token punctuation">(</span>X<span class="token punctuation">,</span> Y<span class="token punctuation">,</span> Z<span class="token punctuation">,</span> P<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 添加边</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>P <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已存在光纤连接，那么就将X和Y合并</span>
+            <span class="token function">unionSet</span><span class="token punctuation">(</span>X<span class="token punctuation">,</span> Y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 将所有的边按照成本从小到大排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>edges<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> edges<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">const</span> Edge<span class="token operator">&amp;</span> a<span class="token punctuation">,</span> <span class="token keyword">const</span> Edge<span class="token operator">&amp;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span>cost <span class="token operator">&lt;</span> b<span class="token punctuation">.</span>cost<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cost <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 总的成本</span>
+    <span class="token comment">// 遍历所有的边</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> Edge<span class="token operator">&amp;</span> edge <span class="token operator">:</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果边的两个端点不在同一个集合中，那么就将这条边添加到最小生成树中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token function">find</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cost <span class="token operator">+=</span> edge<span class="token punctuation">.</span>cost<span class="token punctuation">;</span> <span class="token comment">// 累加成本</span>
+            <span class="token function">unionSet</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">,</span> edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 合并边的两个端点所在的集合</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 检查所有的基站是否都在同一个集合中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果有基站不在同一个集合中，那么就输出-1并结束程序</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 输出总的成本</span>
+    cout <span class="token operator">&lt;&lt;</span> cost <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_182"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 并查集数组</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parent<span class="token punctuation">;</span>
+
+    <span class="token comment">// 并查集查找函数，用于查找x所在的集合</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果x不是自己的父节点，那么就让x的父节点为x的父节点的父节点（路径压缩）</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">!=</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 返回x的父节点</span>
+        <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 定义边的类</span>
+    <span class="token keyword">static</span> <span class="token keyword">class</span> <span class="token class-name">Edge</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> u<span class="token punctuation">,</span> v<span class="token punctuation">,</span> cost<span class="token punctuation">,</span> pre<span class="token punctuation">;</span>
+
+        <span class="token comment">// 构造函数</span>
+        <span class="token keyword">public</span> <span class="token class-name">Edge</span><span class="token punctuation">(</span><span class="token keyword">int</span> u<span class="token punctuation">,</span> <span class="token keyword">int</span> v<span class="token punctuation">,</span> <span class="token keyword">int</span> cost<span class="token punctuation">,</span> <span class="token keyword">int</span> pre<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>u <span class="token operator">=</span> u<span class="token punctuation">;</span> <span class="token comment">// 基站u</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>v <span class="token operator">=</span> v<span class="token punctuation">;</span> <span class="token comment">// 基站v</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>cost <span class="token operator">=</span> cost<span class="token punctuation">;</span> <span class="token comment">// 架设光纤的成本</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>pre <span class="token operator">=</span> pre<span class="token punctuation">;</span> <span class="token comment">// 是否已存在光纤连接</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 并查集合并函数，用于合并x和y所在的集合</span>
+    <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">union</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到x的根节点</span>
+        <span class="token keyword">int</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到y的根节点</span>
+        <span class="token comment">// 如果x和y的根节点不同，那么就将x的根节点的父节点设为y的根节点</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!=</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>rootX<span class="token punctuation">]</span> <span class="token operator">=</span> rootY<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 基站的个数</span>
+        <span class="token keyword">int</span> <span class="token class-name">M</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 具备光纤直连条件的基站对的数目</span>
+        parent <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">N</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 初始化并查集数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 初始时每个节点的父节点就是自己</span>
+        <span class="token punctuation">}</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Edge</span><span class="token punctuation">&gt;</span></span> edges <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储所有的边</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">M</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> <span class="token class-name">X</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 基站X</span>
+            <span class="token keyword">int</span> <span class="token class-name">Y</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 基站Y</span>
+            <span class="token keyword">int</span> <span class="token class-name">Z</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 架设光纤的成本</span>
+            <span class="token keyword">int</span> <span class="token class-name">P</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 是否已存在光纤连接</span>
+            edges<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Edge</span><span class="token punctuation">(</span><span class="token class-name">X</span><span class="token punctuation">,</span> <span class="token class-name">Y</span><span class="token punctuation">,</span> <span class="token class-name">Z</span><span class="token punctuation">,</span> <span class="token class-name">P</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 添加边</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">P</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已存在光纤连接，那么就将X和Y合并</span>
+                <span class="token function">union</span><span class="token punctuation">(</span><span class="token class-name">X</span><span class="token punctuation">,</span> <span class="token class-name">Y</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 将所有的边按照成本从小到大排序</span>
+        edges<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> a<span class="token punctuation">.</span>cost <span class="token operator">-</span> b<span class="token punctuation">.</span>cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> cost <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 总的成本</span>
+        <span class="token comment">// 遍历所有的边</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Edge</span> edge <span class="token operator">:</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果边的两个端点不在同一个集合中，那么就将这条边添加到最小生成树中</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token function">find</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                cost <span class="token operator">+=</span> edge<span class="token punctuation">.</span>cost<span class="token punctuation">;</span> <span class="token comment">// 累加成本</span>
+                <span class="token function">union</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">,</span> edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 合并边的两个端点所在的集合</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 检查所有的基站是否都在同一个集合中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果有基站不在同一个集合中，那么就输出-1并结束程序</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 输出总的成本</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_269"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>lines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义边的类</span>
+    <span class="token keyword">class</span> <span class="token class-name">Edge</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">constructor</span><span class="token punctuation">(</span><span class="token parameter">u<span class="token punctuation">,</span> v<span class="token punctuation">,</span> cost<span class="token punctuation">,</span> pre</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>u <span class="token operator">=</span> u<span class="token punctuation">;</span>  <span class="token comment">// 基站u</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>v <span class="token operator">=</span> v<span class="token punctuation">;</span>  <span class="token comment">// 基站v</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>cost <span class="token operator">=</span> cost<span class="token punctuation">;</span>  <span class="token comment">// 架设光纤的成本</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>pre <span class="token operator">=</span> pre<span class="token punctuation">;</span>  <span class="token comment">// 是否已存在光纤连接</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 并查集查找函数，用于查找x所在的集合</span>
+    <span class="token keyword">function</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token parameter">x</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">!==</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果x不是自己的父节点，那么就让x的父节点为x的父节点的父节点（路径压缩）</span>
+            parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 返回x的父节点</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 并查集合并函数，用于合并x和y所在的集合</span>
+    <span class="token keyword">function</span> <span class="token function">union</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span> y</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 找到x的根节点</span>
+        <span class="token keyword">let</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 找到y的根节点</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!==</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果x和y的根节点不同，那么就将x的根节点的父节点设为y的根节点</span>
+            parent<span class="token punctuation">[</span>rootX<span class="token punctuation">]</span> <span class="token operator">=</span> rootY<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">let</span> <span class="token constant">N</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 输入基站的个数</span>
+    <span class="token keyword">let</span> <span class="token constant">M</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 输入具备光纤直连条件的基站对的数目</span>
+    <span class="token keyword">let</span> parent <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>length<span class="token operator">:</span> <span class="token constant">N</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">_<span class="token punctuation">,</span> i</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 初始化并查集数组，初始时每个节点的父节点就是自己</span>
+    <span class="token keyword">let</span> edges <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储所有的边</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> lines<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> <span class="token punctuation">[</span><span class="token constant">X</span><span class="token punctuation">,</span> <span class="token constant">Y</span><span class="token punctuation">,</span> <span class="token constant">Z</span><span class="token punctuation">,</span> <span class="token constant">P</span><span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 输入基站X, Y, 架设光纤的成本Z, 是否已存在光纤连接P</span>
+        edges<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Edge</span><span class="token punctuation">(</span><span class="token constant">X</span><span class="token punctuation">,</span> <span class="token constant">Y</span><span class="token punctuation">,</span> <span class="token constant">Z</span><span class="token punctuation">,</span> <span class="token constant">P</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 添加边</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token constant">P</span> <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 如果已存在光纤连接，那么就将X和Y合并</span>
+            <span class="token function">union</span><span class="token punctuation">(</span><span class="token constant">X</span><span class="token punctuation">,</span> <span class="token constant">Y</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 将所有的边按照成本从小到大排序</span>
+    edges<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a<span class="token punctuation">.</span>cost <span class="token operator">-</span> b<span class="token punctuation">.</span>cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> cost <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 总的成本</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> edge <span class="token keyword">of</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果边的两个端点不在同一个集合中，那么就将这条边添加到最小生成树中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">)</span> <span class="token operator">!==</span> <span class="token function">find</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cost <span class="token operator">+=</span> edge<span class="token punctuation">.</span>cost<span class="token punctuation">;</span>  <span class="token comment">// 累加成本</span>
+            <span class="token function">union</span><span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">,</span> edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 合并边的两个端点所在的集合</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token constant">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 检查所有的基站是否都在同一个集合中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">!==</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果有基站不在同一个集合中，那么就输出-1并结束程序</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出总的成本</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_357"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">class</span> <span class="token class-name">Edge</span><span class="token punctuation">:</span>
+    <span class="token comment"># 定义边的类</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> u<span class="token punctuation">,</span> v<span class="token punctuation">,</span> cost<span class="token punctuation">,</span> pre<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>u <span class="token operator">=</span> u  <span class="token comment"># 基站u</span>
+        self<span class="token punctuation">.</span>v <span class="token operator">=</span> v  <span class="token comment"># 基站v</span>
+        self<span class="token punctuation">.</span>cost <span class="token operator">=</span> cost  <span class="token comment"># 架设光纤的成本</span>
+        self<span class="token punctuation">.</span>pre <span class="token operator">=</span> pre  <span class="token comment"># 是否已存在光纤连接</span>
+
+<span class="token keyword">def</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 并查集查找函数，用于查找x所在的集合</span>
+    <span class="token keyword">if</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">!=</span> x<span class="token punctuation">:</span>
+        <span class="token comment"># 如果x不是自己的父节点，那么就让x的父节点为x的父节点的父节点（路径压缩）</span>
+        parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> find<span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span>  <span class="token comment"># 返回x的父节点</span>
+
+<span class="token keyword">def</span> <span class="token function">union</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 并查集合并函数，用于合并x和y所在的集合</span>
+    rootX <span class="token operator">=</span> find<span class="token punctuation">(</span>x<span class="token punctuation">)</span>  <span class="token comment"># 找到x的根节点</span>
+    rootY <span class="token operator">=</span> find<span class="token punctuation">(</span>y<span class="token punctuation">)</span>  <span class="token comment"># 找到y的根节点</span>
+    <span class="token keyword">if</span> rootX <span class="token operator">!=</span> rootY<span class="token punctuation">:</span>
+        <span class="token comment"># 如果x和y的根节点不同，那么就将x的根节点的父节点设为y的根节点</span>
+        parent<span class="token punctuation">[</span>rootX<span class="token punctuation">]</span> <span class="token operator">=</span> rootY
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    N <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 输入基站的个数</span>
+    M <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 输入具备光纤直连条件的基站对的数目</span>
+    parent <span class="token operator">=</span> <span class="token punctuation">[</span>i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>  <span class="token comment"># 初始化并查集数组，初始时每个节点的父节点就是自己</span>
+    edges <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 存储所有的边</span>
+    
+    <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        X<span class="token punctuation">,</span> Y<span class="token punctuation">,</span> Z<span class="token punctuation">,</span> P <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 输入基站X, Y, 架设光纤的成本Z, 是否已存在光纤连接P</span>
+        edges<span class="token punctuation">.</span>append<span class="token punctuation">(</span>Edge<span class="token punctuation">(</span>X<span class="token punctuation">,</span> Y<span class="token punctuation">,</span> Z<span class="token punctuation">,</span> P<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 添加边</span>
+        <span class="token keyword">if</span> P <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>  <span class="token comment"># 如果已存在光纤连接，那么就将X和Y合并</span>
+            union<span class="token punctuation">(</span>X<span class="token punctuation">,</span> Y<span class="token punctuation">)</span>
+    
+    <span class="token comment"># 将所有的边按照成本从小到大排序</span>
+    edges<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> edge<span class="token punctuation">:</span> edge<span class="token punctuation">.</span>cost<span class="token punctuation">)</span>
+    cost <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 总的成本</span>
+    
+    <span class="token keyword">for</span> edge <span class="token keyword">in</span> edges<span class="token punctuation">:</span>
+        <span class="token comment"># 如果边的两个端点不在同一个集合中，那么就将这条边添加到最小生成树中</span>
+        <span class="token keyword">if</span> find<span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">)</span> <span class="token operator">!=</span> find<span class="token punctuation">(</span>edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            cost <span class="token operator">+=</span> edge<span class="token punctuation">.</span>cost  <span class="token comment"># 累加成本</span>
+            union<span class="token punctuation">(</span>edge<span class="token punctuation">.</span>u<span class="token punctuation">,</span> edge<span class="token punctuation">.</span>v<span class="token punctuation">)</span>  <span class="token comment"># 合并边的两个端点所在的集合</span>
+    
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 检查所有的基站是否都在同一个集合中</span>
+        <span class="token keyword">if</span> find<span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">!=</span> find<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果有基站不在同一个集合中，那么就输出-1并结束程序</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token keyword">break</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 输出总的成本</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>cost<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_416"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 定义边的结构体</span>
+<span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> u<span class="token punctuation">,</span> v<span class="token punctuation">,</span> cost<span class="token punctuation">,</span> pre<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 并查集数组</span>
+<span class="token keyword">int</span> <span class="token operator">*</span>parent<span class="token punctuation">;</span>
+
+<span class="token comment">// 并查集查找函数，用于查找x所在的集合</span>
+<span class="token keyword">int</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果x不是自己的父节点，那么就让x的父节点为x的父节点的父节点（路径压缩）</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">!=</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 返回x的父节点</span>
+    <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 并查集合并函数，用于合并x和y所在的集合</span>
+<span class="token keyword">void</span> <span class="token function">unionSet</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到x的根节点</span>
+    <span class="token keyword">int</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到y的根节点</span>
+    <span class="token comment">// 如果x和y的根节点不同，那么就将x的根节点的父节点设为y的根节点</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!=</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>rootX<span class="token punctuation">]</span> <span class="token operator">=</span> rootY<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 边的比较函数，用于qsort</span>
+<span class="token keyword">int</span> <span class="token function">compareEdges</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token operator">*</span>edgeA <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token operator">*</span>edgeB <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> edgeA<span class="token operator">-&gt;</span>cost <span class="token operator">-</span> edgeB<span class="token operator">-&gt;</span>cost<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">,</span> M<span class="token punctuation">;</span> <span class="token comment">// 基站的个数和具备光纤直连条件的基站对的数目</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">,</span> <span class="token operator">&amp;</span>M<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    parent <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化并查集数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 初始时每个节点的父节点就是自己</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token operator">*</span>edges <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">Edge</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>M <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">Edge</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储所有的边</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> X<span class="token punctuation">,</span> Y<span class="token punctuation">,</span> Z<span class="token punctuation">,</span> P<span class="token punctuation">;</span> <span class="token comment">// 基站X，基站Y，架设光纤的成本，是否已存在光纤连接</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>X<span class="token punctuation">,</span> <span class="token operator">&amp;</span>Y<span class="token punctuation">,</span> <span class="token operator">&amp;</span>Z<span class="token punctuation">,</span> <span class="token operator">&amp;</span>P<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">Edge</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>X<span class="token punctuation">,</span> Y<span class="token punctuation">,</span> Z<span class="token punctuation">,</span> P<span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 添加边</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>P <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已存在光纤连接，那么就将X和Y合并</span>
+            <span class="token function">unionSet</span><span class="token punctuation">(</span>X<span class="token punctuation">,</span> Y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 将所有的边按照成本从小到大排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>edges<span class="token punctuation">,</span> M<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">Edge</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compareEdges<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cost <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 总的成本</span>
+    <span class="token comment">// 遍历所有的边</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果边的两个端点不在同一个集合中，那么就将这条边添加到最小生成树中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>u<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token function">find</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cost <span class="token operator">+=</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>cost<span class="token punctuation">;</span> <span class="token comment">// 累加成本</span>
+            <span class="token function">unionSet</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>u<span class="token punctuation">,</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 合并边的两个端点所在的集合</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 检查所有的基站是否都在同一个集合中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果有基站不在同一个集合中，那么就输出-1并结束程序</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">find</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 输出总的成本</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/5f0b958970e6c0b7c34717431d93c2f8.png" alt="fengmian"></p> 
+<h2><a id="_505"></a>完整用例</h2> 
+<h3><a id="1_507"></a>用例1</h3> 
+<pre><code class="prism language-input1">4
+5
+1 2 10 0
+2 3 10 0
+3 4 10 0
+1 3 5 1
+2 4 5 1
+</code></pre> 
+<h3><a id="2_519"></a>用例2</h3> 
+<pre><code class="prism language-input2">5
+7
+1 2 2 0
+1 3 3 0
+2 3 4 0
+2 4 5 0
+3 4 1 0
+3 5 2 0
+4 5 3 0
+</code></pre> 
+<h3><a id="3_533"></a>用例3</h3> 
+<pre><code class="prism language-input3">3
+3
+1 2 1 0
+2 3 1 0
+1 3 2 0
+</code></pre> 
+<h3><a id="4_543"></a>用例4</h3> 
+<pre><code class="prism language-input4">3
+3
+1 2 99 0
+2 3 99 0
+1 3 1 0
+</code></pre> 
+<h3><a id="5_553"></a>用例5</h3> 
+<pre><code class="prism language-input5">5
+10
+1 2 1 0
+1 3 1 0
+1 4 1 0
+1 5 1 0
+2 3 1 0
+2 4 1 0
+2 5 1 0
+3 4 1 0
+3 5 1 0
+4 5 1 0
+</code></pre> 
+<h3><a id="6_570"></a>用例6</h3> 
+<pre><code class="prism language-input6">3
+2
+1 2 100 0
+2 3 100 0
+</code></pre> 
+<h3><a id="7_579"></a>用例7</h3> 
+<pre><code class="prism language-input7">5
+6
+1 2 6 1
+1 4 3 0
+2 3 2 0
+3 4 4 1
+4 5 1 0
+3 5 3 0
+</code></pre> 
+<h3><a id="8_592"></a>用例8</h3> 
+<pre><code class="prism language-input8">4
+6
+1 2 5 0
+2 3 5 0
+3 4 5 0
+1 3 5 0
+2 4 5 0
+1 4 5 0
+</code></pre> 
+<h3><a id="9_605"></a>用例9</h3> 
+<pre><code class="prism language-input9">6
+5
+1 2 3 0
+2 3 2 0
+3 4 1 0
+4 5 6 0
+5 6 4 0
+</code></pre> 
+<h3><a id="10_617"></a>用例10</h3> 
+<pre><code class="prism language-input10">4
+6
+1 2 1 1
+1 3 1 1
+1 4 1 1
+2 3 1 1
+2 4 1 1
+3 4 1 1
+</code></pre>
+                </div>
+</body>
+</html>

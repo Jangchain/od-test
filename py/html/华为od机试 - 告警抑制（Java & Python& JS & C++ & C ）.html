@@ -1,0 +1,465 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_12"></a>题目描述</h2> 
+<p>告警抑制，是指高优先级告警抑制低优先级告警的规则。高优先级告警产生后，低优先级告警不再产生。请根据原始告警列表和告警抑制关系，给出实际产生的告警列表。</p> 
+<ul><li>不会出现循环抑制的情况。</li><li>告警不会传递，比如A-&gt;B,B-&gt;C，这种情况下A不会直接抑制C。但被抑制的告警仍然可以抑制其他低优先级告警。</li></ul> 
+<h2><a id="_19"></a>输入描述</h2> 
+<p>第一行为数字N，表示告警抑制关系个数，0 ≤ N ≤ 120<br> 接下来N行，每行是由空格分隔的两个告警ID，例如: id1 id2，表示id1抑制id2，告警ID的格式为：</p> 
+<blockquote> 
+ <p>大写字母+0个或者1个数字</p> 
+</blockquote> 
+<p>最后一行为告警产生列表，列表长度[1,100]</p> 
+<h2><a id="_28"></a>输出描述</h2> 
+<p>真实产生的告警列表</p> 
+<h5><a id="_32"></a>备注</h5> 
+<p>告警ID之间以单个空格分隔</p> 
+<h2><a id="1_36"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>2
+A B
+B C
+A B C D E
+</code></pre> 
+<p>输出</p> 
+<pre><code>A D E
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>A抑制了B，B抑制了C，最后实际的告警为A D E</p> 
+</blockquote> 
+<h2><a id="2_56"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>4
+F G
+C B
+A G
+A0 A
+A B C D E
+</code></pre> 
+<p>输出</p> 
+<pre><code>A C D E
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>第一个告警A，能够抑制它的只有A0，而当前告警列表中没有A0，因此告警A可以正常发生<br> 第二个告警B，能够抑制它的只有C，而当前告警列表中有C，因此告警B被抑制，不可以发生<br> 第三个告警C，没有能抑制它的告警，因此正常发生<br> 第四个告警D，没有能抑制它的告警，因此正常发生<br> 第五个告警E，没有能抑制它的告警，因此正常发生</p> 
+</blockquote> 
+<h2><a id="_85"></a>解题思路</h2> 
+<h4><a id="_90"></a>题意理解</h4> 
+<ol><li> <p><strong>告警抑制规则</strong>：我们有一组抑制规则，每个规则定义了一个“高优先级”告警和一个“低优先级”告警的关系。比如规则<code>A B</code>表示告警<code>A</code>会抑制告警<code>B</code>。</p> </li><li> <p><strong>非循环抑制</strong>：题目中说明不会出现循环抑制，即不会出现<code>A</code>抑制<code>B</code>，<code>B</code>抑制<code>A</code>的情况。这样可以避免复杂的循环判断问题。</p> </li><li> <p><strong>无传递抑制</strong>：例如，<code>A -&gt; B</code>且<code>B -&gt; C</code>的情况下，<code>A</code>不会直接抑制<code>C</code>。但是如果<code>B</code>因为<code>A</code>的存在被抑制了，<code>B</code>将不会再去抑制<code>C</code>。</p> </li><li> <p><strong>原始告警列表</strong>：最后一行输入的是原始的告警列表，按照出现的顺序给出，这些告警可能会被抑制，产生实际的告警列表。</p> </li></ol> 
+<h4><a id="_100"></a>解题步骤</h4> 
+<ol><li> <p><strong>构建抑制规则的映射关系</strong>：使用一个数据结构（如字典）记录每个告警的抑制关系，这样可以快速查询某个告警是否会被另一个告警抑制。</p> </li><li> <p><strong>判断告警是否被抑制</strong>：遍历原始告警列表，对于每个告警，检查在抑制它的告警中是否有已经出现的高优先级告警。如果有，则当前告警被抑制，不加入最终结果；如果没有，则加入最终结果。</p> </li><li> <p><strong>输出实际产生的告警列表</strong>：输出所有未被抑制的告警，按照原始告警列表中的顺序。</p> </li></ol> 
+<h4><a id="_108"></a>示例分析</h4> 
+<h5><a id="1_110"></a>示例1</h5> 
+<p>输入：</p> 
+<pre><code>2
+A B
+B C
+A B C D E
+</code></pre> 
+<ul><li> <p>抑制关系为：</p> 
+  <ul><li><code>A</code>抑制<code>B</code></li><li><code>B</code>抑制<code>C</code></li></ul> </li><li> <p>过程分析：</p> 
+  <ul><li><code>A</code>未被任何告警抑制，加入实际产生的告警列表。</li><li><code>B</code>被<code>A</code>抑制，抑制生效，不加入实际产生的告警列表。</li><li><code>C</code>被<code>B</code>抑制，由于<code>B</code>已被<code>A</code>抑制，因此<code>C</code>也不加入实际产生的告警列表。</li><li><code>D</code>和<code>E</code>未被任何告警抑制，加入实际产生的告警列表。</li></ul> </li><li> <p>输出结果为：<code>A D E</code></p> </li></ul> 
+<h5><a id="2_132"></a>示例2</h5> 
+<p>输入：</p> 
+<pre><code>4
+F G
+C B
+A G
+A0 A
+A B C D E
+</code></pre> 
+<ul><li> <p>抑制关系为：</p> 
+  <ul><li><code>F</code>抑制<code>G</code></li><li><code>C</code>抑制<code>B</code></li><li><code>A</code>抑制<code>G</code></li><li><code>A0</code>抑制<code>A</code></li></ul> </li><li> <p>过程分析：</p> 
+  <ul><li><code>A</code>未被<code>A0</code>抑制（<code>A0</code>不在告警列表中），因此<code>A</code>加入实际产生的告警列表。</li><li><code>B</code>被<code>C</code>抑制，而<code>C</code>在告警列表中，因此<code>B</code>不加入实际产生的告警列表。</li><li><code>C</code>未被任何告警抑制，加入实际产生的告警列表。</li><li><code>D</code>和<code>E</code>未被任何告警抑制，加入实际产生的告警列表。</li></ul> </li><li> <p>输出结果为：<code>A C D E</code></p> </li></ul> 
+<h2><a id="Java_161"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输入告警抑制关系的数量</span>
+        <span class="token keyword">int</span> ruleCount <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 构建抑制关系图，用于记录每个告警抑制的其他告警</span>
+        <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">HashSet</span><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> suppressMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ruleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 读取一条抑制规则，格式为"抑制告警 被抑制告警"</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> rule <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">String</span> suppressor <span class="token operator">=</span> rule<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 抑制告警</span>
+            <span class="token class-name">String</span> suppressed <span class="token operator">=</span> rule<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 被抑制告警</span>
+
+            <span class="token comment">// 将抑制关系加入到抑制关系图中</span>
+            suppressMap<span class="token punctuation">.</span><span class="token function">computeIfAbsent</span><span class="token punctuation">(</span>suppressor<span class="token punctuation">,</span> k <span class="token operator">-&gt;</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取告警产生列表</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> alerts <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 转换告警列表为Set，方便快速查找某告警是否产生</span>
+        <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> activeAlerts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">asList</span><span class="token punctuation">(</span>alerts<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 存储被抑制的告警ID</span>
+        <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> suppressedAlerts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> alert <span class="token operator">:</span> alerts<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 检查当前告警是否抑制其他告警</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>suppressMap<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 遍历被该告警抑制的所有告警</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> suppressed <span class="token operator">:</span> suppressMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果被抑制的告警在产生列表中，则标记为被抑制</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>activeAlerts<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        suppressedAlerts<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 构建实际产生的告警列表</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> finalAlerts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> alert <span class="token operator">:</span> alerts<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果该告警未被抑制，则加入结果列表</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>suppressedAlerts<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                finalAlerts<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最终实际产生的告警列表，按空格分隔</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">,</span> finalAlerts<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="Python_222"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入必要的模块</span>
+<span class="token keyword">import</span> sys
+
+<span class="token comment"># 从标准输入读取数据</span>
+<span class="token builtin">input</span> <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>read
+data <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>splitlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 输入告警抑制关系的数量</span>
+rule_count <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>data<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 构建抑制关系字典，用于记录每个告警抑制的其他告警</span>
+suppress_map <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> rule_count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取一条抑制规则，格式为"抑制告警 被抑制告警"</span>
+    suppressor<span class="token punctuation">,</span> suppressed <span class="token operator">=</span> data<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># 将抑制关系加入到抑制关系字典中</span>
+    <span class="token keyword">if</span> suppressor <span class="token keyword">not</span> <span class="token keyword">in</span> suppress_map<span class="token punctuation">:</span>
+        suppress_map<span class="token punctuation">[</span>suppressor<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    suppress_map<span class="token punctuation">[</span>suppressor<span class="token punctuation">]</span><span class="token punctuation">.</span>add<span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span>
+
+<span class="token comment"># 读取告警产生列表</span>
+alerts <span class="token operator">=</span> data<span class="token punctuation">[</span>rule_count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 转换告警列表为集合，方便快速查找某告警是否产生</span>
+active_alerts <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>alerts<span class="token punctuation">)</span>
+
+<span class="token comment"># 存储被抑制的告警ID</span>
+suppressed_alerts <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> alert <span class="token keyword">in</span> alerts<span class="token punctuation">:</span>
+    <span class="token comment"># 检查当前告警是否抑制其他告警</span>
+    <span class="token keyword">if</span> alert <span class="token keyword">in</span> suppress_map<span class="token punctuation">:</span>
+        <span class="token comment"># 遍历被该告警抑制的所有告警</span>
+        <span class="token keyword">for</span> suppressed <span class="token keyword">in</span> suppress_map<span class="token punctuation">[</span>alert<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果被抑制的告警在产生列表中，则标记为被抑制</span>
+            <span class="token keyword">if</span> suppressed <span class="token keyword">in</span> active_alerts<span class="token punctuation">:</span>
+                suppressed_alerts<span class="token punctuation">.</span>add<span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span>
+
+<span class="token comment"># 构建实际产生的告警列表</span>
+final_alerts <span class="token operator">=</span> <span class="token punctuation">[</span>alert <span class="token keyword">for</span> alert <span class="token keyword">in</span> alerts <span class="token keyword">if</span> alert <span class="token keyword">not</span> <span class="token keyword">in</span> suppressed_alerts<span class="token punctuation">]</span>
+
+<span class="token comment"># 输出最终实际产生的告警列表，按空格分隔</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>final_alerts<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<h2><a id="JavaScript_270"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"readline"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建接口以读取输入</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"close"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 输入告警抑制关系的数量</span>
+  <span class="token keyword">const</span> ruleCount <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 构建抑制关系图，用于记录每个告警抑制的其他告警</span>
+  <span class="token keyword">const</span> suppressMap <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> ruleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取一条抑制规则，格式为"抑制告警 被抑制告警"</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>suppressor<span class="token punctuation">,</span> suppressed<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 将抑制关系加入到抑制关系图中</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>suppressMap<span class="token punctuation">[</span>suppressor<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      suppressMap<span class="token punctuation">[</span>suppressor<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    suppressMap<span class="token punctuation">[</span>suppressor<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 读取告警产生列表</span>
+  <span class="token keyword">const</span> alerts <span class="token operator">=</span> input<span class="token punctuation">[</span>ruleCount <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 转换告警列表为Set，方便快速查找某告警是否产生</span>
+  <span class="token keyword">const</span> activeAlerts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span>alerts<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 存储被抑制的告警ID</span>
+  <span class="token keyword">const</span> suppressedAlerts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> alert <span class="token keyword">of</span> alerts<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 检查当前告警是否抑制其他告警</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>suppressMap<span class="token punctuation">[</span>alert<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> suppressed <span class="token keyword">of</span> suppressMap<span class="token punctuation">[</span>alert<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>activeAlerts<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          suppressedAlerts<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 构建实际产生的告警列表</span>
+  <span class="token keyword">const</span> finalAlerts <span class="token operator">=</span> alerts<span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">alert</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token operator">!</span>suppressedAlerts<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出最终实际产生的告警列表，按空格分隔</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>finalAlerts<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h2><a id="C_330"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> ruleCount<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> ruleCount<span class="token punctuation">;</span>
+    cin<span class="token punctuation">.</span><span class="token function">ignore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 构建抑制关系图，用于记录每个告警抑制的其他告警</span>
+    unordered_map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> unordered_set<span class="token operator">&lt;</span>string<span class="token operator">&gt;&gt;</span> suppressMap<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ruleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string suppressor<span class="token punctuation">,</span> suppressed<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> suppressor <span class="token operator">&gt;&gt;</span> suppressed<span class="token punctuation">;</span>
+        suppressMap<span class="token punctuation">[</span>suppressor<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    cin<span class="token punctuation">.</span><span class="token function">ignore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取告警产生列表</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> alerts<span class="token punctuation">;</span>
+    string alert<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> alert<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        alerts<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 转换告警列表为Set，方便快速查找某告警是否产生</span>
+    unordered_set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> <span class="token function">activeAlerts</span><span class="token punctuation">(</span>alerts<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> alerts<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 存储被抑制的告警ID</span>
+    unordered_set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> suppressedAlerts<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> alert <span class="token operator">:</span> alerts<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>suppressMap<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> suppressed <span class="token operator">:</span> suppressMap<span class="token punctuation">[</span>alert<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>activeAlerts<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    suppressedAlerts<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 构建实际产生的告警列表</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> finalAlerts<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> alert <span class="token operator">:</span> alerts<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>suppressedAlerts<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            finalAlerts<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>alert<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终实际产生的告警列表，按空格分隔</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> finalAlerts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> cout <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+        cout <span class="token operator">&lt;&lt;</span> finalAlerts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    cout <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="C_399"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_RULES</span> <span class="token expression"><span class="token number">100</span>         </span><span class="token comment">// 最大抑制规则数量</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_ALERTS</span> <span class="token expression"><span class="token number">100</span>        </span><span class="token comment">// 最大告警数量</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_NAME_LEN</span> <span class="token expression"><span class="token number">50</span>       </span><span class="token comment">// 最大告警名称长度</span></span>
+
+<span class="token comment">// 定义抑制规则的存储结构</span>
+<span class="token keyword">char</span> suppressors<span class="token punctuation">[</span>MAX_RULES<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储每个抑制告警</span>
+<span class="token keyword">char</span> suppressed<span class="token punctuation">[</span>MAX_RULES<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>   <span class="token comment">// 存储每个被抑制告警</span>
+<span class="token keyword">int</span> ruleCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>                          <span class="token comment">// 记录抑制规则的实际数量</span>
+
+<span class="token comment">// 存储告警列表及其数量</span>
+<span class="token keyword">char</span> alerts<span class="token punctuation">[</span>MAX_ALERTS<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>      <span class="token comment">// 存储输入的告警列表</span>
+<span class="token keyword">int</span> alertCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>                         <span class="token comment">// 实际告警数量</span>
+
+<span class="token comment">// 读取一个抑制规则并存储到 suppressors 和 suppressed 数组中</span>
+<span class="token keyword">void</span> <span class="token function">addSuppressionRule</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>suppressor<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span>suppressedAlert<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>suppressors<span class="token punctuation">[</span>ruleCount<span class="token punctuation">]</span><span class="token punctuation">,</span> suppressor<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">[</span>ruleCount<span class="token punctuation">]</span><span class="token punctuation">,</span> suppressedAlert<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ruleCount<span class="token operator">++</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 检查某个告警是否被另一个告警抑制</span>
+<span class="token keyword">int</span> <span class="token function">isSuppressed</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>alert<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ruleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果 alert 被 suppressors[i] 抑制并且 suppressors[i] 在告警列表中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> alertCount<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>suppressors<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> alerts<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>suppressed<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> alert<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">// 被抑制</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 未被抑制</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> ruleCountInput<span class="token punctuation">;</span>
+    
+    <span class="token comment">// 输入抑制规则数量</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>ruleCountInput<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">getchar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 读取换行符</span>
+
+    <span class="token comment">// 逐行读取每个抑制规则</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ruleCountInput<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> suppressor<span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">,</span> suppressedAlert<span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s %s"</span><span class="token punctuation">,</span> suppressor<span class="token punctuation">,</span> suppressedAlert<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">addSuppressionRule</span><span class="token punctuation">(</span>suppressor<span class="token punctuation">,</span> suppressedAlert<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 存储抑制规则</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取告警产生列表，按空格分隔</span>
+    <span class="token keyword">char</span> inputLine<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">getchar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 清除上一个输入后的换行符</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>inputLine<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>inputLine<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 将告警列表拆分并存储到 alerts 数组中</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>inputLine<span class="token punctuation">,</span> <span class="token string">" \n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>alerts<span class="token punctuation">[</span>alertCount<span class="token operator">++</span><span class="token punctuation">]</span><span class="token punctuation">,</span> token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">" \n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出未被抑制的告警列表</span>
+    <span class="token keyword">int</span> first <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> alertCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isSuppressed</span><span class="token punctuation">(</span>alerts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 检查告警是否被抑制</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>first<span class="token punctuation">)</span> <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> alerts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            first <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p> 
+<h4><a id="_486"></a>完整用例</h4> 
+<h5><a id="1_488"></a>用例1</h5> 
+<pre><code class="prism language-input1">2
+A B
+B C
+A B C D E
+</code></pre> 
+<h5><a id="2_497"></a>用例2</h5> 
+<pre><code class="prism language-input2">4
+A B
+B C
+C D
+E F
+A B C D E F
+</code></pre> 
+<h5><a id="3_508"></a>用例3</h5> 
+<pre><code class="prism language-input3">4
+A B
+B C
+D E
+E F
+A B C D E
+</code></pre> 
+<h5><a id="4_519"></a>用例4</h5> 
+<pre><code class="prism language-input4">4
+A B
+B C
+C D
+D E
+A B C D E
+</code></pre> 
+<h5><a id="5_530"></a>用例5</h5> 
+<pre><code class="prism language-input5">2
+A B
+C D
+A B C D E
+</code></pre> 
+<h5><a id="6_539"></a>用例6</h5> 
+<pre><code class="prism language-input6">1
+A B
+B C D E
+</code></pre> 
+<h5><a id="7_547"></a>用例7</h5> 
+<pre><code class="prism language-input7">3
+A B
+B C
+C D
+A B C D E
+</code></pre> 
+<h5><a id="8_557"></a>用例8</h5> 
+<pre><code class="prism language-input8">4
+A B
+B C
+C D
+D E
+A B C D E
+</code></pre> 
+<h5><a id="9_568"></a>用例9</h5> 
+<pre><code class="prism language-input9">5
+A B
+B C
+C D
+D E
+E F
+A B C D E F
+</code></pre> 
+<h5><a id="10_580"></a>用例10</h5> 
+<pre><code class="prism language-input10">2
+A B
+C D
+A C D
+</code></pre>
+                </div>
+</body>
+</html>

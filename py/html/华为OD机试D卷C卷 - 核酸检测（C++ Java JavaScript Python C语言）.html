@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_5"></a>题目描述</h2> 
+<p>为了达到新冠疫情精准防控的需要，为了避免全员核酸检测带来的浪费，需要精准圈定可能被感染的人群。</p> 
+<p>现在根据传染病流调以及大数据分析，得到了每个人之间在时间、空间上是否存在轨迹的交叉。</p> 
+<p>现在给定一组确诊人员编号 (X1,X2,X3,…Xn)在所有人当中，找出哪些人需要进行核酸检测，输出需要进行核酸检测的数。</p> 
+<p>(注意:确诊病例自身不需要再做核酸检测)需要进行核酸检测的人，是病毒传播链条上的所有人员，即有可能通过确诊病例所能传播到的所有人。</p> 
+<p>例如:A是确诊病例，A和B有接触、B和C有接触 C和D有接触，D和E有接触。那么B、C、D、E都是需要进行核酸检测的人</p> 
+<h2><a id="_17"></a>输入描述</h2> 
+<p>第一行为总人数N</p> 
+<p>第二行为确证病例人员编号（确证病例人员数量&lt;N），用逗号隔开</p> 
+<p>接下来N行，每一行有N个数字，用逗号隔开，其中第i行的第j个数字表名编号i是否与编号j接触过。0表示没有接触，1表示有接触</p> 
+<p>备注：</p> 
+<p>人员编号从0开始</p> 
+<p>0 &lt; N &lt; 100 0&lt;N&lt;1000&lt;N&lt;100</p> 
+<h2><a id="_33"></a>输出描述</h2> 
+<p>输出需要做核酸检测的人数</p> 
+<h2><a id="_37"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>5
+1,2
+1,1,0,1,0
+1,1,0,0,0
+0,0,1,0,1
+1,0,0,1,0
+0,0,1,0,1
+</code></pre> 
+<p>输出</p> 
+<pre><code>3
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>编号为1、2号的人员为确诊病例<br> 1号与0号有接触，0号与3号有接触，2号与4号有接触。所以，需要做核酸检测的人是0号、3号、4号,总计3人要进行核酸检测。</p> 
+</blockquote> 
+<h2><a id="_64"></a>解题思路</h2> 
+<ol><li>初始化一个大小为N的布尔数组<code>visited</code>，用来记录每个人是否已经被访问过（即是否已经确定需要进行核酸检测）。</li><li>初始化一个大小为N×N的布尔矩阵<code>contacts</code>，用来表示人与人之间的接触情况。如果<code>contacts[i][j]</code>为<code>true</code>，则表示编号为i的人与编号为j的人有接触。</li><li>从输入中读取确诊病例的编号，并对每个确诊病例执行深度优先搜索（DFS）： 
+  <ul><li>在DFS中，首先将当前节点（即当前人员编号）标记为已访问。</li><li>然后遍历该节点的所有邻接节点（即与当前人员有接触的所有人），如果邻接节点未被访问，则递归地对邻接节点执行DFS。</li></ul> </li><li>完成DFS后，遍历<code>visited</code>数组，统计除确诊病例外的已访问节点的数量，即为需要进行核酸检测的人数。</li></ol> 
+<h2><a id="_74"></a>用例模拟计算过程：</h2> 
+<ol><li>初始化<code>visited</code>数组为<code>[false, false, false, false, false]</code>。</li><li>构建<code>contacts</code>矩阵如下：<pre><code>[true,  true,  false, true,  false]
+[true,  true,  false, false, false]
+[false, false, true,  false, true ]
+[true,  false, false, true,  false]
+[false, false, true,  false, true ]
+</code></pre> </li><li>对于确诊病例1和2，执行DFS： 
+  <ul><li>DFS(1): 标记<code>visited[1]</code>为<code>true</code>，检查与1有接触的人，发现0和3，递归DFS(0)和DFS(3)。 
+    <ul><li>DFS(0): 标记<code>visited[0]</code>为<code>true</code>，检查与0有接触的人，发现3，但3已在DFS(1)中被访问，所以不再递归。</li><li>DFS(3): 标记<code>visited[3]</code>为<code>true</code>，检查与3有接触的人，发现0，但0已在DFS(0)中被访问，所以不再递归。</li></ul> </li><li>DFS(2): 标记<code>visited[2]</code>为<code>true</code>，检查与2有接触的人，发现4，递归DFS(4)。 
+    <ul><li>DFS(4): 标记<code>visited[4]</code>为<code>true</code>，检查与4有接触的人，发现2，但2已在DFS(2)中被访问，所以不再递归。</li></ul> </li></ul> </li><li>DFS执行完毕后，<code>visited</code>数组为<code>[true, true, true, true, true]</code>。</li><li>统计除确诊病例外的已访问节点数量，即<code>visited</code>中为<code>true</code>的元素数量减去确诊病例的数量。在这个用例中，所有人都被访问过，但需要排除确诊病例1和2，所以需要进行核酸检测的人数为5 - 2 = 3。</li></ol> 
+<h2><a id="C_98"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;set&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 深度优先搜索（DFS）算法</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> contacts<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token operator">&amp;</span> visited<span class="token punctuation">,</span> <span class="token keyword">int</span> start<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    visited<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span> <span class="token comment">// 标记当前节点为已访问</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> contacts<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前节点与其他节点有接触，并且该节点未被访问过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>contacts<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归访问该节点</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> N<span class="token punctuation">;</span>
+    cin<span class="token punctuation">.</span><span class="token function">ignore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 忽略换行符</span>
+
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    string caseIndex<span class="token punctuation">;</span>
+    set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> confirmedCases<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取确诊病例人员编号</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>iss<span class="token punctuation">,</span> caseIndex<span class="token punctuation">,</span> <span class="token char">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        confirmedCases<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token function">stoi</span><span class="token punctuation">(</span>caseIndex<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;&gt;</span> <span class="token function">contacts</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token function">visited</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 构建接触矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        istringstream <span class="token function">rowStream</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        string contact<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>rowStream<span class="token punctuation">,</span> contact<span class="token punctuation">,</span> <span class="token char">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            contacts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> contact <span class="token operator">==</span> <span class="token string">"1"</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对每个确诊病例执行深度优先搜索</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> index <span class="token operator">:</span> confirmedCases<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>visited<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 需要进行核酸检测的人数</span>
+    <span class="token comment">// 遍历访问记录数组，统计需要进行核酸检测的人数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> confirmedCases<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">==</span> confirmedCases<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 如果该人员被访问过且不是确诊病例，则计数器加一</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> count <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出需要进行核酸检测的人数</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_169"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 深度优先搜索（DFS）算法</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> contacts<span class="token punctuation">,</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">,</span> <span class="token keyword">int</span> start<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        visited<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前节点为已访问</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> contacts<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前节点与其他节点有接触，并且该节点未被访问过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>contacts<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token boolean">true</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归访问该节点</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取总人数</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> confirmedCases <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取确诊病例人员编号</span>
+        <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> contacts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建接触矩阵</span>
+        <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建访问记录数组</span>
+
+        <span class="token comment">// 构建接触矩阵</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> row <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                contacts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"1"</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>row<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将接触情况转换为布尔值存储</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 对每个确诊病例执行深度优先搜索</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> caseIndex <span class="token operator">:</span> confirmedCases<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>caseIndex<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 需要进行核酸检测的人数</span>
+        <span class="token comment">// 遍历访问记录数组，统计需要进行核酸检测的人数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果该人员被访问过</span>
+                <span class="token comment">// 检查该人员是否为确诊病例</span>
+                <span class="token keyword">boolean</span> isConfirmedCase <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">asList</span><span class="token punctuation">(</span>confirmedCases<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>isConfirmedCase<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果不是确诊病例，则计数器加一</span>
+                    count<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出需要进行核酸检测的人数</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 关闭扫描器</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_225"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索（DFS）算法</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> start</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  visited<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前节点为已访问</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> contacts<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前节点与其他节点有接触，并且该节点未被访问过</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>contacts<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归访问该节点</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 读取输入数据</span>
+<span class="token keyword">let</span> lineCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> <span class="token constant">N</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> confirmedCases <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> contacts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token constant">N</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取总人数</span>
+    visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化访问记录数组</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    confirmedCases <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取确诊病例人员编号</span>
+    contacts <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建接触矩阵</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> row <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    contacts<span class="token punctuation">[</span>lineCount <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> row<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">value</span> <span class="token operator">=&gt;</span> value <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 构建接触矩阵</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>lineCount <span class="token operator">-</span> <span class="token number">2</span> <span class="token operator">===</span> <span class="token constant">N</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果已读取完所有输入数据，则关闭读取接口</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  lineCount<span class="token operator">++</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 对每个确诊病例执行深度优先搜索</span>
+  confirmedCases<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">caseIndex</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> caseIndex<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 需要进行核酸检测的人数</span>
+  <span class="token comment">// 遍历访问记录数组，统计需要进行核酸检测的人数</span>
+  visited<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">hasVisited<span class="token punctuation">,</span> i</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>hasVisited <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>confirmedCases<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 如果该人员被访问过且不是确诊病例，则计数器加一</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出需要进行核酸检测的人数</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_289"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 深度优先搜索（DFS）算法</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> start<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    visited<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>  <span class="token comment"># 标记当前节点为已访问</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>contacts<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前节点与其他节点有接触，并且该节点未被访问过</span>
+        <span class="token keyword">if</span> contacts<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">and</span> <span class="token keyword">not</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            dfs<span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">)</span>  <span class="token comment"># 递归访问该节点</span>
+
+<span class="token comment"># 读取输入数据</span>
+N <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取总人数</span>
+confirmed_cases <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取确诊病例人员编号</span>
+contacts <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 创建接触矩阵</span>
+visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> N  <span class="token comment"># 创建访问记录数组</span>
+
+<span class="token comment"># 构建接触矩阵</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    row <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    contacts<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">bool</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> row<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 对每个确诊病例执行深度优先搜索</span>
+<span class="token keyword">for</span> case_index <span class="token keyword">in</span> confirmed_cases<span class="token punctuation">:</span>
+    dfs<span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> case_index<span class="token punctuation">)</span>
+
+count <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 需要进行核酸检测的人数</span>
+<span class="token comment"># 遍历访问记录数组，统计需要进行核酸检测的人数</span>
+<span class="token keyword">for</span> i<span class="token punctuation">,</span> has_visited <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>visited<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> has_visited <span class="token keyword">and</span> i <span class="token keyword">not</span> <span class="token keyword">in</span> confirmed_cases<span class="token punctuation">:</span>
+        count <span class="token operator">+=</span> <span class="token number">1</span>  <span class="token comment"># 如果该人员被访问过且不是确诊病例，则计数器加一</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span>  <span class="token comment"># 输出需要进行核酸检测的人数</span>
+</code></pre> 
+<h2><a id="C_328"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 深度优先搜索（DFS）算法</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> contacts<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> visited<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> start<span class="token punctuation">,</span> <span class="token keyword">int</span> N<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    visited<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前节点为已访问</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前节点与其他节点有接触，并且该节点未被访问过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>contacts<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> i<span class="token punctuation">,</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归访问该节点</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">;</span> <span class="token comment">// 总人数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">getchar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取换行符</span>
+
+    <span class="token keyword">int</span> confirmed_cases<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 确诊病例人员编号数组</span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span><span class="token number">300</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于接收输入的确诊病例字符串</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token number">300</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取确诊病例字符串</span>
+
+    <span class="token comment">// 分割确诊病例字符串，转换为整数，并存储到确诊病例数组中</span>
+    <span class="token keyword">int</span> case_count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 确诊病例的数量</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        confirmed_cases<span class="token punctuation">[</span>case_count<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> contacts<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 接触矩阵</span>
+    <span class="token keyword">int</span> visited<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 访问记录数组</span>
+
+    <span class="token comment">// 构建接触矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>contacts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> N <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token function">getchar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取逗号</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">getchar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取换行符</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对每个确诊病例执行深度优先搜索</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> case_count<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>contacts<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> confirmed_cases<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 需要进行核酸检测的人数</span>
+    <span class="token comment">// 遍历访问记录数组，统计需要进行核酸检测的人数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> is_confirmed_case <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> case_count<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>confirmed_cases<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    is_confirmed_case <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>is_confirmed_case<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 如果该人员被访问过且不是确诊病例，则计数器加一</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> count<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出需要进行核酸检测的人数</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_402"></a>完整用例</h2> 
+<h3><a id="1_403"></a>用例1</h3> 
+<pre><code class="prism language-input1">4
+0
+1,0,0,0
+0,1,0,0
+0,0,1,0
+0,0,0,1
+</code></pre> 
+<h3><a id="2_414"></a>用例2</h3> 
+<pre><code class="prism language-input2">3
+0,1
+1,1,0
+1,1,1
+0,1,1
+</code></pre> 
+<h3><a id="3_424"></a>用例3</h3> 
+<pre><code class="prism language-input3">5
+1,3
+0,1,0,0,0
+1,1,1,1,0
+0,1,1,0,0
+0,1,0,1,1
+0,0,0,1,1
+</code></pre> 
+<h3><a id="4_436"></a>用例4</h3> 
+<pre><code class="prism language-input4">6
+2,4
+0,0,1,0,0,0
+0,0,0,1,0,0
+1,0,1,1,1,0
+0,1,1,1,0,0
+0,0,1,0,1,1
+0,0,0,0,1,1
+</code></pre> 
+<h3><a id="5_449"></a>用例5</h3> 
+<pre><code class="prism language-input5">4
+0,2
+1,1,1,0
+1,1,0,1
+1,0,1,1
+0,1,1,1
+</code></pre> 
+<h3><a id="6_460"></a>用例6</h3> 
+<pre><code class="prism language-input6">7
+1,3,5
+0,1,0,0,0,0,0
+1,1,1,0,0,0,0
+0,1,1,1,0,0,0
+0,0,1,1,1,0,0
+0,0,0,1,1,1,0
+0,0,0,0,1,1,1
+0,0,0,0,0,1,1
+</code></pre> 
+<h3><a id="7_474"></a>用例7</h3> 
+<pre><code class="prism language-input7">3
+0
+1,1,0
+1,1,1
+0,1,1
+</code></pre> 
+<h3><a id="8_484"></a>用例8</h3> 
+<pre><code class="prism language-input8">5
+0,1,2
+1,1,1,0,0
+1,1,1,1,0
+1,1,1,0,1
+0,1,0,1,0
+0,0,1,0,1
+</code></pre> 
+<h3><a id="9_496"></a>用例9</h3> 
+<pre><code class="prism language-input9">8
+4,7
+0,0,0,0,1,0,0,0
+0,0,0,0,0,1,0,0
+0,0,0,0,0,0,1,0
+0,0,0,0,0,0,0,1
+1,0,0,0,1,1,0,0
+0,1,0,0,1,1,1,0
+0,0,1,0,0,1,1,1
+0,0,0,1,0,0,1,1
+</code></pre> 
+<h3><a id="10_511"></a>用例10</h3> 
+<pre><code class="prism language-input10">5
+0,4
+1,0,0,1,1
+0,1,1,0,0
+0,1,1,0,0
+1,0,0,1,0
+1,0,0,0,1
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_5" rel="nofollow">题目描述</a></li><li><a href="#_17" rel="nofollow">输入描述</a></li><li><a href="#_33" rel="nofollow">输出描述</a></li><li><a href="#_37" rel="nofollow">用例</a></li><li><a href="#_64" rel="nofollow">解题思路</a></li><li><a href="#_74" rel="nofollow">用例模拟计算过程：</a></li><li><a href="#C_98" rel="nofollow">C++</a></li><li><a href="#Java_169" rel="nofollow">Java</a></li><li><a href="#javaScript_225" rel="nofollow">javaScript</a></li><li><a href="#Python_289" rel="nofollow">Python</a></li><li><a href="#C_328" rel="nofollow">C语言</a></li><li><a href="#_402" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_403" rel="nofollow">用例1</a></li><li><a href="#2_414" rel="nofollow">用例2</a></li><li><a href="#3_424" rel="nofollow">用例3</a></li><li><a href="#4_436" rel="nofollow">用例4</a></li><li><a href="#5_449" rel="nofollow">用例5</a></li><li><a href="#6_460" rel="nofollow">用例6</a></li><li><a href="#7_474" rel="nofollow">用例7</a></li><li><a href="#8_484" rel="nofollow">用例8</a></li><li><a href="#9_496" rel="nofollow">用例9</a></li><li><a href="#10_511" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/0722b540fe7cafb5e9f76380ff0f9735.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

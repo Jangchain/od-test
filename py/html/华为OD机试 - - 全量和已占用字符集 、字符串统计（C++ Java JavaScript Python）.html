@@ -1,0 +1,420 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="__100_2"></a>题目描述： 全量和已占用字符集 、字符串统计（分值100）</h2> 
+<p>给定两个字符集合，一个是全量字符集，一个是已占用字符集，已占用字符集中的字符不能再使用。<br> 要求输出剩余可用字符集。</p> 
+<h2><a id="_7"></a>输入描述</h2> 
+<ol><li>输入一个字符串 一定包含@，@前为全量字符集 @后的为已占用字符集</li><li>已占用字符集中的字符一定是全量字符集中的字符</li><li>字符集中的字符跟字符之间使用英文逗号隔开</li><li>每个字符都表示为字符+数字的形式用英文冒号分隔，比如a:1标识一个a字符</li><li>字符只考虑英文字母，区分大小写</li><li>数字只考虑正整型 不超过100</li><li>如果一个字符都没被占用 @标识仍存在，例如 a:3,b:5,c:2@</li></ol> 
+<h2><a id="_17"></a>输出描述</h2> 
+<ul><li>输出可用字符集</li><li>不同的输出字符集之间用回车换行</li><li>注意 输出的字符顺序要跟输入的一致，如下面用例不能输出b:3,a:2,c:2</li><li>如果某个字符已全部占用 则不需要再输出</li></ul> 
+<h2><a id="_26"></a>用例</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c">a<span class="token operator">:</span><span class="token number">3</span><span class="token punctuation">,</span>b<span class="token operator">:</span><span class="token number">5</span><span class="token punctuation">,</span>c<span class="token operator">:</span><span class="token number">2</span>@a<span class="token operator">:</span><span class="token number">1</span><span class="token punctuation">,</span>b<span class="token operator">:</span><span class="token number">2</span>
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-c">a<span class="token operator">:</span><span class="token number">2</span><span class="token punctuation">,</span>b<span class="token operator">:</span><span class="token number">3</span><span class="token punctuation">,</span>c<span class="token operator">:</span><span class="token number">2</span>
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>全量字符集为三个a，5个b，2个c<br> 已占用字符集为1个a，2个b<br> 由于已占用字符不能再使用<br> 因此剩余可用字符为2个a，3个b，2个c<br> 因此输出a:2,b:3,c:2</p> 
+</blockquote> 
+<h2><a id="C_46"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>string input<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 将输入字符串按照@符号分割为全量字符集和已占用字符集</span>
+    std<span class="token operator">::</span>string fullCharacterSet <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">"@"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>string occupiedCharacterSet <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">"@"</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建字符列表，用于存储全量字符集中的字符及其对应的数量</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>std<span class="token operator">::</span>pair<span class="token operator">&lt;</span>std<span class="token operator">::</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> characterList<span class="token punctuation">;</span>
+
+    <span class="token comment">// 将全量字符集按照逗号分割为单个字符</span>
+    std<span class="token operator">::</span>stringstream <span class="token function">fullCharacterSetStream</span><span class="token punctuation">(</span>fullCharacterSet<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>string character<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>fullCharacterSetStream<span class="token punctuation">,</span> character<span class="token punctuation">,</span> <span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将字符按照冒号分割为字符和数量</span>
+        std<span class="token operator">::</span>string characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> character<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> count <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>character<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>character<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        characterList<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">make_pair</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">,</span> count<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符和数量添加到字符列表中</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果已占用字符集为空，则输出全量字符集</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>occupiedCharacterSet<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> fullCharacterSet <span class="token operator">&lt;&lt;</span> <span class="token string">"@"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 创建已占用字符集的哈希表，用于存储已占用字符及其对应的数量</span>
+    std<span class="token operator">::</span>unordered_map<span class="token operator">&lt;</span>std<span class="token operator">::</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> occupiedCharacters<span class="token punctuation">;</span>
+
+    <span class="token comment">// 将已占用字符集按照逗号分割为单个字符</span>
+    std<span class="token operator">::</span>stringstream <span class="token function">occupiedCharacterSetStream</span><span class="token punctuation">(</span>occupiedCharacterSet<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>occupiedCharacterSetStream<span class="token punctuation">,</span> character<span class="token punctuation">,</span> <span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将字符按照冒号分割为字符和数量</span>
+        std<span class="token operator">::</span>string characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> character<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> count <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>character<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>character<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        occupiedCharacters<span class="token punctuation">[</span>characterSplit<span class="token punctuation">]</span> <span class="token operator">=</span> count<span class="token punctuation">;</span> <span class="token comment">// 将字符和数量添加到已占用字符集的哈希表中</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历字符列表中的每个字符</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> characterList<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>string character <span class="token operator">=</span> characterList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> count <span class="token operator">=</span> characterList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+        <span class="token comment">// 如果已占用字符集中包含当前字符</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>occupiedCharacters<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>character<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count <span class="token operator">-=</span> occupiedCharacters<span class="token punctuation">[</span>character<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 计算剩余可用数量</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                characterList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>second <span class="token operator">=</span> count<span class="token punctuation">;</span> <span class="token comment">// 更新字符列表中的数量为剩余可用数量</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                characterList<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>characterList<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果剩余可用数量为0，则移除当前字符</span>
+                i<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 由于移除了一个字符，需要将索引减1</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 构建输出字符串</span>
+    std<span class="token operator">::</span>stringstream result<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> character <span class="token operator">:</span> characterList<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        result <span class="token operator">&lt;&lt;</span> character<span class="token punctuation">.</span>first <span class="token operator">&lt;&lt;</span> <span class="token string">":"</span> <span class="token operator">&lt;&lt;</span> character<span class="token punctuation">.</span>second <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span> <span class="token comment">// 将每个字符及其数量添加到输出字符串中</span>
+    <span class="token punctuation">}</span>
+    std<span class="token operator">::</span>string output <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    output <span class="token operator">=</span> output<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> output<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 删除最后一个逗号</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> output <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="JavaScript_124"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将输入字符串按照@符号分割为全量字符集和已占用字符集</span>
+  <span class="token keyword">const</span> splitInput <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"@"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> fullCharacterSet <span class="token operator">=</span> splitInput<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 全量字符集</span>
+  <span class="token keyword">const</span> occupiedCharacterSet <span class="token operator">=</span> splitInput<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 已占用字符集</span>
+
+  <span class="token comment">// 创建字符列表，用于存储全量字符集中的字符及其对应的数量</span>
+  <span class="token keyword">const</span> characterList <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 将全量字符集按照逗号分割为单个字符</span>
+  <span class="token keyword">const</span> fullCharacterSetSplit <span class="token operator">=</span> fullCharacterSet<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历全量字符集的每个字符</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> character <span class="token keyword">of</span> fullCharacterSetSplit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将字符按照冒号分割为字符和数量</span>
+    <span class="token keyword">const</span> characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    characterList<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符和数量添加到字符列表中</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 如果已占用字符集为空，则输出全量字符集</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>occupiedCharacterSet <span class="token operator">===</span> <span class="token string">""</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>fullCharacterSet <span class="token operator">+</span> <span class="token string">"@"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 创建已占用字符集的哈希表，用于存储已占用字符及其对应的数量</span>
+  <span class="token keyword">const</span> occupiedCharacters <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 将已占用字符集按照逗号分割为单个字符</span>
+  <span class="token keyword">const</span> occupiedCharacterSetSplit <span class="token operator">=</span> occupiedCharacterSet<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历已占用字符集的每个字符</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> character <span class="token keyword">of</span> occupiedCharacterSetSplit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将字符按照冒号分割为字符和数量</span>
+    <span class="token keyword">const</span> characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    occupiedCharacters<span class="token punctuation">[</span>characterSplit<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符和数量添加到已占用字符集的哈希表中</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 遍历字符列表中的每个字符</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> characterList<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> character <span class="token operator">=</span> characterList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 如果已占用字符集中包含当前字符</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token keyword">in</span> occupiedCharacters<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">const</span> count <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> occupiedCharacters<span class="token punctuation">[</span>character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 计算剩余可用数量</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> count<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新字符列表中的数量为剩余可用数量</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        characterList<span class="token punctuation">.</span><span class="token function">splice</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果剩余可用数量为0，则移除当前字符</span>
+        i<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 由于移除了一个字符，需要将索引减1</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 构建输出字符串</span>
+  <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> character <span class="token keyword">of</span> characterList<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    result <span class="token operator">+=</span> character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">":"</span> <span class="token operator">+</span> character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">","</span><span class="token punctuation">;</span> <span class="token comment">// 将每个字符及其数量添加到输出字符串中</span>
+  <span class="token punctuation">}</span>
+  result <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 删除最后一个逗号</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Java_199"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 读取输入字符串</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 将输入字符串按照@符号分割为全量字符集和已占用字符集</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> splitInput <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"@"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> fullCharacterSet <span class="token operator">=</span> splitInput<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 全量字符集</span>
+        <span class="token class-name">String</span> occupiedCharacterSet <span class="token operator">=</span> splitInput<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 已占用字符集</span>
+        
+        <span class="token comment">// 创建字符列表，用于存储全量字符集中的字符及其对应的数量</span>
+        <span class="token class-name">ArrayList</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> characterList <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 将全量字符集按照逗号分割为单个字符</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fullCharacterSetSplit <span class="token operator">=</span> fullCharacterSet<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 遍历全量字符集的每个字符</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> character <span class="token operator">:</span> fullCharacterSetSplit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将字符按照冒号分割为字符和数量</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            characterList<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符和数量添加到字符列表中</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 如果已占用字符集为空，则输出全量字符集</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>occupiedCharacterSet<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>fullCharacterSet <span class="token operator">+</span> <span class="token string">"@"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 创建已占用字符集的哈希表，用于存储已占用字符及其对应的数量</span>
+        <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> occupiedCharacters <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 将已占用字符集按照逗号分割为单个字符</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> occupiedCharacterSetSplit <span class="token operator">=</span> occupiedCharacterSet<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 遍历已占用字符集的每个字符</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> character <span class="token operator">:</span> occupiedCharacterSetSplit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将字符按照冒号分割为字符和数量</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            occupiedCharacters<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符和数量添加到已占用字符集的哈希表中</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 遍历字符列表中的每个字符</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> characterList<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> character <span class="token operator">=</span> characterList<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果已占用字符集中包含当前字符</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>occupiedCharacters<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> occupiedCharacters<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算剩余可用数量</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新字符列表中的数量为剩余可用数量</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    characterList<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果剩余可用数量为0，则移除当前字符</span>
+                    i<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 由于移除了一个字符，需要将索引减1</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 构建输出字符串</span>
+        <span class="token class-name">StringBuilder</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> character <span class="token operator">:</span> characterList<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将每个字符及其数量添加到输出字符串中</span>
+        <span class="token punctuation">}</span>
+        result<span class="token punctuation">.</span><span class="token function">deleteCharAt</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 删除最后一个逗号</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_276"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取输入字符串</span>
+<span class="token builtin">input</span> <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 将输入字符串按照@符号分割为全量字符集和已占用字符集</span>
+splitInput <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">"@"</span><span class="token punctuation">)</span>
+fullCharacterSet <span class="token operator">=</span> splitInput<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token comment"># 全量字符集</span>
+occupiedCharacterSet <span class="token operator">=</span> splitInput<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token comment"># 已占用字符集</span>
+
+<span class="token comment"># 创建字符列表，用于存储全量字符集中的字符及其对应的数量</span>
+characterList <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 将全量字符集按照逗号分割为单个字符</span>
+fullCharacterSetSplit <span class="token operator">=</span> fullCharacterSet<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历全量字符集的每个字符</span>
+<span class="token keyword">for</span> character <span class="token keyword">in</span> fullCharacterSetSplit<span class="token punctuation">:</span>
+    <span class="token comment"># 将字符按照冒号分割为字符和数量</span>
+    characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span>
+    characterList<span class="token punctuation">.</span>append<span class="token punctuation">(</span>characterSplit<span class="token punctuation">)</span> <span class="token comment"># 将字符和数量添加到字符列表中</span>
+
+<span class="token comment"># 如果已占用字符集为空，则输出全量字符集</span>
+<span class="token keyword">if</span> occupiedCharacterSet <span class="token operator">==</span> <span class="token string">""</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>fullCharacterSet <span class="token operator">+</span> <span class="token string">"@"</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 创建已占用字符集的哈希表，用于存储已占用字符及其对应的数量</span>
+occupiedCharacters <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+<span class="token comment"># 将已占用字符集按照逗号分割为单个字符</span>
+occupiedCharacterSetSplit <span class="token operator">=</span> occupiedCharacterSet<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历已占用字符集的每个字符</span>
+<span class="token keyword">for</span> character <span class="token keyword">in</span> occupiedCharacterSetSplit<span class="token punctuation">:</span>
+    <span class="token comment"># 将字符按照冒号分割为字符和数量</span>
+    characterSplit <span class="token operator">=</span> character<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span>
+    occupiedCharacters<span class="token punctuation">[</span>characterSplit<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>characterSplit<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment"># 将字符和数量添加到已占用字符集的哈希表中</span>
+
+<span class="token comment"># 遍历字符列表中的每个字符</span>
+i <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">while</span> i <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>characterList<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    character <span class="token operator">=</span> characterList<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    <span class="token comment"># 如果已占用字符集中包含当前字符</span>
+    <span class="token keyword">if</span> character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token keyword">in</span> occupiedCharacters<span class="token punctuation">:</span>
+        count <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> occupiedCharacters<span class="token punctuation">[</span>character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token comment"># 计算剩余可用数量</span>
+        <span class="token keyword">if</span> count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span> <span class="token comment"># 更新字符列表中的数量为剩余可用数量</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            characterList<span class="token punctuation">.</span>pop<span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token comment"># 如果剩余可用数量为0，则移除当前字符</span>
+            i <span class="token operator">-=</span> <span class="token number">1</span> <span class="token comment"># 由于移除了一个字符，需要将索引减1</span>
+    i <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 构建输出字符串</span>
+result <span class="token operator">=</span> <span class="token string">""</span>
+<span class="token keyword">for</span> character <span class="token keyword">in</span> characterList<span class="token punctuation">:</span>
+    result <span class="token operator">+=</span> character<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">":"</span> <span class="token operator">+</span> character<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">","</span> <span class="token comment"># 将每个字符及其数量添加到输出字符串中</span>
+result <span class="token operator">=</span> result<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token comment"># 删除最后一个逗号</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span> <span class="token comment"># 输出结果</span>
+</code></pre> 
+<h2><a id="C_342"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">maxsize</span> <span class="token expression"><span class="token number">1000</span>   </span></span>
+
+<span class="token comment">// 定义字符和数量的结构体</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> ch<span class="token punctuation">[</span><span class="token number">26</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储字符</span>
+    <span class="token keyword">int</span> count<span class="token punctuation">;</span>    <span class="token comment">// 存储该字符的数量</span>
+<span class="token punctuation">}</span> CharStr<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span>maxsize<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 用于存储输入的字符串</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> maxsize<span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 从标准输入读取一行</span>
+
+    <span class="token comment">// 分割全量字符集和已占用字符集</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> fullSet <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"@"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 分割出全量字符集</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> occSet <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>   <span class="token comment">// 分割出已占用字符集</span>
+
+    <span class="token comment">// 定义两个字符数组，分别存储全量和已占用字符集的信息</span>
+    CharStr fullList<span class="token punctuation">[</span>maxsize<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储全量字符集</span>
+    <span class="token keyword">int</span> fullcnt <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 全量字符集中的元素计数</span>
+    CharStr occList<span class="token punctuation">[</span>maxsize<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储已占用字符集</span>
+    <span class="token keyword">int</span> occcnt <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// 已占用字符集中的元素计数</span>
+
+    <span class="token comment">// 解析全量字符集字符串</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>fullSet<span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">sscanf</span><span class="token punctuation">(</span>token<span class="token punctuation">,</span> <span class="token string">"%[^:]:%d"</span><span class="token punctuation">,</span> fullList<span class="token punctuation">[</span>fullcnt<span class="token punctuation">]</span><span class="token punctuation">.</span>ch<span class="token punctuation">,</span> <span class="token operator">&amp;</span>fullList<span class="token punctuation">[</span>fullcnt<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 解析字符和数量</span>
+        fullcnt<span class="token operator">++</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 解析已占用字符集字符串</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>occSet <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>occSet<span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">sscanf</span><span class="token punctuation">(</span>token<span class="token punctuation">,</span> <span class="token string">"%[^:]:%d"</span><span class="token punctuation">,</span> occList<span class="token punctuation">[</span>occcnt<span class="token punctuation">]</span><span class="token punctuation">.</span>ch<span class="token punctuation">,</span> <span class="token operator">&amp;</span>occList<span class="token punctuation">[</span>occcnt<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 解析字符和数量</span>
+            occcnt<span class="token operator">++</span><span class="token punctuation">;</span>
+            token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算剩余字符集</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> fullcnt<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> occcnt<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>fullList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>ch<span class="token punctuation">,</span> occList<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>ch<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  <span class="token comment">// 比较字符是否相同</span>
+                fullList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">-=</span> occList<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">;</span>  <span class="token comment">// 减去已占用的数量</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 构建并输出最终的可用字符集</span>
+    <span class="token keyword">char</span> temp<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 临时存储每个字符及其剩余数量</span>
+    <span class="token keyword">char</span> ans<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>  <span class="token comment">// 存储最终结果的字符串</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> fullcnt<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fullList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">sprintf</span><span class="token punctuation">(</span>temp<span class="token punctuation">,</span> <span class="token string">"%s:%d,"</span><span class="token punctuation">,</span> fullList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>ch<span class="token punctuation">,</span> fullList<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 格式化字符串</span>
+            <span class="token function">strcat</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> temp<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 连接到结果字符串</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">int</span> len <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>len <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> ans<span class="token punctuation">[</span>len<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'\0'</span><span class="token punctuation">;</span>  <span class="token comment">// 去除最后一个逗号</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 输出结果</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_414"></a>完整用例</h2> 
+<h3><a id="1_415"></a>用例1</h3> 
+<pre><code class="prism language-input1">a:3,b:5,c:2@a:1,b:2
+</code></pre> 
+<h3><a id="2_421"></a>用例2</h3> 
+<pre><code class="prism language-input2">a:1,b:2,c:3@a:1,b:2,c:3
+</code></pre> 
+<h3><a id="3_427"></a>用例3</h3> 
+<pre><code class="prism language-input3">x:10,y:20,z:30@x:5,y:10,z:15
+</code></pre> 
+<h3><a id="4_433"></a>用例4</h3> 
+<pre><code class="prism language-input4">m:7,n:8,o:9@m:2,n:4,o:6
+</code></pre> 
+<h3><a id="5_439"></a>用例5</h3> 
+<pre><code class="prism language-input5">x:1,y:2,z:3@x:1,y:1,z:3
+</code></pre> 
+<h3><a id="6_445"></a>用例6</h3> 
+<pre><code class="prism language-input6">a:10,b:20,c:30@a:1,b:2,c:3
+</code></pre> 
+<h3><a id="7_451"></a>用例7</h3> 
+<pre><code class="prism language-input7">a:3,b:5,c:2@a:1,b:2
+</code></pre> 
+<h3><a id="8_457"></a>用例8</h3> 
+<pre><code class="prism language-input8">a:3,b:5,c:2@a:0,b:0,c:0
+</code></pre> 
+<h3><a id="9_463"></a>用例9</h3> 
+<pre><code class="prism language-input9">l:1,t:3,u:5,v:7@l:1,t:2,u:3,v:4
+</code></pre> 
+<h3><a id="10_469"></a>用例10</h3> 
+<pre><code class="prism language-input10">d:5,e:5,f:5@d:2,e:3,f:4
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#__100_2" rel="nofollow">题目描述： 全量和已占用字符集 、字符串统计（分值100）</a></li><li><a href="#_7" rel="nofollow">输入描述</a></li><li><a href="#_17" rel="nofollow">输出描述</a></li><li><a href="#_26" rel="nofollow">用例</a></li><li><a href="#C_46" rel="nofollow">C++</a></li><li><a href="#JavaScript_124" rel="nofollow">JavaScript</a></li><li><a href="#Java_199" rel="nofollow">Java</a></li><li><a href="#Python_276" rel="nofollow">Python</a></li><li><a href="#C_342" rel="nofollow">C语言</a></li><li><a href="#_414" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_415" rel="nofollow">用例1</a></li><li><a href="#2_421" rel="nofollow">用例2</a></li><li><a href="#3_427" rel="nofollow">用例3</a></li><li><a href="#4_433" rel="nofollow">用例4</a></li><li><a href="#5_439" rel="nofollow">用例5</a></li><li><a href="#6_445" rel="nofollow">用例6</a></li><li><a href="#7_451" rel="nofollow">用例7</a></li><li><a href="#8_457" rel="nofollow">用例8</a></li><li><a href="#9_463" rel="nofollow">用例9</a></li><li><a href="#10_469" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/3cb8e2318f9657470932620a3ea3e1e8.png" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

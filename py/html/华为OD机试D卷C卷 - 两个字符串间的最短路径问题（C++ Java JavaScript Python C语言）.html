@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_5"></a>题目描述</h2> 
+<p>给定两个字符串，分别为字符串A与字符串B。</p> 
+<p>例如A字符串为ABCABBA，B字符串为CBABAC可以得到m*n的二维数组，定义原点为(0,0)，终点为(m,n)，水平与垂直的每一条边距离为1，</p> 
+<p>从原点(0,0)到(0,A)为水平边，距离为1，从(0,A)到(A,C)为垂直边，距离为1；</p> 
+<p>假设两个字符串同一位置的两个字符相同则可以作一个斜边，如(A,C)到(B,B)最短距离为斜边，距离同样为1。</p> 
+<p>作出所有的斜边，则有(0,0)到(B,B)的距离为 1个水平边+1个垂直边+1个斜边 =3。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/9384038af848bb8471164fbb3897dd84.png" alt="image-20240102200702399"></p> 
+<p>根据定义可知，原点到终点的最短距离路径如下图红线标记，最短距离为9；<br> 路径为(0,0)-&gt;(A,0)-&gt;(A,C)-&gt;(B,B)-&gt;(C,B)-&gt;(A,A)-&gt;(B,B)-&gt;(B,B)-&gt;(A,A)-&gt;(A,C)</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/6d9ebc7c09f57b8bda4babd2722aa39b.png" alt="image-20240102201132737"></p> 
+<h2><a id="_24"></a>输入描述</h2> 
+<p>空格分割的两个字符串 A 与字符串 B</p> 
+<ul><li>字符串不为"空串"</li><li>字符格式满足正则规则：[A-Z]</li><li>字符串长度 &lt; 10000</li></ul> 
+<h2><a id="_32"></a>输出描述</h2> 
+<p>原点到终点的最短距离</p> 
+<h2><a id="_36"></a>用例</h2> 
+<table><thead><tr><th>输入</th><th>ABC ABC</th></tr></thead><tbody><tr><td>输出</td><td>3</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<table><thead><tr><th>输入</th><th>ABCABBA CBABAC</th></tr></thead><tbody><tr><td>输出</td><td>9</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h2><a id="_50"></a>解题思路</h2> 
+<p>题意其实很简单，就是把AB两个字符串的字符映射到坐标轴上面。A的字符串为x轴，B的字符串为y轴。</p> 
+<p>起始和终点为（0,0）和（m,n）。然后求起点到终点的最短路径。这个路径的求法有限制。</p> 
+<p>如上面的图所示，起点为（0,0），然后下一个坐标轴，可以往（0，A）或者（C,0）走，这里我们选择往（0，A）走。然后再往（A,C）走。然后我们可以往（C,B）或者（B,0）或（B,B）（这个坐标是因为坐标的x和y都为B,所以可以斜着走）走。知道走到终点。</p> 
+<p>这个问题可以通过动态规划来解决。动态规划的基本思想是将一个复杂的问题分解为多个子问题，然后通过解决子问题来解决原问题。在这个问题中，我们需要找到从原点到终点的最短距离，这个距离可以通过计算到每个点的最短距离来得到。</p> 
+<p>首先，我们需要创建一个动态规划数组，用于存储到每个点的最短距离。然后，我们初始化数组的第一行和第一列，即从原点到每个点的距离。</p> 
+<p>接下来，我们遍历字符串B，对于每个字符，我们遍历字符串A，对于每个字符，我们检查当前字符是否与字符串B的当前字符匹配。如果匹配，那么我们更新动态规划数组的当前位置为左上角的值加1；如果不匹配，那么我们更新动态规划数组的当前位置为左边和上边的最小值加1。</p> 
+<p>最后，我们输出从原点到终点的最短距离，即动态规划数组的最后一个元素。</p> 
+<p>以下是详细的推导过程：</p> 
+<ol><li> <p>初始化：</p> 
+  <ul><li><code>dp[0]</code>到<code>dp[n]</code>初始化为<code>0</code>到<code>n</code>，因为从字符串A的开头到每个位置的最短距离就是对应的索引值（即水平移动的距离）。</li></ul> </li><li> <p>遍历字符串B（<code>i</code>从<code>1</code>到<code>m</code>）：</p> 
+  <ul><li>在每次新的行开始时，更新<code>dp[0]</code>为<code>i</code>，因为从字符串B的开头到当前位置的最短距离就是<code>i</code>（即垂直移动的距离）。</li><li>保存<code>prev</code>为左上角的值，即上一行的<code>dp[0]</code>。</li></ul> </li><li> <p>遍历字符串A（<code>j</code>从<code>1</code>到<code>n</code>）：</p> 
+  <ul><li>保存<code>temp</code>为当前<code>dp[j]</code>的值，因为在更新<code>dp[j]</code>时需要用到。</li><li>如果<code>A[j-1] == B[i-1]</code>（字符匹配），则<code>dp[j]</code>更新为<code>prev + 1</code>，因为可以直接从左上角移动到当前位置。</li><li>如果<code>A[j-1] != B[i-1]</code>（字符不匹配），则<code>dp[j]</code>更新为<code>min(dp[j], dp[j-1]) + 1</code>，即从左边或上边移动到当前位置的最小值加1。</li><li>更新<code>prev</code>为当前<code>dp[j]</code>的原始值（即<code>temp</code>）。</li></ul> </li><li> <p>最终，<code>dp[n]</code>保存了从字符串A到字符串B的最短距离。</p> </li></ol> 
+<p>这个过程中，我们只保留了当前行和上一行的信息，从而将空间复杂度从O(mn)降低到了O(n)。</p> 
+<h2><a id="C_89"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string input<span class="token punctuation">;</span>
+    <span class="token comment">// 读取一行输入</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用stringstream分割输入</span>
+    stringstream <span class="token function">ss</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    string A<span class="token punctuation">,</span> B<span class="token punctuation">;</span>
+    ss <span class="token operator">&gt;&gt;</span> A <span class="token operator">&gt;&gt;</span> B<span class="token punctuation">;</span>
+    
+    <span class="token comment">// 获取字符串B和A的长度</span>
+    <span class="token keyword">int</span> m <span class="token operator">=</span> B<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> n <span class="token operator">=</span> A<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建动态规划数组</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">dp</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化dp数组的第一行</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历字符串B</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> prev <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token comment">// 遍历字符串A</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> temp <span class="token operator">=</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果字符匹配</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>A<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> B<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> prev <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果字符不匹配</span>
+                dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            prev <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最短距离</span>
+    cout <span class="token operator">&lt;&lt;</span> dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_143"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parts <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 将分割后的两部分分别赋值给A和B</span>
+        <span class="token class-name">String</span> <span class="token class-name">A</span> <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> <span class="token class-name">B</span> <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取字符串B的长度</span>
+        <span class="token keyword">int</span> m <span class="token operator">=</span> <span class="token class-name">B</span><span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取字符串A的长度</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token class-name">A</span><span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个动态规划数组，用于存储到每个点的最短距离</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化dp数组的第一行，即从(0,0)到(0,j)的距离</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 遍历字符串B</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 保存左上角的值</span>
+            <span class="token keyword">int</span> prev <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 更新dp数组的第一列，即从(0,0)到(i,0)的距离</span>
+            dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+            <span class="token comment">// 遍历字符串A</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 保存dp[j]的原始值，用于后面的更新</span>
+                <span class="token keyword">int</span> temp <span class="token operator">=</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果当前字符匹配，则更新dp[j]为左上角的值加1</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">A</span><span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token class-name">B</span><span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> prev <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果当前字符不匹配，则更新dp[j]为左边和上边的最小值加1</span>
+                    dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 更新prev为当前dp[j]的原始值</span>
+                prev <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出从(0,0)到(m,n)的最短距离</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_197"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> parts <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> <span class="token constant">A</span> <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> <span class="token constant">B</span> <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">const</span> m <span class="token operator">=</span> <span class="token constant">B</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+    <span class="token keyword">const</span> n <span class="token operator">=</span> <span class="token constant">A</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+
+    <span class="token keyword">let</span> dp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">_<span class="token punctuation">,</span> j</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> j<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历字符串B</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> prev <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历字符串A</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">let</span> temp <span class="token operator">=</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果字符匹配</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token constant">A</span><span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token constant">B</span><span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> prev <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果字符不匹配</span>
+                dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            prev <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最短距离</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_248"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 读取输入</span>
+input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+A<span class="token punctuation">,</span> B <span class="token operator">=</span> input_str<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span>
+
+m <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>B<span class="token punctuation">)</span>
+n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>A<span class="token punctuation">)</span>
+
+<span class="token comment"># 创建动态规划数组</span>
+dp <span class="token operator">=</span> <span class="token punctuation">[</span>j <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 遍历字符串B</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> m <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    prev <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> i
+
+    <span class="token comment"># 遍历字符串A</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        temp <span class="token operator">=</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span>
+
+        <span class="token comment"># 如果字符匹配</span>
+        <span class="token keyword">if</span> A<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> B<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> prev <span class="token operator">+</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果字符不匹配</span>
+            dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+        prev <span class="token operator">=</span> temp
+
+<span class="token comment"># 输出最短距离</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_282"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义字符串A和B</span>
+    <span class="token keyword">char</span> A<span class="token punctuation">[</span><span class="token number">10001</span><span class="token punctuation">]</span><span class="token punctuation">,</span> B<span class="token punctuation">[</span><span class="token number">10001</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 从标准输入读取两个字符串</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s %s"</span><span class="token punctuation">,</span> A<span class="token punctuation">,</span> B<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 获取字符串A和B的长度</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>A<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> m <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>B<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建动态规划数组dp，用于存储到每个点的最短距离</span>
+    <span class="token keyword">int</span> <span class="token operator">*</span>dp <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化dp数组的第一行，即从(0,0)到(0,j)的距离</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历字符串B</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 保存左上角的值</span>
+        <span class="token keyword">int</span> prev <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新dp数组的第一列，即从(0,0)到(i,0)的距离</span>
+        dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历字符串A</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 保存dp[j]的原始值，用于后面的更新</span>
+            <span class="token keyword">int</span> temp <span class="token operator">=</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果当前字符匹配，则更新dp[j]为左上角的值加1</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>A<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> B<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> prev <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果当前字符不匹配，则更新dp[j]为左边和上边的最小值加1</span>
+                <span class="token keyword">int</span> minVal <span class="token operator">=</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;</span> dp<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">?</span> dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">:</span> dp<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                dp<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> minVal <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 更新prev为当前dp[j]的原始值</span>
+            prev <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出从(0,0)到(m,n)的最短距离</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 释放动态分配的内存</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>dp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_342"></a>完整用例</h2> 
+<h3><a id="1_344"></a>用例1</h3> 
+<pre><code class="prism language-input1">ABCDE ABCDE
+</code></pre> 
+<h3><a id="2_350"></a>用例2</h3> 
+<pre><code class="prism language-input2">A B
+</code></pre> 
+<h3><a id="3_356"></a>用例3</h3> 
+<pre><code class="prism language-input3">ABCD EFGH
+</code></pre> 
+<h3><a id="4_362"></a>用例4</h3> 
+<pre><code class="prism language-input4">AAAAA BBBBB
+</code></pre> 
+<h3><a id="5_368"></a>用例5</h3> 
+<pre><code class="prism language-input5">ABACAD AEAFAG
+</code></pre> 
+<h3><a id="6_374"></a>用例6</h3> 
+<pre><code class="prism language-input6">XYZ XYZXYZ
+</code></pre> 
+<h3><a id="7_380"></a>用例7</h3> 
+<pre><code class="prism language-input7">ABCDEFG XYZABC
+</code></pre> 
+<h3><a id="8_386"></a>用例8</h3> 
+<pre><code class="prism language-input8">AAAAAA B
+</code></pre> 
+<h3><a id="9_392"></a>用例9</h3> 
+<pre><code class="prism language-input9">ABCDEFGH IJKLMNOP
+</code></pre> 
+<h3><a id="10_398"></a>用例10</h3> 
+<pre><code class="prism language-input10">ABACABADABACABA DACBADACB
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_5" rel="nofollow">题目描述</a></li><li><a href="#_24" rel="nofollow">输入描述</a></li><li><a href="#_32" rel="nofollow">输出描述</a></li><li><a href="#_36" rel="nofollow">用例</a></li><li><a href="#_50" rel="nofollow">解题思路</a></li><li><a href="#C_89" rel="nofollow">C++</a></li><li><a href="#Java_143" rel="nofollow">Java</a></li><li><a href="#javaScript_197" rel="nofollow">javaScript</a></li><li><a href="#Python_248" rel="nofollow">Python</a></li><li><a href="#C_282" rel="nofollow">C语言</a></li><li><a href="#_342" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_344" rel="nofollow">用例1</a></li><li><a href="#2_350" rel="nofollow">用例2</a></li><li><a href="#3_356" rel="nofollow">用例3</a></li><li><a href="#4_362" rel="nofollow">用例4</a></li><li><a href="#5_368" rel="nofollow">用例5</a></li><li><a href="#6_374" rel="nofollow">用例6</a></li><li><a href="#7_380" rel="nofollow">用例7</a></li><li><a href="#8_386" rel="nofollow">用例8</a></li><li><a href="#9_392" rel="nofollow">用例9</a></li><li><a href="#10_398" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/9dc54366c71693a05d99eb6eb5e23207.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

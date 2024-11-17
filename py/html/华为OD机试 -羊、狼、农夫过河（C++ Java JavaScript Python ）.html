@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_4"></a>题目描述</h4> 
+<p>羊、狼、农夫都在岸边，当羊的数量小于狼的数量时，狼会攻击羊，农夫则会损失羊。农夫有一艘容量固定的船，能够承载固定数量的动物。</p> 
+<p>要求求出不损失羊情况下将全部羊和狼运到对岸需要的最小次数。</p> 
+<p>只计算农夫去对岸的次数，回程时农夫不会运送羊和狼。</p> 
+<p>备注：农夫在或农夫离开后羊的数量大于狼的数量时狼不会攻击羊。</p> 
+<h4><a id="_14"></a>输入描述</h4> 
+<p>第一行输入为M，N，X， 分别代表羊的数量，狼的数量，小船的容量。</p> 
+<h4><a id="_18"></a>输出描述</h4> 
+<p>输出不损失羊情况下将全部羊和狼运到对岸需要的最小次数（若无法满足条件则输出0）。</p> 
+<h4><a id="_22"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>5 3 3</td></tr><tr><td>输出</td><td>3</td></tr><tr><td>说明</td><td><p>第一次运2只狼</p><p>第二次运3只羊</p><p>第三次运2只羊和1只狼</p></td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>5 4 1</td></tr><tr><td>输出</td><td>0</td></tr><tr><td>说明</td><td>如果找不到不损失羊的运送方案，输出0</td></tr></tbody></table> 
+<h4><a id="_28"></a>题目解析</h4> 
+<p>首先需要明确几个边界条件：</p> 
+<p>第一，羊的数量不能少于狼的数量。</p> 
+<p>第二，农夫本身不占用船的容量。</p> 
+<p>第三，农夫回程时不会带上羊或狼。</p> 
+<p>本题通过暴力枚举可以解决;</p> 
+<ul><li>农夫离开后，本岸羊 &gt; 本岸狼</li><li>农夫离开后，对岸羊 &gt; 对岸狼</li><li>船上由于农夫始终在，因此羊、狼什么数量都可以，只要不超过船载量</li></ul> 
+<h4><a id="_46"></a>代码思路</h4> 
+<p>这道题是一道典型的深度优先搜索的应用题。题目描述了一群人和动物需要过河，其中有一些限制条件，比如羊的数量小于狼的数量时，狼会攻击羊，农夫则会损失羊；农夫有一艘容量固定的船，能够承载固定数量的动物等等。我们需要求出不损失羊情况下将全部羊和狼运到对岸需要的最小次数。</p> 
+<p>解题思路：</p> 
+<ol><li> <p>首先需要明确一点：本题只需要考虑农夫去对岸的次数，回程时农夫不会运送羊和狼。</p> </li><li> <p>采用深度优先搜索的方式，每次搜索的过程中，需要考虑当前岸边的羊和狼的数量，以及对岸的羊和狼的数量，以及船的容量等等。</p> </li><li> <p>如果当前岸边的羊和狼的数量总和小于等于船的容量，则只需要一次过河，这时候记录当前步数并返回。</p> </li><li> <p>如果羊和狼都在对岸，则记录步数并返回。</p> </li><li> <p>如果羊的数量小于狼的数量，则跳过。</p> </li><li> <p>如果对岸的羊的数量小于对岸的狼的数量，则跳过。</p> </li><li> <p>如果对岸没有羊，但是对岸的狼的数量大于等于船的容量，则跳过。</p> </li><li> <p>进行下一步搜索，搜索过程中需要更新岸边和对岸的羊和狼的数量，以及船的容量等等。</p> </li><li> <p>最后统计所有记录的步数，取最小值即为不损失羊情况下将全部羊和狼运到对岸需要的最小次数。</p> </li></ol> 
+<h4><a id="C_70"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">/**
+ * 深度优先搜索
+ * @param sheep 羊的数量
+ * @param wolf 狼的数量
+ * @param boat 船的容量
+ * @param oppo_sheep 对岸的羊的数量
+ * @param oppo_wolf 对岸的狼的数量
+ * @param count 当前步数
+ * @param ans 存储最小步数的数组
+ */</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> sheep<span class="token punctuation">,</span> <span class="token keyword">int</span> wolf<span class="token punctuation">,</span> <span class="token keyword">int</span> boat<span class="token punctuation">,</span> <span class="token keyword">int</span> oppo_sheep<span class="token punctuation">,</span> <span class="token keyword">int</span> oppo_wolf<span class="token punctuation">,</span> <span class="token keyword">int</span> count<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ans<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> wolf <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果羊和狼都在对岸，则记录步数</span>
+        ans<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">+</span> wolf <span class="token operator">&lt;=</span> boat<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果羊和狼的数量总和小于等于船的容量，则只需要一次过河</span>
+        ans<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token function">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> sheep<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> <span class="token function">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> wolf<span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> j <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 如果没有动物上船，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> j <span class="token operator">&gt;</span> boat<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果上船的动物数量超过船的容量，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">-</span> i <span class="token operator">&lt;=</span> wolf <span class="token operator">-</span> j <span class="token operator">&amp;&amp;</span> sheep <span class="token operator">-</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 如果羊的数量小于狼的数量，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>oppo_sheep <span class="token operator">+</span> i <span class="token operator">&lt;=</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&amp;&amp;</span> oppo_sheep <span class="token operator">+</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果对岸的羊的数量小于对岸的狼的数量，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>oppo_sheep <span class="token operator">+</span> i <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&gt;=</span> boat<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果对岸没有羊，但是对岸的狼的数量大于等于船的容量，则跳过</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>sheep <span class="token operator">-</span> i<span class="token punctuation">,</span> wolf <span class="token operator">-</span> j<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> oppo_sheep <span class="token operator">+</span> i<span class="token punctuation">,</span> oppo_wolf <span class="token operator">+</span> j<span class="token punctuation">,</span> count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 进行下一步搜索</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> sheep <span class="token operator">&gt;&gt;</span> wolf <span class="token operator">&gt;&gt;</span> boat<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ans<span class="token punctuation">;</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span>sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token operator">*</span><span class="token function">min_element</span><span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ans<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> 
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token number">0</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JavaScript_130"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> oppo_sheep<span class="token punctuation">,</span> oppo_wolf<span class="token punctuation">,</span> count<span class="token punctuation">,</span> ans</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> wolf <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    ans<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">+</span> wolf <span class="token operator">&lt;=</span> boat<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    ans<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> sheep<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> wolf<span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> j <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> j <span class="token operator">&gt;</span> boat<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">-</span> i <span class="token operator">&lt;=</span> wolf <span class="token operator">-</span> j <span class="token operator">&amp;&amp;</span> sheep <span class="token operator">-</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>oppo_sheep <span class="token operator">+</span> i <span class="token operator">&lt;=</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&amp;&amp;</span> oppo_sheep <span class="token operator">+</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>oppo_sheep <span class="token operator">+</span> i <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&gt;=</span> boat<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+      <span class="token function">dfs</span><span class="token punctuation">(</span>sheep <span class="token operator">-</span> i<span class="token punctuation">,</span> wolf <span class="token operator">-</span> j<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> oppo_sheep <span class="token operator">+</span> i<span class="token punctuation">,</span> oppo_wolf <span class="token operator">+</span> j<span class="token punctuation">,</span> count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> ans <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token function">dfs</span><span class="token punctuation">(</span>sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>ans<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token operator">...</span>ans<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="Java_174"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token comment">/**
+     * 深度优先搜索
+     * @param sheep 羊的数量
+     * @param wolf 狼的数量
+     * @param boat 船的容量
+     * @param oppo_sheep 对岸的羊的数量
+     * @param oppo_wolf 对岸的狼的数量
+     * @param count 当前步数
+     * @param ans 存储最小步数的数组
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> sheep<span class="token punctuation">,</span> <span class="token keyword">int</span> wolf<span class="token punctuation">,</span> <span class="token keyword">int</span> boat<span class="token punctuation">,</span> <span class="token keyword">int</span> oppo_sheep<span class="token punctuation">,</span> <span class="token keyword">int</span> oppo_wolf<span class="token punctuation">,</span> <span class="token keyword">int</span> count<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> ans<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> wolf <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果羊和狼都在对岸，则记录步数</span>
+            ans<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">+</span> wolf <span class="token operator">&lt;=</span> boat<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果羊和狼的数量总和小于等于船的容量，则只需要一次过河</span>
+            ans<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> sheep<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> wolf<span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> j <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 如果没有动物上船，则跳过</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> j <span class="token operator">&gt;</span> boat<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果上船的动物数量超过船的容量，则跳过</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>sheep <span class="token operator">-</span> i <span class="token operator">&lt;=</span> wolf <span class="token operator">-</span> j <span class="token operator">&amp;&amp;</span> sheep <span class="token operator">-</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 如果羊的数量小于狼的数量，则跳过</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>oppo_sheep <span class="token operator">+</span> i <span class="token operator">&lt;=</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&amp;&amp;</span> oppo_sheep <span class="token operator">+</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果对岸的羊的数量小于对岸的狼的数量，则跳过</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>oppo_sheep <span class="token operator">+</span> i <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&gt;=</span> boat<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果对岸没有羊，但是对岸的狼的数量大于等于船的容量，则跳过</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>sheep <span class="token operator">-</span> i<span class="token punctuation">,</span> wolf <span class="token operator">-</span> j<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> oppo_sheep <span class="token operator">+</span> i<span class="token punctuation">,</span> oppo_wolf <span class="token operator">+</span> j<span class="token punctuation">,</span> count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 进行下一步搜索</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sheep <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> wolf <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> boat <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> ans <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_231"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> oppo_sheep<span class="token punctuation">,</span> oppo_wolf<span class="token punctuation">,</span> count<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> sheep <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">and</span> wolf <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        ans<span class="token punctuation">.</span>append<span class="token punctuation">(</span>count<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+    <span class="token keyword">if</span> sheep <span class="token operator">+</span> wolf <span class="token operator">&lt;=</span> boat<span class="token punctuation">:</span>
+        ans<span class="token punctuation">.</span>append<span class="token punctuation">(</span>count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> sheep<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">min</span><span class="token punctuation">(</span>boat<span class="token punctuation">,</span> wolf<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> i <span class="token operator">+</span> j <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                <span class="token keyword">continue</span>
+            <span class="token keyword">if</span> i <span class="token operator">+</span> j <span class="token operator">&gt;</span> boat<span class="token punctuation">:</span>
+                <span class="token keyword">break</span>
+            <span class="token keyword">if</span> sheep <span class="token operator">-</span> i <span class="token operator">&lt;=</span> wolf <span class="token operator">-</span> j <span class="token keyword">and</span> sheep <span class="token operator">-</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                <span class="token keyword">continue</span>
+            <span class="token keyword">if</span> oppo_sheep <span class="token operator">+</span> i <span class="token operator">&lt;=</span> oppo_wolf <span class="token operator">+</span> j <span class="token keyword">and</span> oppo_sheep <span class="token operator">+</span> i <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                <span class="token keyword">break</span>
+            <span class="token keyword">if</span> oppo_sheep <span class="token operator">+</span> i <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">and</span> oppo_wolf <span class="token operator">+</span> j <span class="token operator">&gt;=</span> boat<span class="token punctuation">:</span>
+                <span class="token keyword">break</span>
+            dfs<span class="token punctuation">(</span>sheep <span class="token operator">-</span> i<span class="token punctuation">,</span> wolf <span class="token operator">-</span> j<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> oppo_sheep <span class="token operator">+</span> i<span class="token punctuation">,</span> oppo_wolf <span class="token operator">+</span> j<span class="token punctuation">,</span> count <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span>
+
+sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+ans <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+dfs<span class="token punctuation">(</span>sheep<span class="token punctuation">,</span> wolf<span class="token punctuation">,</span> boat<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> ans<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">min</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_18" rel="nofollow">输出描述</a></li><li><a href="#_22" rel="nofollow">用例</a></li><li><a href="#_28" rel="nofollow">题目解析</a></li><li><a href="#_46" rel="nofollow">代码思路</a></li><li><a href="#C_70" rel="nofollow">C++</a></li><li><a href="#JavaScript_130" rel="nofollow">JavaScript</a></li><li><a href="#Java_174" rel="nofollow">Java</a></li><li><a href="#Python_231" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e9413fcd109f2f3d7297192eab0c0b2a.gif" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

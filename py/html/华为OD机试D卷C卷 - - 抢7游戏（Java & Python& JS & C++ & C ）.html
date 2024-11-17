@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>A、B两个人玩抢7游戏，游戏规则为：</p> 
+<p>A先报一个起始数字 X（10 ≤ 起始数字 ≤ 10000），B报下一个数字 Y （X - Y &lt; 3），A再报一个数字 Z（Y - Z &lt; 3），以此类推，直到其中一个抢到7，抢到7即为胜者；</p> 
+<p>在B赢得比赛的情况下，一共有多少种组合？</p> 
+<h2><a id="_11"></a>输入描述</h2> 
+<p>起始数字 M</p> 
+<ul><li>10 ≤ M ≤ 10000</li></ul> 
+<h2><a id="_21"></a>输出描述</h2> 
+<p>B能赢得比赛的组合次数</p> 
+<h2><a id="_25"></a>用例</h2> 
+<p>输入</p> 
+<pre><code class="prism language-none">10
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-none">1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>只有一种赢的组合，A起始选择10，B接着选择9，A接着选择8，B接着选择7赢得胜利。</p> 
+</blockquote> 
+<h2><a id="_47"></a>解题思路</h2> 
+<h4><a id="_51"></a>规则解析</h4> 
+<ul><li>游戏由两位玩家A和B进行，其中A先报数，B跟报数，以此类推，直到某一方报出数字7为止。</li><li>报数的规则是，每一次报出的数字必须比前一次报出的数字小，且两数之差小于3（即每次至少减1，最多减2）。</li></ul> 
+<h4><a id="_56"></a>解题步骤</h4> 
+<ol><li> <p><strong>初始化动态规划数组</strong>：</p> 
+  <ul><li>创建两个数组<code>dpA</code>和<code>dpB</code>，长度为<code>M+2</code>。这两个数组分别用于存储在每个可能的游戏状态下，A和B赢得游戏的方式的数量。数组长度之所以选择<code>M+2</code>，是为了处理边界条件，避免在计算时数组越界。</li></ul> </li><li> <p><strong>基础状态设定</strong>：</p> 
+  <ul><li><code>dpA[M]</code>被初始化为1，意味着如果游戏从<code>M</code>开始，且轮到A报数，A有一种方式直接赢得游戏 ，直接喊。</li></ul> </li><li> <p><strong>动态规划递推关系</strong>：</p> 
+  <ul><li>从<code>M-1</code>开始递减至6，迭代计算每个状态下A和B赢得游戏的方式的数量。这个迭代过程基于游戏的规则：每次报数至少减1，最多减2。</li><li>对于玩家B，在状态<code>i</code>下赢得游戏的方式的数量等于A玩家在状态<code>i+1</code>和<code>i+2</code>下赢得游戏的方式的数量之和。这表示，如果B要赢，A在接下来的两个状态（B的可能报数）中必须无法赢得游戏。</li><li>同理，对于玩家A，在状态<code>i</code>下赢得游戏的方式的数量等于B玩家在状态<code>i+1</code>和<code>i+2</code>下赢得游戏方式的数量之和。这表示，A的胜利依赖于B在接下来的两个状态中的报数。</li></ul> </li></ol> 
+<p>当用例输入为10时，我们可以通过模拟计算过程来理解动态规划数组如何更新。下面是详细的步骤：</p> 
+<h4><a id="_73"></a>初始状态</h4> 
+<ul><li>输入<code>M = 10</code>。</li><li>初始化<code>dpA</code>和<code>dpB</code>数组，每个数组的大小为<code>M+2 = 12</code>，以便能访问到<code>dpA[10+1]</code>和<code>dpA[10+2]</code>而不越界。</li><li>初始时，<code>dpA[10] = 1</code>，因为A玩家从10开始并且直接结束游戏（这里的游戏规则简化处理，实际上如果M不是7，A并不能在起始步骤赢得游戏，但这是按照代码逻辑的初始化）。</li></ul> 
+<h4><a id="_79"></a>计算过程</h4> 
+<p>我们从<code>M-1=9</code>开始向下计算到7，更新<code>dpB</code>和<code>dpA</code>数组。</p> 
+<ol><li> <p><strong>i = 9</strong>：</p> 
+  <ul><li><code>dpB[9] = dpA[10] + dpA[11] = 1 + 0 = 1</code>。这表示B在9的状态下赢得游戏的方式有1种，即A在下一步选择10或11（实际上不可能选择11，但按初始化条件）。</li><li><code>dpA[9] = dpB[10] + dpB[11] = 0 + 0 = 0</code>。因为B不能直接从10或11状态赢得游戏，所以A在9状态的胜利方式为0。</li></ul> </li><li> <p><strong>i = 8</strong>：</p> 
+  <ul><li><code>dpB[8] = dpA[9] + dpA[10] = 0 + 1 = 1</code>。B在8的状态下赢得游戏的方式有1种，即A在下一步选择9或10。</li><li><code>dpA[8] = dpB[9] + dpB[10] = 1 + 0 = 1</code>。A在8状态的胜利方式有1种，即B在下一步选择9或10。</li></ul> </li><li> <p><strong>i = 7</strong>：</p> 
+  <ul><li><code>dpB[7] = dpA[8] + dpA[9] = 1 + 0 = 1</code>。B在7的状态下赢得游戏的方式有1种，即A在下一步选择8或9。</li></ul> </li></ol> 
+<h4><a id="_94"></a>结果</h4> 
+<p>最终，<code>dpB[7]</code>的值为1，这意味着在起始数字为10的情况下，B能赢得比赛的组合次数为1种。</p> 
+<h2><a id="C_100"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 字符串表示的大数加法函数</span>
+<span class="token comment">// 参数a和b分别为两个大数的字符串表示</span>
+string <span class="token function">addBigNumbers</span><span class="token punctuation">(</span><span class="token keyword">const</span> string <span class="token operator">&amp;</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> string <span class="token operator">&amp;</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string result<span class="token punctuation">;</span> <span class="token comment">// 用于存储加法结果的字符串</span>
+    <span class="token keyword">int</span> carry <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 进位，初始为0</span>
+    <span class="token keyword">int</span> i <span class="token operator">=</span> a<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> j <span class="token operator">=</span> b<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 分别设置两个指针指向a和b的最后一个字符（即最低位）</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">||</span> j <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">||</span> carry<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当任一字符串未遍历完或存在进位时循环</span>
+        <span class="token keyword">int</span> sum <span class="token operator">=</span> carry<span class="token punctuation">;</span> <span class="token comment">// 当前位的和，初始为进位值</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> sum <span class="token operator">+=</span> a<span class="token punctuation">[</span>i<span class="token operator">--</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span> <span class="token comment">// 如果a未遍历完，加上a当前位的值，并将指针i向前移动</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> sum <span class="token operator">+=</span> b<span class="token punctuation">[</span>j<span class="token operator">--</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span> <span class="token comment">// 如果b未遍历完，加上b当前位的值，并将指针j向前移动</span>
+        result<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>sum <span class="token operator">%</span> <span class="token number">10</span> <span class="token operator">+</span> <span class="token char">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将当前位的和模10的结果转为字符后加到结果字符串中</span>
+        carry <span class="token operator">=</span> sum <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 计算新的进位</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">reverse</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> result<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将结果字符串反转，因为加法是从低位到高位进行的</span>
+    <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> M<span class="token punctuation">;</span> <span class="token comment">// 用于存储输入的整数M</span>
+    
+    cin <span class="token operator">&gt;&gt;</span> M<span class="token punctuation">;</span> <span class="token comment">// 从标准输入读取整数M</span>
+
+    <span class="token comment">// 使用vector&lt;string&gt;动态数组存储玩家A和B在每个可能的游戏状态下赢得游戏的方式的数量</span>
+    <span class="token comment">// 初始值设为"0"，数组大小为M+2以避免在计算过程中出现越界</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> <span class="token function">dpA</span><span class="token punctuation">(</span>M <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"0"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">dpB</span><span class="token punctuation">(</span>M <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dpA<span class="token punctuation">[</span>M<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"1"</span><span class="token punctuation">;</span> <span class="token comment">// 初始化dpA[M]为1，表示当游戏处于初始状态M时，玩家A有一种方式赢得游戏</span>
+
+    <span class="token comment">// 从M-1开始递减至6，逐个计算每个可能的游戏状态下，玩家B和A赢得游戏的方式的数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> M <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">6</span><span class="token punctuation">;</span> <span class="token operator">--</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">addBigNumbers</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算玩家B在状态i下赢得游戏的方式的数量</span>
+        dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">addBigNumbers</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算玩家A在状态i下赢得游戏的方式的数量</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> dpB<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 最后，打印出玩家B在游戏状态7下赢得游戏的方式的数量</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_149"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>math<span class="token punctuation">.</span></span><span class="token class-name">BigInteger</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个Scanner对象用于接收用户输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 从用户输入中接收一个整数M，表示游戏的起始或初始条件</span>
+        <span class="token keyword">int</span> <span class="token class-name">M</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化两个BigInteger数组dpA和dpB，分别用来存储玩家A和B在每个可能的游戏状态下赢得游戏的方式的数量</span>
+        <span class="token comment">// 数组大小为M+2，是因为在迭代过程中需要访问当前状态之后的两个状态，这样可以避免数组越界错误</span>
+        <span class="token class-name">BigInteger</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dpA <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">BigInteger</span><span class="token punctuation">[</span><span class="token class-name">M</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token class-name">BigInteger</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dpB <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">BigInteger</span><span class="token punctuation">[</span><span class="token class-name">M</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 使用BigInteger.ZERO初始化数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">M</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">BigInteger</span><span class="token punctuation">.</span><span class="token constant">ZERO</span><span class="token punctuation">;</span>
+            dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">BigInteger</span><span class="token punctuation">.</span><span class="token constant">ZERO</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化dpA[M]为1，表示当游戏处于初始状态M时，玩家A有一种方式赢得游戏</span>
+        dpA<span class="token punctuation">[</span><span class="token class-name">M</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">BigInteger</span><span class="token punctuation">.</span><span class="token constant">ONE</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 从M-1开始递减至6，逐个计算每个可能的游戏状态下，玩家B和A赢得游戏的方式的数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token class-name">M</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;</span> <span class="token number">6</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算玩家B在状态i下赢得游戏的方式的数量</span>
+            dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 计算玩家A在状态i下赢得游戏的方式的数量</span>
+            dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 最后，打印出玩家B在游戏状态7下赢得游戏的方式的数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_192"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口，用于从标准输入读取数据</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ 
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token constant">M</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将用户输入的字符串转换为整数</span>
+
+  <span class="token comment">// 初始化两个BigInt数组dpA和dpB，分别用来存储玩家A和B在每个可能的游戏状态下赢得游戏的方式的数量</span>
+  <span class="token comment">// 数组大小为M+2，是因为在迭代过程中需要访问当前状态之后的两个状态，以避免数组越界错误</span>
+  <span class="token keyword">const</span> dpA <span class="token operator">=</span> <span class="token function">Array</span><span class="token punctuation">(</span><span class="token constant">M</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token function">BigInt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> dpB <span class="token operator">=</span> <span class="token function">Array</span><span class="token punctuation">(</span><span class="token constant">M</span> <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token function">BigInt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化dpA[M]为1，表示当游戏处于初始状态M时，玩家A有一种方式赢得游戏</span>
+  dpA<span class="token punctuation">[</span><span class="token constant">M</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">BigInt</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 从M-1开始递减至6，逐个计算每个可能的游戏状态下，玩家B和A赢得游戏的方式的数量</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token constant">M</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 计算玩家B在状态i下赢得游戏的方式的数量</span>
+    <span class="token comment">// B玩家赢得方式的数量等于A玩家在状态i+1和i+2下赢得游戏方式的数量之和</span>
+    dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算玩家A在状态i下赢得游戏的方式的数量</span>
+    <span class="token comment">// A玩家赢得方式的数量等于B玩家在状态i+1和i+2下赢得游戏方式的数量之和</span>
+    dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 最后，打印出玩家B在游戏状态7下赢得游戏的方式的数量</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span> dpB<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_235"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 从用户输入中接收一个整数M，表示游戏的起始或初始条件</span>
+M <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化两个数组dpA和dpB，分别用来存储玩家A和B在每个可能的游戏状态下赢得游戏的方式的数量</span>
+<span class="token comment"># 数组大小为M+2，是因为在迭代过程中需要访问当前状态之后的两个状态，这样可以避免数组越界错误</span>
+dpA <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>M<span class="token operator">+</span><span class="token number">2</span><span class="token punctuation">)</span>
+dpB <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>M<span class="token operator">+</span><span class="token number">2</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化dpA[M]为1，表示当游戏处于初始状态M时，玩家A有一种方式赢得游戏,因为：A先叫可以直接叫M。</span>
+dpA<span class="token punctuation">[</span>M<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token comment"># 从M-1开始递减至6，逐个计算每个可能的游戏状态下，玩家B和A赢得游戏的方式的数量</span>
+<span class="token comment"># 这里的循环范围和步长说明了游戏状态是逐步递减的，直到达到某个终止状态（这里为6）</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>M<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 计算玩家B在状态i下赢得游戏的方式的数量</span>
+    <span class="token comment"># B玩家赢得方式的数量等于A玩家在状态i+1和i+2下赢得游戏方式的数量之和</span>
+    <span class="token comment"># 这反映了游戏的某种规则，即玩家B的胜利依赖于接下来两个状态下玩家A的可能行为</span>
+    dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> dpA<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> dpA<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">2</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 计算玩家A在状态i下赢得游戏的方式的数量</span>
+    <span class="token comment"># A玩家赢得方式的数量等于B玩家在状态i+1和i+2下赢得游戏方式的数量之和</span>
+    <span class="token comment"># 类似地，这也反映了游戏规则中的互动性，即玩家A的胜利依赖于接下来两个状态下玩家B的可能行为</span>
+    dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> dpB<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> dpB<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">2</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 最后，打印出玩家B在游戏状态7下赢得游戏的方式的数量</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_266"></a>C语言</h2> 
+<p>当输入为999，会报错，正在解决！！！</p> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 将两个大数字符串相加的函数</span>
+<span class="token comment">// 参数a和b分别为两个大数的字符串表示，result为存储结果的字符串数组</span>
+<span class="token keyword">void</span> <span class="token function">addBigNumbers</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>b<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span>result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> lenA <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// a的长度</span>
+    <span class="token keyword">int</span> lenB <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// b的长度</span>
+    <span class="token keyword">int</span> carry <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 进位，初始为0</span>
+    <span class="token keyword">int</span> i <span class="token operator">=</span> lenA <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> j <span class="token operator">=</span> lenB <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 分别设置两个指针指向a和b的最后一个字符，以及结果数组的当前位置</span>
+    <span class="token keyword">int</span> sum<span class="token punctuation">;</span> <span class="token comment">// 用于存储当前位的和</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">||</span> j <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">||</span> carry<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        sum <span class="token operator">=</span> carry<span class="token punctuation">;</span> <span class="token comment">// 当前位的和，初始为进位值</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> sum <span class="token operator">+=</span> a<span class="token punctuation">[</span>i<span class="token operator">--</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span> <span class="token comment">// 如果a未遍历完，加上a当前位的值</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> sum <span class="token operator">+=</span> b<span class="token punctuation">[</span>j<span class="token operator">--</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span> <span class="token comment">// 如果b未遍历完，加上b当前位的值</span>
+        result<span class="token punctuation">[</span>k<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>sum <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token char">'0'</span><span class="token punctuation">;</span> <span class="token comment">// 将当前位的和模10的结果转为字符后存储到结果数组中</span>
+        carry <span class="token operator">=</span> sum <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">;</span> <span class="token comment">// 更新进位</span>
+    <span class="token punctuation">}</span>
+    result<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> <span class="token comment">// 字符串结束符</span>
+    <span class="token comment">// 将结果字符串反转</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> start <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> end <span class="token operator">=</span> k <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> start <span class="token operator">&lt;</span> end<span class="token punctuation">;</span> start<span class="token operator">++</span><span class="token punctuation">,</span> end<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> temp <span class="token operator">=</span> result<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        result<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> result<span class="token punctuation">[</span>end<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        result<span class="token punctuation">[</span>end<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> M<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>M<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从标准输入读取整数M</span>
+
+    <span class="token comment">// 动态分配内存以存储每个可能的游戏状态下玩家A和B赢得游戏的方式的数量</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>dpA <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>M <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>dpB <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>M <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> M <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 假设每个数字不超过100位</span>
+        dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">"0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化为"0"</span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">"0"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>M<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">"1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化dpA[M]为1</span>
+
+    <span class="token keyword">char</span> result<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储加法结果的临时数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> M <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">6</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">addBigNumbers</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dpA<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">addBigNumbers</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dpB<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> dpB<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印玩家B在游戏状态7下赢得游戏的方式的数量</span>
+
+    <span class="token comment">// 释放动态分配的内存</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> M <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">free</span><span class="token punctuation">(</span>dpA<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>dpB<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>dpA<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>dpB<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_335"></a>完整用例</h2> 
+<h3><a id="1_337"></a>用例1</h3> 
+<pre><code class="prism language-input1">10
+</code></pre> 
+<h3><a id="2_343"></a>用例2</h3> 
+<pre><code class="prism language-input2">17
+</code></pre> 
+<h3><a id="3_349"></a>用例3</h3> 
+<pre><code class="prism language-input3">18
+</code></pre> 
+<h3><a id="4_355"></a>用例4</h3> 
+<pre><code class="prism language-input4">20
+</code></pre> 
+<h3><a id="5_361"></a>用例5</h3> 
+<pre><code class="prism language-input5">15
+</code></pre> 
+<h3><a id="6_367"></a>用例6</h3> 
+<pre><code class="prism language-input6">99
+</code></pre> 
+<h3><a id="7_373"></a>用例7</h3> 
+<pre><code class="prism language-input7">88
+</code></pre> 
+<h3><a id="8_379"></a>用例8</h3> 
+<pre><code class="prism language-input8">77
+</code></pre> 
+<h3><a id="9_385"></a>用例9</h3> 
+<pre><code class="prism language-input9">66
+</code></pre> 
+<h3><a id="10_391"></a>用例10</h3> 
+<pre><code class="prism language-input10">9999
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_11" rel="nofollow">输入描述</a></li><li><a href="#_21" rel="nofollow">输出描述</a></li><li><a href="#_25" rel="nofollow">用例</a></li><li><a href="#_47" rel="nofollow">解题思路</a></li><li><ul><li><ul><li><a href="#_51" rel="nofollow">规则解析</a></li><li><a href="#_56" rel="nofollow">解题步骤</a></li><li><a href="#_73" rel="nofollow">初始状态</a></li><li><a href="#_79" rel="nofollow">计算过程</a></li><li><a href="#_94" rel="nofollow">结果</a></li></ul> 
+  </li></ul> 
+  </li><li><a href="#C_100" rel="nofollow">C++</a></li><li><a href="#Java_149" rel="nofollow">Java</a></li><li><a href="#javaScript_192" rel="nofollow">javaScript</a></li><li><a href="#Python_235" rel="nofollow">Python</a></li><li><a href="#C_266" rel="nofollow">C语言</a></li><li><a href="#_335" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_337" rel="nofollow">用例1</a></li><li><a href="#2_343" rel="nofollow">用例2</a></li><li><a href="#3_349" rel="nofollow">用例3</a></li><li><a href="#4_355" rel="nofollow">用例4</a></li><li><a href="#5_361" rel="nofollow">用例5</a></li><li><a href="#6_367" rel="nofollow">用例6</a></li><li><a href="#7_373" rel="nofollow">用例7</a></li><li><a href="#8_379" rel="nofollow">用例8</a></li><li><a href="#9_385" rel="nofollow">用例9</a></li><li><a href="#10_391" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/5daec6f580fd54b5f8b8a1220f41f9cf.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_2"></a>题目描述</h4> 
+<p>考勤记录是分析和考核职工工作时间利用情况的原始依据，也是计算职工工资的原始依据，为了正确地计算职工工资和监督工资基金使用情况，公司决定对员工的手机打卡记录进行异常排查。</p> 
+<p>如果出现以下两种情况，则认为打卡异常：</p> 
+<ol><li>实际设备号与注册设备号不一样</li><li>或者，同一个员工的两个打卡记录的时间小于60分钟并且打卡距离超过5km。</li></ol> 
+<p>给定打卡记录的[字符串数组]clockRecords（每个打卡记录组成为：工号;时间（分钟）;打卡距离（km）;实际设备号;注册设备号），返回其中异常的打卡记录（按输入顺序输出）。</p> 
+<h4><a id="_14"></a>输入描述</h4> 
+<p>第一行输入为N，表示打卡记录数；</p> 
+<p>之后的N行为打卡记录，每一行为一条打卡记录。</p> 
+<h4><a id="_20"></a>输出描述</h4> 
+<p>输出异常的打卡记录。</p> 
+<h4><a id="_24"></a>备注</h4> 
+<ul><li>clockRecords长度 ≤ 1000</li><li>clockRecords[i] 格式：{id},{time},{distance},{actualDeviceNumber},{registeredDeviceNumber}</li><li>id由6位数字组成</li><li>time由整数组成，范围为0~1000</li><li>distance由整数组成，范围为0~100</li><li>actualDeviceNumber与registeredDeviceNumber由思维大写字母组成</li></ul> 
+<h4><a id="_33"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>2<br>100000,10,1,ABCD,ABCD<br>100000,50,10,ABCD,ABCD</td></tr><tr><td>输出</td><td>100000,10,1,ABCD,ABCD;100000,50,10,ABCD,ABCD</td></tr><tr><td>说明</td><td>第一条记录是异常得，因为第二题记录与它得间隔不超过60分钟，但是打卡距离超过了5km，同理第二条记录也是异常得。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>2<br>100000,10,1,ABCD,ABCD<br>100001,80,10,ABCE,ABCE</td></tr><tr><td>输出</td><td>null</td></tr><tr><td>说明</td><td>无异常打卡记录，所以返回null</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>2<br>100000,10,1,ABCD,ABCD<br>100000,80,10,ABCE,ABCD</td></tr><tr><td>输出</td><td>100000,80,10,ABCE,ABCD</td></tr><tr><td>说明</td><td>第二条记录得注册设备号与打卡设备号不一致，所以是异常记录</td></tr></tbody></table> 
+<h4><a id="_41"></a>题目解析</h4> 
+<p>第一步是对单条打卡记录进行比较，判断其是否异常。异常情况有两种：一是实际设备号和注册设备号不同；二是同一员工的两条打卡记录时间间隔小于60分钟但是打卡距离超过5km。</p> 
+<p>第二步是对同一员工下设备号一致的打卡记录进行两两对比，判断是否异常。如果有两个打卡记录时间间隔小于60分钟且打卡距离超过5km，则视为异常。需要注意的是，一旦有两条打卡记录对比异常了，其他打卡记录也需要和这两条异常记录对比。</p> 
+<p>在保存异常打卡记录时，需要记录其输入时的索引，以便按照输入顺序输出异常记录。</p> 
+<h4><a id="C_51"></a>C++</h4> 
+<pre><code class="prism language-C++">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;set&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+/* 按操作符分隔字符串 */
+vector&lt;string&gt; split_str( string params_str, string op )
+{
+	vector&lt;string&gt; p;
+	while ( params_str.find( op ) != string::npos )
+	{
+		int found = params_str.find( op );
+		p.push_back( params_str.substr( 0, found ) );
+		params_str = params_str.substr( found + 1 );
+	}
+	p.push_back( params_str );
+	return(p);
+}
+
+
+/* 用于比较两个打卡记录 */
+bool comp( vector&lt;string&gt; &amp; a, vector&lt;string&gt; &amp; b )
+{
+	return(stoi( a[1] ) &gt; stoi( b[1] ) );
+}
+
+
+int main()
+{
+/* 读取输入 */
+	string num_str;
+	getline( cin, num_str );
+	int			n = stoi( num_str );
+	vector&lt;vector&lt;string&gt; &gt; records; /* 存放所有打卡记录 */
+	for ( int i = 0; i &lt; n; i++ )
+	{
+		string record_str;
+		getline( cin, record_str );
+		records.push_back( split_str( record_str, "," ) );
+	}
+
+	map&lt;string, vector&lt;vector&lt;string&gt; &gt; &gt;	record_map;             /* 存放每位员工的打卡记录 */
+	set&lt;int&gt;				result;                 /* 存放异常记录的索引 */
+
+/* 异常规则1：同一天内，进和出的门不一致 */
+	for ( int i = 0; i &lt; records.size(); i++ )
+	{
+		records[i].push_back( to_string( i ) );                 /* 加一个索引 i，以便排序后输出原来的顺序 */
+		vector&lt;string&gt; single_record = records[i];
+
+		if ( single_record[3] != single_record[4] )
+		{
+			result.insert( i );                             /* 如果进和出的门不一致，则为异常记录 */
+		} else {
+			if ( record_map.count( single_record[0] ) )     /* 将相同员工的记录存放在一起 */
+			{
+				record_map[single_record[0]].push_back( single_record );
+			} else {
+				vector&lt;vector&lt;string&gt; &gt; temp;
+				temp.push_back( single_record );
+				record_map[single_record[0]] = temp;
+			}
+		}
+	}
+
+/* 异常规则2：在一小时内，距离相差超过5米 */
+	for ( auto single_records_info : record_map )
+	{
+		vector&lt;vector&lt;string&gt; &gt; single_employee_records = single_records_info.second;
+
+		/* 用打卡时间排序，以加速双层循环 */
+		sort( single_employee_records.begin(), single_employee_records.end(), comp );
+
+		for ( int i = 0; i &lt; single_employee_records.size(); i++ )
+		{
+			int	time1	= stoi( single_employee_records[i][1] );
+			int	dist1	= stoi( single_employee_records[i][2] );
+
+			for ( int j = i + 1; j &lt; single_employee_records.size(); j++ )
+			{
+				int	time2	= stoi( single_employee_records[j][1] );
+				int	dist2	= stoi( single_employee_records[j][2] );
+
+				/* 如果当前的两次打卡时间超过60分钟，则后续的肯定也超过60分钟了 */
+				if ( time2 - time1 &gt;= 60 )
+				{
+					break;
+				} else {
+					if ( abs( dist2 - dist1 ) &gt; 5 )
+					{
+						result.insert( stoi( single_employee_records[i][5] ) );
+						result.insert( stoi( single_employee_records[j][5] ) );
+					}
+				}
+			}
+		}
+	}
+
+/* 输出结果 */
+	if ( result.empty() )
+	{
+		cout &lt;&lt; "null";
+	} else {
+		for ( int i : result ) /* 遍历异常记录的索引 */
+		{
+			for ( int j = 0; j &lt; records[i].size() - 1; j++ )
+			{
+				cout &lt;&lt; records[i][j];
+				if ( j != records[i].size() - 2 )
+				{
+					cout &lt;&lt; ",";
+				}
+			}
+			cout &lt;&lt; ":";
+		}
+	}
+
+	return(0);
+}
+</code></pre> 
+<h4><a id="JavaScript_179"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"readline"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义全局变量</span>
+<span class="token keyword">const</span> records <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 所有打卡记录</span>
+<span class="token keyword">let</span> numEmployees<span class="token punctuation">;</span> <span class="token comment">// 员工数量</span>
+
+<span class="token comment">// 监听每一行输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将输入的每一行记录存入records数组中</span>
+  records<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 如果记录数量达到要求，则开始处理</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>records<span class="token punctuation">.</span>length <span class="token operator">===</span> numEmployees <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 获取结果并输出</span>
+    <span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token function">getResult</span><span class="token punctuation">(</span>records<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 重置记录数组和员工数量</span>
+    records<span class="token punctuation">.</span>length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    numEmployees <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>records<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果记录数量为1，则说明是员工数量，将其存入numEmployees变量中</span>
+    numEmployees <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/**
+ * @param {*} clockRecords 打卡记录的字符串数组, [工号, 时间, 打卡距离, 实际设备号, 注册设备号]
+ */</span>
+<span class="token keyword">function</span> <span class="token function">getResult</span><span class="token punctuation">(</span><span class="token parameter">clockRecords</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> employees <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 员工打卡记录的对象</span>
+  <span class="token keyword">const</span> ans <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 异常打卡记录的集合</span>
+
+  <span class="token comment">// 遍历所有打卡记录，将异常记录加入ans集合，将正常记录存入employees对象中</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> clockRecords<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> clockRecord <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">...</span>clockRecords<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">,</span> i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将打卡记录转为数组形式，并追加输入索引</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>id<span class="token punctuation">,</span> time<span class="token punctuation">,</span> dis<span class="token punctuation">,</span> actDevice<span class="token punctuation">,</span> regDevice<span class="token punctuation">,</span> index<span class="token punctuation">]</span> <span class="token operator">=</span> clockRecord<span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果实际设备号与注册设备号不一致，则认为是异常打卡记录</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>actDevice <span class="token operator">!==</span> regDevice<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      ans<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 如果实际设备号与注册设备号一致，则将打卡记录存入employees对象中</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>employees<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        employees<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>clockRecord<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        employees<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span>clockRecord<span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 遍历employees对象，检查每个员工的打卡记录是否存在异常</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> id <span class="token keyword">in</span> employees<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> records <span class="token operator">=</span> employees<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 该员工的所有打卡记录</span>
+    <span class="token keyword">const</span> n <span class="token operator">=</span> records<span class="token punctuation">.</span>length<span class="token punctuation">;</span> <span class="token comment">// 打卡记录数量</span>
+
+    <span class="token comment">// 将该员工的打卡记录按照打卡时间升序排序</span>
+    records<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> b<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历该员工的打卡记录，检查是否存在异常</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">const</span> time1 <span class="token operator">=</span> records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token keyword">const</span> dis1 <span class="token operator">=</span> records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> time2 <span class="token operator">=</span> records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> dis2 <span class="token operator">=</span> records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果两次打卡时间超过60分钟，则后面的打卡记录不用再检查了</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>time2 <span class="token operator">-</span> time1 <span class="token operator">&gt;=</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 如果两次打卡时间小于60分钟，且打卡距离超过5公里，则认为是异常打卡记录</span>
+          <span class="token keyword">if</span> <span class="token punctuation">(</span>Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>dis2 <span class="token operator">-</span> dis1<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果打卡记录已经加入ans集合，则无需再次加入，否则需要加入</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>ans<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+              ans<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>ans<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+              ans<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 如果没有异常打卡记录，则返回null</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>ans<span class="token punctuation">.</span>size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token string">"null"</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 将异常打卡记录按照输入顺序排序，并返回结果字符串</span>
+  <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token operator">...</span>ans<span class="token punctuation">]</span>
+    <span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">-</span> b<span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">i</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> clockRecords<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">";"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Java_290"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">TreeSet</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>stream<span class="token punctuation">.</span></span><span class="token class-name">Collectors</span><span class="token punctuation">;</span>
+ <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+<span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+<span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取输入</span>
+    <span class="token keyword">int</span> numRecords <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打卡记录数目</span>
+    scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> records <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">String</span><span class="token punctuation">[</span>numRecords<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numRecords<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        records<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 存放每位员工的打卡记录</span>
+    <span class="token class-name">HashMap</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">ArrayList</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;&gt;</span> recordMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 异常规则1：打卡时间不一致</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> records<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 在打卡记录后面增加一个索引，方便后面输出时按照输入顺序排序</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> singleRecord <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">copyOf</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        singleRecord<span class="token punctuation">[</span>singleRecord<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token string">""</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>singleRecord<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>singleRecord<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> id <span class="token operator">=</span> singleRecord<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>recordMap<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                recordMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>singleRecord<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">ArrayList</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> list <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                list<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>singleRecord<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                recordMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> list<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 异常规则2：在60分钟内，两次打卡地点距离大于5米</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> id <span class="token operator">:</span> recordMap<span class="token punctuation">.</span><span class="token function">keySet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">ArrayList</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> idRecords <span class="token operator">=</span> recordMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 按照打卡时间排序，以便后面双层循环加速</span>
+        idRecords<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>b<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> idRecords<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> time1 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>idRecords<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> dist1 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>idRecords<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> idRecords<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> time2 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>idRecords<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">int</span> dist2 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>idRecords<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 如果当前的两次打卡时间超过60分钟，后面的肯定也超过60分钟了</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>time2 <span class="token operator">-</span> time1 <span class="token operator">&gt;=</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>dist2 <span class="token operator">-</span> dist1<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>idRecords<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>idRecords<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"null"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">String</span> resStr <span class="token operator">=</span> result<span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+                              <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>index <span class="token operator">-&gt;</span> <span class="token function">join</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                              <span class="token punctuation">.</span><span class="token function">collect</span><span class="token punctuation">(</span><span class="token class-name">Collectors</span><span class="token punctuation">.</span><span class="token function">joining</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>resStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 将字符串数组拼接成一个字符串</span>
+<span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">join</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> strs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token class-name">String</span> s <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> str <span class="token operator">:</span> strs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            s<span class="token operator">+=</span>str<span class="token operator">+</span><span class="token string">","</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> s<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">}</span>
+ <span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_385"></a>Python</h4> 
+<pre><code class="prism language-python">n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+clock_records <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ 
+ 
+<span class="token comment"># 算法入口</span>
+<span class="token keyword">def</span> <span class="token function">get_result</span><span class="token punctuation">(</span>clock_records<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    employees <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+    ans <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>clock_records<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">id</span><span class="token punctuation">,</span> time<span class="token punctuation">,</span> dis<span class="token punctuation">,</span> act_device<span class="token punctuation">,</span> reg_device <span class="token operator">=</span> clock_records<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+ 
+        <span class="token comment"># 实际设备号与注册设备号不一样,则认为打卡异常</span>
+        <span class="token keyword">if</span> act_device <span class="token operator">!=</span> reg_device<span class="token punctuation">:</span>
+            ans<span class="token punctuation">.</span>add<span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+        <span class="token comment"># 如果实际设备号和注册设备号一样，则统计到该员工名下</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 由于异常打卡记录需要按输入顺序输出，因此这里追加一个输入索引到打卡记录中</span>
+            clock_record <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">,</span> time<span class="token punctuation">,</span> dis<span class="token punctuation">,</span> act_device<span class="token punctuation">,</span> reg_device<span class="token punctuation">,</span> i<span class="token punctuation">]</span>
+            <span class="token keyword">if</span> employees<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">)</span> <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                employees<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span>clock_record<span class="token punctuation">]</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                employees<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>clock_record<span class="token punctuation">)</span>
+ 
+    <span class="token keyword">for</span> <span class="token builtin">id</span> <span class="token keyword">in</span> employees<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 某id员工的所有打卡记录</span>
+        records <span class="token operator">=</span> employees<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span>
+        n <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>records<span class="token punctuation">)</span>
+ 
+        <span class="token comment"># 将该员工打卡记录按照打卡时间升序</span>
+        records<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+ 
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            time1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            dis1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+ 
+            <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                time2 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                dis2 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+ 
+                <span class="token comment"># 如果两次打卡时间超过60分治，则不计入异常，由于已按打卡时间升序，因此后面的都不用检查了</span>
+                <span class="token keyword">if</span> time2 <span class="token operator">-</span> time1 <span class="token operator">&gt;=</span> <span class="token number">60</span><span class="token punctuation">:</span>
+                    <span class="token keyword">break</span>
+                <span class="token keyword">else</span><span class="token punctuation">:</span>
+                    <span class="token comment"># 如果两次打开时间小于60MIN，且打卡距离超过5KM，则这两次打卡记录算作异常</span>
+                    <span class="token keyword">if</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>dis2 <span class="token operator">-</span> dis1<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">:</span>
+                        <span class="token comment"># 如果打卡记录已经加入异常列表ans，则无需再次加入，否则需要加入</span>
+                        <span class="token keyword">if</span> records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span> <span class="token keyword">not</span> <span class="token keyword">in</span> ans<span class="token punctuation">:</span>
+                            ans<span class="token punctuation">.</span>add<span class="token punctuation">(</span>records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+ 
+                        <span class="token keyword">if</span> records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span> <span class="token keyword">not</span> <span class="token keyword">in</span> ans<span class="token punctuation">:</span>
+                            ans<span class="token punctuation">.</span>add<span class="token punctuation">(</span>records<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+ 
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            tmp <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span>
+            tmp<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token string">";"</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token keyword">lambda</span> i<span class="token punctuation">:</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>clock_records<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> tmp<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token string">"null"</span>
+ 
+ 
+<span class="token comment"># 调用算法</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>get_result<span class="token punctuation">(</span>clock_records<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/d702b10837509e3d8c4ec95477717bf6.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

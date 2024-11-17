@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述：数据最节约的备份方法</h2> 
+<p>有若干个文件，使用刻录光盘的方式进行备份，假设每张光盘的容量是500MB，求使用光盘最少的文件分布方式</p> 
+<p>所有文件的大小都是整数的MB，且不超过500MB；文件不能分割、分卷打包</p> 
+<h2><a id="_10"></a>输入描述：</h2> 
+<p>一组文件大小的数据</p> 
+<h2><a id="_14"></a>输出描述：</h2> 
+<p>使用光盘的数量</p> 
+<p>不用考虑输入数据不合法的情况；假设最多100个输入文件。</p> 
+<h2><a id="1_23"></a>用例1</h2> 
+<p>输入：</p> 
+<pre><code>100,500,300,200,400
+</code></pre> 
+<p>输出：</p> 
+<pre><code>3
+</code></pre> 
+<p>说明：</p> 
+<p>(100,400),(200,300),(500) 3张光盘即可。<br> 输入和输出内容都不含空格。</p> 
+<h2><a id="2_42"></a>用例2</h2> 
+<p>输入：</p> 
+<pre><code>1,100,200,300
+</code></pre> 
+<p>输出：</p> 
+<pre><code>2
+</code></pre> 
+<h2><a id="_56"></a>解题思路</h2> 
+<ul><li><code>minDisks</code>：至少需要1个磁盘。</li><li><code>maxDisks</code>：最多需要的磁盘数，等于文件的总数。</li></ul> 
+<ol start="4"><li> <p><strong>二分查找</strong>：使用二分查找算法找到最少需要的磁盘数量。在<code>minDisks</code>和<code>maxDisks</code>定义的范围内，不断尝试不同的磁盘数量（<code>mid</code>），使用<code>canFilesBeDistributed</code>方法检查这个数量的磁盘是否足以存储所有文件。</p> </li><li> <p><strong>递归分配</strong>：<code>canFilesBeDistributed</code>方法通过递归检查给定数量的磁盘是否能够分配所有文件。对于每个文件，方法尝试将其放入每个磁盘，如果当前磁盘容量允许，就将文件"放入"磁盘（即增加磁盘上的已用容量），然后递归地尝试放入下一个文件。如果无法找到合适的分配方式，会进行回溯（减少磁盘上的已用容量），尝试其他分配方案。</p> </li><li> <p><strong>回溯与剪枝</strong>：在尝试分配文件到磁盘时，如果一个磁盘在加入当前文件后容量达到或超过500，或者磁盘是空的，则不再尝试将当前文件放入其他磁盘。这一步骤是优化的关键，可以减少不必要的计算。</p> </li></ol> 
+<h2><a id="python_71"></a>python</h2> 
+<pre><code class="prism language-python">
+
+<span class="token keyword">def</span> <span class="token function">can_files_be_distributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> file_sizes<span class="token punctuation">,</span> index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> index <span class="token operator">==</span> <span class="token builtin">len</span><span class="token punctuation">(</span>file_sizes<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>  <span class="token comment"># 所有文件已成功分配</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>disks<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> file_sizes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">500</span><span class="token punctuation">:</span>  <span class="token comment"># 尝试放入文件</span>
+            disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> file_sizes<span class="token punctuation">[</span>index<span class="token punctuation">]</span>
+            <span class="token keyword">if</span> can_files_be_distributed<span class="token punctuation">(</span>disks<span class="token punctuation">,</span> file_sizes<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">True</span>
+            disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> file_sizes<span class="token punctuation">[</span>index<span class="token punctuation">]</span>  <span class="token comment"># 回溯</span>
+        <span class="token keyword">if</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">or</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> file_sizes<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">500</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>  <span class="token comment"># 优化：避免不必要的尝试</span>
+    <span class="token keyword">return</span> <span class="token boolean">False</span>  <span class="token comment"># 无法分配当前文件</span>
+
+ 
+file_sizes <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+file_sizes<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>  <span class="token comment"># 降序排序文件大小</span>
+min_disks <span class="token operator">=</span> <span class="token number">1</span>
+max_disks <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>file_sizes<span class="token punctuation">)</span>
+optimal_disk_count <span class="token operator">=</span> max_disks
+
+<span class="token keyword">while</span> min_disks <span class="token operator">&lt;=</span> max_disks<span class="token punctuation">:</span>
+    mid <span class="token operator">=</span> <span class="token punctuation">(</span>min_disks <span class="token operator">+</span> max_disks<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+    <span class="token keyword">if</span> can_files_be_distributed<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> mid<span class="token punctuation">,</span> file_sizes<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        optimal_disk_count <span class="token operator">=</span> mid
+        max_disks <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        min_disks <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>optimal_disk_count<span class="token punctuation">)</span>
+
+ 
+
+</code></pre> 
+<h2><a id="javascript_112"></a>javascript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 询问输入并处理</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> fileSizes <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> b <span class="token operator">-</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入分割为文件大小数组并降序排序</span>
+  <span class="token keyword">let</span> minDisks <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 至少需要一个磁盘</span>
+  <span class="token keyword">let</span> maxDisks <span class="token operator">=</span> fileSizes<span class="token punctuation">.</span>length<span class="token punctuation">;</span> <span class="token comment">// 最多需要的磁盘数等于文件数量</span>
+  <span class="token keyword">let</span> optimalDiskCount <span class="token operator">=</span> maxDisks<span class="token punctuation">;</span> <span class="token comment">// 初始化最优磁盘数量</span>
+
+  <span class="token comment">// 使用二分查找寻找最少需要的磁盘数量</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>minDisks <span class="token operator">&lt;=</span> maxDisks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> mid <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span><span class="token punctuation">(</span>minDisks <span class="token operator">+</span> maxDisks<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>mid<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      optimalDiskCount <span class="token operator">=</span> mid<span class="token punctuation">;</span>
+      maxDisks <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      minDisks <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>optimalDiskCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span><span class="token parameter">disks<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> index</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">===</span> fileSizes<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 所有文件已成功分配</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">const</span> fileSize <span class="token operator">=</span> fileSizes<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> disks<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> fileSize <span class="token operator">&lt;=</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 尝试放入文件</span>
+      disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> fileSize<span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 回溯</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span> <span class="token operator">||</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> fileSize <span class="token operator">===</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 优化：避免不必要的尝试</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 无法分配当前文件</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="C_166"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 检查给定数量的磁盘是否足以分配所有文件</span>
+bool <span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> disks<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> fileSizes<span class="token punctuation">,</span> <span class="token keyword">int</span> currentIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+   <span class="token keyword">if</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">==</span> fileSizes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+       <span class="token keyword">return</span> true<span class="token punctuation">;</span> <span class="token comment">// 所有文件都已尝试分配</span>
+   <span class="token punctuation">}</span>
+   <span class="token keyword">int</span> currentFileSize <span class="token operator">=</span> fileSizes<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> disks<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+       <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> currentFileSize <span class="token operator">&lt;=</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+           disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> currentFileSize<span class="token punctuation">;</span> <span class="token comment">// 尝试放入当前文件</span>
+           <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> currentIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+               <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+           <span class="token punctuation">}</span>
+           disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> currentFileSize<span class="token punctuation">;</span> <span class="token comment">// 回溯：移除当前文件，尝试其他分配方案</span>
+       <span class="token punctuation">}</span>
+       <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> currentFileSize <span class="token operator">==</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+           <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果磁盘是空的，或者加入当前文件后刚好满，就没有必要尝试其它磁盘了</span>
+       <span class="token punctuation">}</span>
+   <span class="token punctuation">}</span>
+   <span class="token keyword">return</span> false<span class="token punctuation">;</span> <span class="token comment">// 当前文件无法分配到任何磁盘</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+   string input<span class="token punctuation">;</span>
+   <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   istringstream <span class="token function">iss</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> fileSizes<span class="token punctuation">;</span>
+   string fileSize<span class="token punctuation">;</span>
+   
+   <span class="token comment">// 读取输入并将其转换为整数数组</span>
+   <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>iss<span class="token punctuation">,</span> fileSize<span class="token punctuation">,</span> <span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+       fileSizes<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">stoi</span><span class="token punctuation">(</span>fileSize<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">}</span>
+   
+   <span class="token comment">// 降序排序文件大小，以便优先分配大文件</span>
+   <span class="token function">sort</span><span class="token punctuation">(</span>fileSizes<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> fileSizes<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> greater<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   
+   <span class="token keyword">int</span> minDisks <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 至少需要1个磁盘</span>
+   <span class="token keyword">int</span> maxDisks <span class="token operator">=</span> fileSizes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 最多的磁盘数等于文件数量</span>
+   <span class="token keyword">int</span> optimalDiskCount <span class="token operator">=</span> maxDisks<span class="token punctuation">;</span> <span class="token comment">// 初始化最优磁盘数量为最大可能值</span>
+   
+   <span class="token comment">// 使用二分查找找到最少需要的磁盘数量</span>
+   <span class="token keyword">while</span> <span class="token punctuation">(</span>minDisks <span class="token operator">&lt;=</span> maxDisks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+       <span class="token keyword">int</span> mid <span class="token operator">=</span> <span class="token punctuation">(</span>minDisks <span class="token operator">+</span> maxDisks<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+       vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">disks</span><span class="token punctuation">(</span>mid<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建mid个磁盘，初始容量为0</span>
+       <span class="token comment">// 检查当前磁盘数量是否能满足存储所有文件</span>
+       <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+           optimalDiskCount <span class="token operator">=</span> mid<span class="token punctuation">;</span> <span class="token comment">// 更新最优磁盘数量</span>
+           maxDisks <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+       <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+           minDisks <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+       <span class="token punctuation">}</span>
+   <span class="token punctuation">}</span>
+   cout <span class="token operator">&lt;&lt;</span> optimalDiskCount <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+   <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h2><a id="java_236"></a>java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建扫描器读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入，并将其分割为文件大小数组</span>
+        <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fileSizes <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                                    <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span>
+                                    <span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">::</span><span class="token keyword">new</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将文件大小降序排序，以便优先分配大文件</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>fileSizes<span class="token punctuation">,</span> <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> b <span class="token operator">-</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> minDisks <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 至少需要1个磁盘</span>
+        <span class="token keyword">int</span> maxDisks <span class="token operator">=</span> fileSizes<span class="token punctuation">.</span>length<span class="token punctuation">;</span> <span class="token comment">// 最多的磁盘数等于文件数量</span>
+        <span class="token keyword">int</span> optimalDiskCount <span class="token operator">=</span> maxDisks<span class="token punctuation">;</span> <span class="token comment">// 初始化最优磁盘数量为最大可能值</span>
+
+        <span class="token comment">// 使用二分查找找到最少需要的磁盘数量</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>minDisks <span class="token operator">&lt;=</span> maxDisks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> mid <span class="token operator">=</span> <span class="token punctuation">(</span>minDisks <span class="token operator">+</span> maxDisks<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+            <span class="token comment">// 检查当前磁盘数量是否能满足存储所有文件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>mid<span class="token punctuation">]</span><span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                optimalDiskCount <span class="token operator">=</span> mid<span class="token punctuation">;</span> <span class="token comment">// 更新最优磁盘数量</span>
+                maxDisks <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 在较小的范围内继续查找</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                minDisks <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 需要更多的磁盘</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 输出最少需要的磁盘数量</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>optimalDiskCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 方法：检查给定数量的磁盘是否足以分配所有文件</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> disks<span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fileSizes<span class="token punctuation">,</span> <span class="token keyword">int</span> currentIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 所有文件都已尝试分配</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">==</span> fileSizes<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span> currentFileSize <span class="token operator">=</span> fileSizes<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历每个磁盘尝试放入当前文件</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> disks<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 检查当前磁盘是否有足够空间放入文件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> currentFileSize <span class="token operator">&lt;=</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> currentFileSize<span class="token punctuation">;</span>
+                <span class="token comment">// 递归尝试放入下一个文件</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> currentIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 回溯：移除当前文件，尝试其他分配方案</span>
+                disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> currentFileSize<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 如果磁盘是空的，或者加入当前文件后刚好满，就没有必要尝试其它磁盘了</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> currentFileSize <span class="token operator">==</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 当前文件无法分配到任何磁盘</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_301"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>disks<span class="token punctuation">,</span> <span class="token keyword">int</span> diskCount<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">int</span> <span class="token operator">*</span>fileSizes<span class="token punctuation">,</span> <span class="token keyword">int</span> fileSizeCount<span class="token punctuation">,</span> <span class="token keyword">int</span> currentIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">==</span> fileSizeCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 所有文件都已尝试分配</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> currentFileSize <span class="token operator">=</span> fileSizes<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> diskCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> currentFileSize <span class="token operator">&lt;=</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+=</span> currentFileSize<span class="token punctuation">;</span> <span class="token comment">// 尝试放入当前文件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> diskCount<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> fileSizeCount<span class="token punctuation">,</span> currentIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> currentFileSize<span class="token punctuation">;</span> <span class="token comment">// 回溯：移除当前文件，尝试其他分配方案</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> disks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> currentFileSize <span class="token operator">==</span> <span class="token number">500</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span> <span class="token comment">// 如果磁盘是空的，或者加入当前文件后刚好满，就没有必要尝试其它磁盘了</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前文件无法分配到任何磁盘</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> fileSizes<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">,</span> fileSizeCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+   
+    <span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 解析输入字符串，将文件大小存储在数组中</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span> <span class="token operator">&amp;&amp;</span> fileSizeCount <span class="token operator">&lt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        fileSizes<span class="token punctuation">[</span>fileSizeCount<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 降序排序文件大小</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> fileSizeCount <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> fileSizeCount<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>fileSizes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> fileSizes<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> temp <span class="token operator">=</span> fileSizes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                fileSizes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> fileSizes<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                fileSizes<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> minDisks <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> maxDisks <span class="token operator">=</span> fileSizeCount<span class="token punctuation">,</span> optimalDiskCount <span class="token operator">=</span> maxDisks<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>minDisks <span class="token operator">&lt;=</span> maxDisks<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> mid <span class="token operator">=</span> <span class="token punctuation">(</span>minDisks <span class="token operator">+</span> maxDisks<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token operator">*</span>disks <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span>mid<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">canFilesBeDistributed</span><span class="token punctuation">(</span>disks<span class="token punctuation">,</span> mid<span class="token punctuation">,</span> fileSizes<span class="token punctuation">,</span> fileSizeCount<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            optimalDiskCount <span class="token operator">=</span> mid<span class="token punctuation">;</span>
+            maxDisks <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            minDisks <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>disks<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> optimalDiskCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h2><a id="_370"></a>完整用例</h2> 
+<h3><a id="1_371"></a>用例1</h3> 
+<p>100,500,300,200,400</p> 
+<h3><a id="2_374"></a>用例2</h3> 
+<p>500,500,500,500</p> 
+<h3><a id="3_377"></a>用例3</h3> 
+<p>100,100,100,100,100,100</p> 
+<h3><a id="4_380"></a>用例4</h3> 
+<p>300,200,100</p> 
+<h3><a id="5_384"></a>用例5</h3> 
+<p>400,400,400,400,400</p> 
+<h3><a id="6_388"></a>用例6</h3> 
+<p>100,200,300,400,500,100,200,300,400,500</p> 
+<h3><a id="7_391"></a>用例7</h3> 
+<p>400,400,400,400,400,400,400,400,400,400</p> 
+<h3><a id="8_394"></a>用例8</h3> 
+<p>500,500,500,500,500,500,500,500,500,500</p> 
+<h3><a id="9_397"></a>用例9</h3> 
+<p>200,200,200,200,200,200,200,200,200,200</p> 
+<h3><a id="10_400"></a>用例10</h3> 
+<p>300,200,100,300,200,100,300,200,100<br> </p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述：数据最节约的备份方法</a></li><li><a href="#_10" rel="nofollow">输入描述：</a></li><li><a href="#_14" rel="nofollow">输出描述：</a></li><li><a href="#1_23" rel="nofollow">用例1</a></li><li><a href="#2_42" rel="nofollow">用例2</a></li><li><a href="#_56" rel="nofollow">解题思路</a></li><li><a href="#python_71" rel="nofollow">python</a></li><li><a href="#javascript_112" rel="nofollow">javascript</a></li><li><a href="#C_166" rel="nofollow">C++</a></li><li><a href="#java_236" rel="nofollow">java</a></li><li><a href="#C_301" rel="nofollow">C语言</a></li><li><a href="#_370" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_371" rel="nofollow">用例1</a></li><li><a href="#2_374" rel="nofollow">用例2</a></li><li><a href="#3_377" rel="nofollow">用例3</a></li><li><a href="#4_380" rel="nofollow">用例4</a></li><li><a href="#5_384" rel="nofollow">用例5</a></li><li><a href="#6_388" rel="nofollow">用例6</a></li><li><a href="#7_391" rel="nofollow">用例7</a></li><li><a href="#8_394" rel="nofollow">用例8</a></li><li><a href="#9_397" rel="nofollow">用例9</a></li><li><a href="#10_400" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/56016a627b67ccf6f75aad3d5d469d83.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

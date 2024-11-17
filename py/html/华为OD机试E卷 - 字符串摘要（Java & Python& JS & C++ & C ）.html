@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>给定一个字符串的摘要算法，请输出给定字符串的摘要值</p> 
+<ol><li>去除字符串中非字母的符号。</li><li>如果出现连续字符(不区分大小写) ，则输出：该字符 (小写) + 连续出现的次数。</li><li>如果是非连续的字符(不区分大小写)，则输出：该字符(小写) + 该字母之后字符串中出现的该字符的次数</li><li>对按照以上方式表示后的字符串进行排序：字母和紧随的数字作为一组进行排序，数字大的在前，数字相同的，则按字母进行排序，字母小的在前。</li></ol> 
+<h2><a id="_13"></a>输入描述</h2> 
+<p>一行字符串，长度为[1,200]</p> 
+<h2><a id="_17"></a>输出描述</h2> 
+<p>摘要字符串</p> 
+<h2><a id="1_22"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>aabbcc
+</code></pre> 
+<p>输出</p> 
+<pre><code>a2b2c2
+</code></pre> 
+<h2><a id="2_38"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>bAaAcBb
+</code></pre> 
+<p>输出</p> 
+<pre><code>a3b2b2c0
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>bAaAcBb:</p> 
+ <p>第一个b非连续字母，该字母之后字符串中还出现了2次(最后的两个Bb) ，所以输出b2</p> 
+ <p>a连续出现3次，输出a3，</p> 
+ <p>c非连续，该字母之后字符串再没有出现过c，输出c0</p> 
+ <p>Bb连续2次，输出b2</p> 
+ <p>对b2a3c0b2进行排序，最终输出a3b2b2c0</p> 
+</blockquote> 
+<h2><a id="C_69"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string input<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">transform</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">::</span>tolower<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的字符串转换为小写</span>
+
+    <span class="token comment">// 统计每个字符出现的次数</span>
+    <span class="token keyword">int</span> charCount<span class="token punctuation">[</span><span class="token number">128</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// ASCII 码表中共有 128 个字符</span>
+    string sb<span class="token punctuation">;</span> <span class="token comment">// 用于存储去除非字母的符号后的字符串</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果该字符是字母</span>
+            charCount<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 该字符出现次数加 1</span>
+            sb<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将该字符添加到 sb 中</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 在每个字符后面加上其出现的次数或者连续出现的次数</span>
+    sb<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 在字符串末尾加上一个空格，方便统计最后一个字符的出现次数</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> ans<span class="token punctuation">;</span> <span class="token comment">// 用于存储每个字符的摘要值</span>
+    <span class="token keyword">char</span> pre <span class="token operator">=</span> sb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// pre 表示当前正在处理的字符的前一个字符</span>
+    <span class="token keyword">int</span> repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// repeat 表示当前正在处理的字符的连续出现次数</span>
+    charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 出现的次数减 1</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+        <span class="token keyword">char</span> cur <span class="token operator">=</span> sb<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// cur 表示当前正在处理的字符</span>
+        charCount<span class="token punctuation">[</span>cur<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 cur 出现的次数减 1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cur <span class="token operator">==</span> pre<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 相等，表示出现了连续字符</span>
+            repeat<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 连续出现次数加 1</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 不相等，表示出现了非连续字符</span>
+            ans<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">string</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> pre<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token punctuation">(</span>repeat <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token function">to_string</span><span class="token punctuation">(</span>repeat<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">to_string</span><span class="token punctuation">(</span>charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 的摘要值添加到 ans 中</span>
+            pre <span class="token operator">=</span> cur<span class="token punctuation">;</span> <span class="token comment">// 更新 pre 为当前字符</span>
+            repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 重置连续出现次数为 1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ans<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span>string a<span class="token punctuation">,</span> string b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 根据题目要求对 ans 进行排序</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> b<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果最后一个字符不相等，按照数字大小排序</span>
+            <span class="token keyword">return</span> b<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> a<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果最后一个字符相等，按照字母顺序排序</span>
+            <span class="token keyword">return</span> a<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> b<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出结果</span>
+    string res<span class="token punctuation">;</span> <span class="token comment">// 用于存储最终的摘要值</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>string an <span class="token operator">:</span> ans<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历 ans</span>
+        res <span class="token operator">+=</span> an<span class="token punctuation">;</span> <span class="token comment">// 将每个元素添加到 res 中</span>
+    <span class="token punctuation">}</span>
+    cout <span class="token operator">&lt;&lt;</span> res <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出最终的摘要值</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="Java_133"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        input <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的字符串转换为小写</span>
+
+        <span class="token comment">// 统计每个字符出现的次数</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> charCount <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token number">128</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// ASCII 码表中共有 128 个字符</span>
+        <span class="token class-name">StringBuilder</span> sb <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储去除非字母的符号后的字符串</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> input<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果该字符是字母</span>
+                charCount<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 该字符出现次数加 1</span>
+                sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将该字符添加到 sb 中</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 在每个字符后面加上其出现的次数或者连续出现的次数</span>
+        input <span class="token operator">=</span> sb <span class="token operator">+</span> <span class="token string">" "</span><span class="token punctuation">;</span> <span class="token comment">// 在字符串末尾加上一个空格，方便统计最后一个字符的出现次数</span>
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> ans <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储每个字符的摘要值</span>
+        <span class="token keyword">char</span> pre <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// pre 表示当前正在处理的字符的前一个字符</span>
+        <span class="token keyword">int</span> repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// repeat 表示当前正在处理的字符的连续出现次数</span>
+        charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 出现的次数减 1</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+            <span class="token keyword">char</span> cur <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// cur 表示当前正在处理的字符</span>
+            charCount<span class="token punctuation">[</span>cur<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 cur 出现的次数减 1</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cur <span class="token operator">==</span> pre<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 相等，表示出现了连续字符</span>
+                repeat<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 连续出现次数加 1</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 不相等，表示出现了非连续字符</span>
+                ans<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>pre <span class="token operator">+</span> <span class="token string">""</span> <span class="token operator">+</span> <span class="token punctuation">(</span>repeat <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> repeat <span class="token operator">:</span> charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 的摘要值添加到 ans 中</span>
+                pre <span class="token operator">=</span> cur<span class="token punctuation">;</span> <span class="token comment">// 更新 pre 为当前字符</span>
+                repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 重置连续出现次数为 1</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 排序</span>
+        <span class="token class-name">Object</span><span class="token punctuation">[</span><span class="token punctuation">]</span> ansArray <span class="token operator">=</span> ans<span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将 ans 转换为数组</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>ansArray<span class="token punctuation">,</span> <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 根据题目要求对 ansArray 进行排序</span>
+            <span class="token class-name">String</span> s1 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">)</span> a<span class="token punctuation">;</span>
+            <span class="token class-name">String</span> s2 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">)</span> b<span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>s1<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>s1<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">!=</span> s2<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>s2<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果最后一个字符不相等，按照数字大小排序</span>
+                <span class="token keyword">return</span> s2<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>s2<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">-</span> s1<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>s1<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果最后一个字符相等，按照字母顺序排序</span>
+                <span class="token keyword">return</span> s1<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">-</span> s2<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出结果</span>
+        <span class="token class-name">StringBuilder</span> res <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储最终的摘要值</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Object</span> an <span class="token operator">:</span> ansArray<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历 ansArray</span>
+            res<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>an<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将每个元素添加到 res 中</span>
+        <span class="token punctuation">}</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最终的摘要值</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="JavaScript_196"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  input <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">toLowerCase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的字符串转换为小写</span>
+
+  <span class="token comment">// 统计每个字符出现的次数</span>
+  <span class="token keyword">const</span> charCount <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// ASCII 码表中共有 128 个字符</span>
+  <span class="token keyword">let</span> sb <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储去除非字母的符号后的字符串</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+    <span class="token keyword">const</span> c <span class="token operator">=</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果该字符是字母</span>
+      charCount<span class="token punctuation">[</span>c<span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 该字符出现次数加 1</span>
+      sb <span class="token operator">+=</span> c<span class="token punctuation">;</span> <span class="token comment">// 将该字符添加到 sb 中</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 在每个字符后面加上其出现的次数或者连续出现的次数</span>
+  input <span class="token operator">=</span> sb <span class="token operator">+</span> <span class="token string">' '</span><span class="token punctuation">;</span> <span class="token comment">// 在字符串末尾加上一个空格，方便统计最后一个字符的出现次数</span>
+  <span class="token keyword">const</span> ans <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储每个字符的摘要值</span>
+  <span class="token keyword">let</span> pre <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// pre 表示当前正在处理的字符的前一个字符</span>
+  <span class="token keyword">let</span> repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// repeat 表示当前正在处理的字符的连续出现次数</span>
+  charCount<span class="token punctuation">[</span>pre<span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 出现的次数减 1</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+    <span class="token keyword">const</span> cur <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// cur 表示当前正在处理的字符</span>
+    charCount<span class="token punctuation">[</span>cur<span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 cur 出现的次数减 1</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cur <span class="token operator">===</span> pre<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 相等，表示出现了连续字符</span>
+      repeat<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 连续出现次数加 1</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 不相等，表示出现了非连续字符</span>
+      ans<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>pre <span class="token operator">+</span> <span class="token punctuation">(</span>repeat <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> repeat <span class="token operator">:</span> charCount<span class="token punctuation">[</span>pre<span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 的摘要值添加到 ans 中</span>
+      pre <span class="token operator">=</span> cur<span class="token punctuation">;</span> <span class="token comment">// 更新 pre 为当前字符</span>
+      repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 重置连续出现次数为 1</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 排序</span>
+  ans<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 根据题目要求对 ans 进行排序</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>a<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">!==</span> b<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>b<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果最后一个字符不相等，按照数字大小排序</span>
+      <span class="token keyword">return</span> b<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>b<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">-</span> a<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>a<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果最后一个字符相等，按照字母顺序排序</span>
+      <span class="token keyword">return</span> a<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">-</span> b<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出结果</span>
+  <span class="token keyword">let</span> res <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储最终的摘要值</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> an <span class="token keyword">of</span> ans<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历 ans</span>
+    res <span class="token operator">+=</span> an<span class="token punctuation">;</span> <span class="token comment">// 将每个元素添加到 res 中</span>
+  <span class="token punctuation">}</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最终的摘要值</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h2><a id="Python_257"></a>Python</h2> 
+<pre><code class="prism language-c">import sys
+
+# 统计每个字符出现的次数
+charCount <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">128</span>  # ASCII 码表中共有 <span class="token number">128</span> 个字符
+sb <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  # 用于存储去除非字母的符号后的字符串
+input <span class="token operator">=</span> sys<span class="token punctuation">.</span><span class="token constant">stdin</span><span class="token punctuation">.</span><span class="token function">readline</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">strip</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">lower</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  # 将输入的字符串转换为小写
+<span class="token keyword">for</span> c in input<span class="token operator">:</span>
+    <span class="token keyword">if</span> <span class="token string">'a'</span> <span class="token operator">&lt;=</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token operator">:</span>  # 如果该字符是字母
+        charCount<span class="token punctuation">[</span><span class="token function">ord</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">+=</span> <span class="token number">1</span>  # 该字符出现次数加 <span class="token number">1</span>
+        sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span>  # 将该字符添加到 sb 中
+
+# 在每个字符后面加上其出现的次数或者连续出现的次数
+input <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">' '</span>  # 在字符串末尾加上一个空格，方便统计最后一个字符的出现次数
+ans <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  # 用于存储每个字符的摘要值
+pre <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>  # pre 表示当前正在处理的字符的前一个字符
+repeat <span class="token operator">=</span> <span class="token number">1</span>  # repeat 表示当前正在处理的字符的连续出现次数
+charCount<span class="token punctuation">[</span><span class="token function">ord</span><span class="token punctuation">(</span>pre<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>  # 将 pre 出现的次数减 <span class="token number">1</span>
+<span class="token keyword">for</span> i in <span class="token function">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token function">len</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">:</span>  # 遍历字符串的每个字符
+    cur <span class="token operator">=</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span>  # cur 表示当前正在处理的字符
+    charCount<span class="token punctuation">[</span><span class="token function">ord</span><span class="token punctuation">(</span>cur<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>  # 将 cur 出现的次数减 <span class="token number">1</span>
+    <span class="token keyword">if</span> cur <span class="token operator">==</span> pre<span class="token operator">:</span>  # 如果 cur 和 pre 相等，表示出现了连续字符
+        repeat <span class="token operator">+=</span> <span class="token number">1</span>  # 连续出现次数加 <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token operator">:</span>  # 如果 cur 和 pre 不相等，表示出现了非连续字符
+        ans<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>pre <span class="token operator">+</span> <span class="token function">str</span><span class="token punctuation">(</span>repeat<span class="token punctuation">)</span> <span class="token keyword">if</span> repeat <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token keyword">else</span> pre <span class="token operator">+</span> <span class="token function">str</span><span class="token punctuation">(</span>charCount<span class="token punctuation">[</span><span class="token function">ord</span><span class="token punctuation">(</span>pre<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  # 将 pre 的摘要值添加到 ans 中
+        pre <span class="token operator">=</span> cur  # 更新 pre 为当前字符
+        repeat <span class="token operator">=</span> <span class="token number">1</span>  # 重置连续出现次数为 <span class="token number">1</span>
+
+# 排序
+ans<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>key<span class="token operator">=</span>lambda x<span class="token operator">:</span> <span class="token punctuation">(</span><span class="token operator">-</span><span class="token keyword">int</span><span class="token punctuation">(</span>x<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> x<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+# 输出结果
+res <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span>ans<span class="token punctuation">)</span>  # 用于存储最终的摘要值
+<span class="token function">print</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span>  # 输出最终的摘要值
+</code></pre> 
+<h2><a id="C_295"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;ctype.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LEN</span> <span class="token expression"><span class="token number">200</span></span></span>
+
+<span class="token comment">// 定义一个结构体，用于存储字符和对应的次数</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> ch<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> CharCount<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义一个比较函数，用于 qsort 函数</span>
+<span class="token keyword">int</span> <span class="token function">cmp</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    CharCount <span class="token operator">*</span>cc1 <span class="token operator">=</span> <span class="token punctuation">(</span>CharCount <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    CharCount <span class="token operator">*</span>cc2 <span class="token operator">=</span> <span class="token punctuation">(</span>CharCount <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cc1<span class="token operator">-&gt;</span>count <span class="token operator">!=</span> cc2<span class="token operator">-&gt;</span>count<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> cc2<span class="token operator">-&gt;</span>count <span class="token operator">-</span> cc1<span class="token operator">-&gt;</span>count<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> cc1<span class="token operator">-&gt;</span>ch <span class="token operator">-</span> cc2<span class="token operator">-&gt;</span>ch<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 输入的字符串</span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span>MAX_LEN <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> MAX_LEN <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    input<span class="token punctuation">[</span><span class="token function">strcspn</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'\0'</span><span class="token punctuation">;</span>  <span class="token comment">// 去掉末尾的换行符</span>
+
+    <span class="token comment">// 统计每个字符出现的次数</span>
+    <span class="token keyword">int</span> charCount<span class="token punctuation">[</span><span class="token number">128</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// ASCII 码表中共有 128 个字符</span>
+    <span class="token keyword">char</span> sb<span class="token punctuation">[</span>MAX_LEN <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储去除非字母的符号后的字符串</span>
+    <span class="token keyword">int</span> sb_len <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> <span class="token function">tolower</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将字符转换为小写</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;=</span> <span class="token string">'a'</span> <span class="token operator">&amp;&amp;</span> c <span class="token operator">&lt;=</span> <span class="token string">'z'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果该字符是字母</span>
+            charCount<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 该字符出现次数加 1</span>
+            sb<span class="token punctuation">[</span>sb_len<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> c<span class="token punctuation">;</span> <span class="token comment">// 将该字符添加到 sb 中</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 在每个字符后面加上其出现的次数或者连续出现的次数</span>
+    CharCount ans<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储每个字符的摘要值</span>
+    <span class="token keyword">int</span> ans_len <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> pre <span class="token operator">=</span> sb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// pre 表示当前正在处理的字符的前一个字符</span>
+    <span class="token keyword">int</span> repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// repeat 表示当前正在处理的字符的连续出现次数</span>
+    charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 pre 出现的次数减 1</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> sb_len<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历字符串的每个字符</span>
+        <span class="token keyword">char</span> cur <span class="token operator">=</span> sb<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// cur 表示当前正在处理的字符</span>
+        charCount<span class="token punctuation">[</span>cur<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 将 cur 出现的次数减 1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cur <span class="token operator">==</span> pre<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 相等，表示出现了连续字符</span>
+            repeat<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 连续出现次数加 1</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果 cur 和 pre 不相等，表示出现了非连续字符</span>
+            ans<span class="token punctuation">[</span>ans_len<span class="token punctuation">]</span><span class="token punctuation">.</span>ch <span class="token operator">=</span> pre<span class="token punctuation">;</span>
+            ans<span class="token punctuation">[</span>ans_len<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">=</span> repeat <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> repeat <span class="token operator">:</span> charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            ans_len<span class="token operator">++</span><span class="token punctuation">;</span>
+            pre <span class="token operator">=</span> cur<span class="token punctuation">;</span> <span class="token comment">// 更新 pre 为当前字符</span>
+            repeat <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 重置连续出现次数为 1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    ans<span class="token punctuation">[</span>ans_len<span class="token punctuation">]</span><span class="token punctuation">.</span>ch <span class="token operator">=</span> pre<span class="token punctuation">;</span>
+    ans<span class="token punctuation">[</span>ans_len<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">=</span> repeat <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> repeat <span class="token operator">:</span> charCount<span class="token punctuation">[</span>pre<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    ans_len<span class="token operator">++</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> ans_len<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>CharCount<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出结果</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ans_len<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历 ans</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%c%d"</span><span class="token punctuation">,</span> ans<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>ch<span class="token punctuation">,</span> ans<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出每个元素</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出换行符</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_380"></a>完整用例</h2> 
+<h3><a id="1_381"></a>用例1</h3> 
+<p>aabbcc</p> 
+<h3><a id="2_384"></a>用例2</h3> 
+<p>abcde</p> 
+<h3><a id="3_387"></a>用例3</h3> 
+<p>AABBCC</p> 
+<h3><a id="4_390"></a>用例4</h3> 
+<p>bAaAcBb</p> 
+<h3><a id="5_393"></a>用例5</h3> 
+<p>abcdabcd</p> 
+<h3><a id="6_396"></a>用例6</h3> 
+<p>aaaAAA</p> 
+<h3><a id="7_399"></a>用例7</h3> 
+<p>abcABC</p> 
+<h3><a id="8_402"></a>用例8</h3> 
+<p>abcdABCD</p> 
+<h3><a id="9_405"></a>用例9</h3> 
+<p>aAaAaA</p> 
+<h3><a id="10_408"></a>用例10</h3> 
+<p>aabbccddeeffgghhiiijjj<br> </p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#OD_1" rel="nofollow">最新华为OD机试</a></li><li><a href="#_5" rel="nofollow">题目描述</a></li><li><a href="#_13" rel="nofollow">输入描述</a></li><li><a href="#_17" rel="nofollow">输出描述</a></li><li><a href="#1_22" rel="nofollow">用例1</a></li><li><a href="#2_38" rel="nofollow">用例2</a></li><li><a href="#C_69" rel="nofollow">C++</a></li><li><a href="#Java_133" rel="nofollow">Java</a></li><li><a href="#JavaScript_196" rel="nofollow">JavaScript</a></li><li><a href="#Python_257" rel="nofollow">Python</a></li><li><a href="#C_295" rel="nofollow">C语言</a></li><li><a href="#_380" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_381" rel="nofollow">用例1</a></li><li><a href="#2_384" rel="nofollow">用例2</a></li><li><a href="#3_387" rel="nofollow">用例3</a></li><li><a href="#4_390" rel="nofollow">用例4</a></li><li><a href="#5_393" rel="nofollow">用例5</a></li><li><a href="#6_396" rel="nofollow">用例6</a></li><li><a href="#7_399" rel="nofollow">用例7</a></li><li><a href="#8_402" rel="nofollow">用例8</a></li><li><a href="#9_405" rel="nofollow">用例9</a></li><li><a href="#10_408" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/169f277a87c29b8ff13d65ef9e7eeec7.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

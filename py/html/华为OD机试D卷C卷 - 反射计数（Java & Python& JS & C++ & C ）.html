@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>给定一个包含 0 和 1 的二维矩阵，给定一个初始位置和速度，一个物体从给定的初始位置触发, 在给定的速度下进行移动, 遇到矩阵的边缘则发生镜面反射。</p> 
+<p>无论物体经过 0 还是 1, 都不影响其速度</p> 
+<p>请计算并给出经过 t 时间单位后, 物体经过 1 点的次数</p> 
+<p>矩阵以左上角位置为[0, 0](列(x), 行(行)), 例如下面A点坐标为[2, 1] (第二列, 第一行)</p> 
+<pre><code>+--------------------------- 递增(x)
+| 0 0 1 0 0 0 0 1 0 0 0 0
+| 0 0 1 0 0 0 0 1 0 0 0 0
+| 0 0 1 0 0 0 0 1 0 0 0 0
+| 0 0 1 0 0 0 0 1 0 0 0 0
+| 0 0 1 0 0 0 0 1 0 0 0 0
+| 0 0 1 0 0 0 0 1 0 0 0 0
+| 0 0 1 0 0 0 0 1 0 0 0 0
+|
+递增(y)
+</code></pre> 
+<p>注意:</p> 
+<ul><li>如果初始位置的点是 1, 也计算在内</li><li>时间的最小单位为1, 不考虑小于 1 个时间单位内经过的点</li></ul> 
+<h2><a id="_32"></a>输入描述</h2> 
+<p>第一行为初始信息</p> 
+<blockquote> 
+ <p></p> 
+</blockquote> 
+<p>第二行开始一共 h 行，为二维矩阵信息</p> 
+<p>其中：</p> 
+<ul><li> <p>w，h 为矩阵的宽和高</p> </li><li> <p>x，y 为起始位置</p> </li><li> <p>sx，sy 为初始速度</p> </li><li> <p>t 为经过的时间</p> </li></ul> 
+<p>所有输入都是有效的，数据范围如下：</p> 
+<ul><li>0 &lt; w &lt; 100</li><li>0 &lt; h &lt; 100</li><li>0 ≤ x &lt; w</li><li>0 ≤ y &lt; h</li><li>-1 ≤ sx ≤ 1</li><li>-1 ≤ sy ≤ 1</li><li>0 ≤ t ＜100</li></ul> 
+<h2><a id="_61"></a>输出描述</h2> 
+<p>经过 1 的个数</p> 
+<p>注意初始位置也要计算在内</p> 
+<h2><a id="_67"></a>用例</h2> 
+<p>输入：</p> 
+<pre><code>12 7 2 1 1 -1 13
+001000010000
+001000010000
+001000010000
+001000010000
+001000010000
+001000010000
+001000010000
+</code></pre> 
+<p>输出：</p> 
+<pre><code>3
+</code></pre> 
+<p>说明：</p> 
+<blockquote> 
+ <p>初始位置为(2, 1), 速度为(1, -1), 那么13个时间单位后, 经过点1的个数为3</p> 
+</blockquote> 
+<h2><a id="_94"></a>解题思路</h2> 
+<p>这段Java代码的主要目标是模拟一个物体在二维矩阵中的运动，并计算在给定的时间单位内，物体经过1的次数。</p> 
+<p>解题思路如下：</p> 
+<ol><li> <p><strong>模拟运动</strong>：首先初始化一个计数器<code>count</code>，并将物体的初始位置的值（即<code>matrix[y][x]</code>）加到计数器上。然后，进入一个循环，每次循环模拟一个时间单位的运动。</p> 
+  <ul><li> <p><strong>移动物体</strong>：在每个时间单位内，根据物体的速度<code>(sx, sy)</code>移动物体，即更新物体的位置<code>(x, y)</code>。</p> </li><li> <p><strong>处理反射</strong>：如果物体移动后到达了二维矩阵的边界（即<code>x</code>等于0或<code>w-1</code>，或者<code>y</code>等于0或<code>h-1</code>），则改变物体的方向，即反转速度的相应分量。</p> </li><li> <p><strong>更新计数器</strong>：如果物体移动后的位置是1，即<code>matrix[y][x]</code>等于1，则将该值加到计数器上。</p> </li></ul> </li></ol> 
+<h2><a id="C_112"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取初始信息</span>
+    <span class="token keyword">int</span> w<span class="token punctuation">,</span> h<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> sx<span class="token punctuation">,</span> sy<span class="token punctuation">,</span> t<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> w <span class="token operator">&gt;&gt;</span> h <span class="token operator">&gt;&gt;</span> x <span class="token operator">&gt;&gt;</span> y <span class="token operator">&gt;&gt;</span> sx <span class="token operator">&gt;&gt;</span> sy <span class="token operator">&gt;&gt;</span> t<span class="token punctuation">;</span>
+    
+    <span class="token comment">// 初始化矩阵并读取矩阵信息</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">matrix</span><span class="token punctuation">(</span>h<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>w<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> h<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> w<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">char</span> ch<span class="token punctuation">;</span>
+            cin <span class="token operator">&gt;&gt;</span> ch<span class="token punctuation">;</span>
+            matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> ch <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录经过 '1' 的个数</span>
+    t<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 用于判断起始节点，不需要增加时间</span>
+
+    <span class="token comment">// 模拟运动过程</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>t <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 记录当前节点是否为 '1'</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 判断下一个节点是否会超越边界并反弹</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> sy <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">+</span> sy <span class="token operator">&gt;=</span> h<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sy <span class="token operator">=</span> <span class="token operator">-</span>sy<span class="token punctuation">;</span> <span class="token comment">// 碰到上下边界，垂直速度取反</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">+</span> sx <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">+</span> sx <span class="token operator">&gt;=</span> w<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sx <span class="token operator">=</span> <span class="token operator">-</span>sx<span class="token punctuation">;</span> <span class="token comment">// 碰到左右边界，水平速度取反</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 递增到下一个节点</span>
+        y <span class="token operator">+=</span> sy<span class="token punctuation">;</span>
+        x <span class="token operator">+=</span> sx<span class="token punctuation">;</span>
+
+        t<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少时间单位</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出经过 '1' 的个数</span>
+    cout <span class="token operator">&lt;&lt;</span> count <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_168"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span><span class="token punctuation">{<!-- --></span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取第一行输入，包含初始信息</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> initialInfo <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> w <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> h <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> x <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> y <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sx <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sy <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> t <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>initialInfo<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建矩阵，并读取矩阵信息</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>h<span class="token punctuation">]</span><span class="token punctuation">[</span>w<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> h<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> line <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> w<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Character</span><span class="token punctuation">.</span><span class="token function">getNumericValue</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录经过 '1' 的个数</span>
+        t<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 用于判断起始节点，不需要增加时间</span>
+
+        <span class="token comment">// 模拟运动过程</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>t <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 记录当前节点是否为 '1'</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 判断下一个节点是否会超越边界并反弹</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> sy <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">+</span> sy <span class="token operator">&gt;=</span> h<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                sy <span class="token operator">=</span> <span class="token operator">-</span>sy<span class="token punctuation">;</span> <span class="token comment">// 碰到上下边界，垂直速度取反</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">+</span> sx <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">+</span> sx <span class="token operator">&gt;=</span> w<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                sx <span class="token operator">=</span> <span class="token operator">-</span>sx<span class="token punctuation">;</span> <span class="token comment">// 碰到左右边界，水平速度取反</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 递增到下一个节点</span>
+            y <span class="token operator">+=</span> sy<span class="token punctuation">;</span>
+            x <span class="token operator">+=</span> sx<span class="token punctuation">;</span>
+
+            t<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少时间单位</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出经过 '1' 的个数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_228"></a>javaScript</h2> 
+<pre><code class="prism language-js"> 
+<span class="token keyword">const</span> rl <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"readline"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ 
+<span class="token keyword">var</span> iter <span class="token operator">=</span> rl<span class="token punctuation">[</span>Symbol<span class="token punctuation">.</span>asyncIterator<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义异步读取一行输入的函数</span>
+<span class="token keyword">const</span> <span class="token function-variable function">readline</span> <span class="token operator">=</span> <span class="token keyword">async</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">(</span><span class="token keyword">await</span> iter<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>value<span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 用于存储输入的数组</span>
+    <span class="token keyword">let</span> inputLines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>line <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">readline</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        inputLines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将每行输入存入数组</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 获取初始信息并解析成数字</span>
+    <span class="token keyword">let</span> <span class="token punctuation">[</span>w<span class="token punctuation">,</span> h<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> sx<span class="token punctuation">,</span> sy<span class="token punctuation">,</span> t<span class="token punctuation">]</span> <span class="token operator">=</span> inputLines<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 获取矩阵信息并将其转换为二维数组</span>
+    <span class="token keyword">let</span> matrix <span class="token operator">=</span> inputLines<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">line</span> <span class="token operator">=&gt;</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">let</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录经过 '1' 的个数</span>
+    t<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 用于判断起始节点，不需要增加时间</span>
+    
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>t <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 记录当前节点是否为 '1'</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 判断下一个节点是否会超越边界并反弹</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> sy <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">+</span> sy <span class="token operator">&gt;=</span> h<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sy <span class="token operator">=</span> <span class="token operator">-</span>sy<span class="token punctuation">;</span> <span class="token comment">// 碰到上下边界，垂直速度取反</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">+</span> sx <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">+</span> sx <span class="token operator">&gt;=</span> w<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sx <span class="token operator">=</span> <span class="token operator">-</span>sx<span class="token punctuation">;</span> <span class="token comment">// 碰到左右边界，水平速度取反</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 递增到下一个节点</span>
+        y <span class="token operator">+=</span> sy<span class="token punctuation">;</span>
+        x <span class="token operator">+=</span> sx<span class="token punctuation">;</span>
+
+        t<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少时间单位</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出经过 '1' 的个数</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_284"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取标准输入的所有行</span>
+input_lines <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 获取初始信息并解析成数字</span>
+w<span class="token punctuation">,</span> h<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> sx<span class="token punctuation">,</span> sy<span class="token punctuation">,</span> t <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> input_lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 获取矩阵信息并将其转换为二维数组</span>
+matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> line<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> line <span class="token keyword">in</span> input_lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+
+count <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 记录经过 '1' 的个数</span>
+t <span class="token operator">+=</span> <span class="token number">1</span>  <span class="token comment"># 用于判断起始节点，不需要增加时间</span>
+
+<span class="token keyword">while</span> t <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token comment"># 记录当前节点是否为 '1'</span>
+    <span class="token keyword">if</span> matrix<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        count <span class="token operator">+=</span> <span class="token number">1</span>
+
+    <span class="token comment"># 判断下一个节点是否会超越边界并反弹</span>
+    <span class="token keyword">if</span> y <span class="token operator">+</span> sy <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token keyword">or</span> y <span class="token operator">+</span> sy <span class="token operator">&gt;=</span> h<span class="token punctuation">:</span>
+        sy <span class="token operator">=</span> <span class="token operator">-</span>sy  <span class="token comment"># 碰到上下边界，垂直速度取反</span>
+    <span class="token keyword">if</span> x <span class="token operator">+</span> sx <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token keyword">or</span> x <span class="token operator">+</span> sx <span class="token operator">&gt;=</span> w<span class="token punctuation">:</span>
+        sx <span class="token operator">=</span> <span class="token operator">-</span>sx  <span class="token comment"># 碰到左右边界，水平速度取反</span>
+
+    <span class="token comment"># 递增到下一个节点</span>
+    y <span class="token operator">+=</span> sy
+    x <span class="token operator">+=</span> sx
+
+    t <span class="token operator">-=</span> <span class="token number">1</span>  <span class="token comment"># 减少时间单位</span>
+
+<span class="token comment"># 输出经过 '1' 的个数</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_322"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取第一行输入，包含初始信息</span>
+    <span class="token keyword">int</span> w<span class="token punctuation">,</span> h<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> sx<span class="token punctuation">,</span> sy<span class="token punctuation">,</span> t<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d %d %d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>w<span class="token punctuation">,</span> <span class="token operator">&amp;</span>h<span class="token punctuation">,</span> <span class="token operator">&amp;</span>x<span class="token punctuation">,</span> <span class="token operator">&amp;</span>y<span class="token punctuation">,</span> <span class="token operator">&amp;</span>sx<span class="token punctuation">,</span> <span class="token operator">&amp;</span>sy<span class="token punctuation">,</span> <span class="token operator">&amp;</span>t<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建矩阵，并读取矩阵信息</span>
+    <span class="token keyword">int</span><span class="token operator">*</span><span class="token operator">*</span> matrix <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>h <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> h<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>w <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span> line<span class="token punctuation">[</span>w <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> w<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> line<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录经过 '1' 的个数</span>
+    t<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 用于判断起始节点，不需要增加时间</span>
+
+    <span class="token comment">// 模拟运动过程</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>t <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 记录当前节点是否为 '1'</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>y<span class="token punctuation">]</span><span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 判断下一个节点是否会超越边界并反弹</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> sy <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> y <span class="token operator">+</span> sy <span class="token operator">&gt;=</span> h<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sy <span class="token operator">=</span> <span class="token operator">-</span>sy<span class="token punctuation">;</span> <span class="token comment">// 碰到上下边界，垂直速度取反</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">+</span> sx <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> x <span class="token operator">+</span> sx <span class="token operator">&gt;=</span> w<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sx <span class="token operator">=</span> <span class="token operator">-</span>sx<span class="token punctuation">;</span> <span class="token comment">// 碰到左右边界，水平速度取反</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 递增到下一个节点</span>
+        y <span class="token operator">+=</span> sy<span class="token punctuation">;</span>
+        x <span class="token operator">+=</span> sx<span class="token punctuation">;</span>
+
+        t<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少时间单位</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出经过 '1' 的个数</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 释放动态分配的内存</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> h<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">free</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>matrix<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_382"></a>完整用例</h2> 
+<h3><a id="1_383"></a>用例1</h3> 
+<pre><code class="prism language-input1">3 3 0 0 1 1 2
+111
+000
+111
+</code></pre> 
+<h3><a id="2_392"></a>用例2</h3> 
+<pre><code class="prism language-input2">5 5 2 2 -1 -1 5
+01010
+10101
+01010
+10101
+01010
+</code></pre> 
+<h3><a id="3_403"></a>用例3</h3> 
+<pre><code class="prism language-input3">4 4 2 2 -1 -1 3
+1001
+0000
+0000
+1001
+</code></pre> 
+<h3><a id="4_413"></a>用例4</h3> 
+<pre><code class="prism language-input4">6 6 1 1 0 1 4
+000000
+010101
+000000
+010101
+000000
+010101
+</code></pre> 
+<h3><a id="5_425"></a>用例5</h3> 
+<pre><code class="prism language-input5">5 5 1 1 0 1 4
+10101
+01010
+10101
+01010
+10101
+</code></pre> 
+<h3><a id="6_436"></a>用例6</h3> 
+<pre><code class="prism language-input6">3 3 1 0 1 1 3
+111
+111
+111
+</code></pre> 
+<h3><a id="7_445"></a>用例7</h3> 
+<pre><code class="prism language-input7">8 8 0 0 1 1 16
+00000000
+00000000
+00011000
+00011000
+00000000
+00000000
+00000000
+00000000
+</code></pre> 
+<h3><a id="8_459"></a>用例8</h3> 
+<pre><code class="prism language-input8">10 10 9 0 -1 1 19
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000000
+0000000001
+</code></pre> 
+<h3><a id="9_475"></a>用例9</h3> 
+<pre><code class="prism language-input9">6 6 3 3 -1 1 5
+000000
+000000
+000100
+000000
+000000
+000000
+</code></pre> 
+<h3><a id="10_487"></a>用例10</h3> 
+<pre><code class="prism language-input10">3 3 1 1 -1 -1 4
+000
+010
+000
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/a6b22fe66f8fe99b1a89f227848f6bb1.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

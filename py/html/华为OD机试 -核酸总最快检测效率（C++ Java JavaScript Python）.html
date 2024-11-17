@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>在系统、网络均正常的情况下组织核酸采样员和志愿者对人群进行[核酸检测]筛查。</p> 
+<p>每名采样员的效率不同，采样效率为N人/小时。</p> 
+<p>由于外界变化，采样员的效率会以M人/小时为粒度发生变化，M为采样效率浮动粒度，M=N*10%，输入保证N*10%的结果为整数。</p> 
+<p>采样员效率浮动规则：采样员需要一名志愿者协助组织才能发挥正常效率，在此基础上，每增加一名志愿者，效率提升1M，最多提升3M；如果没有志愿者协助组织，效率下降2M。</p> 
+<p>怎么安排速度最快？求<strong>总最快检测效率</strong>（总检查效率为各采样人员效率值相加）。</p> 
+<h4><a id="_13"></a>输入描述</h4> 
+<p>第一行：第一个值，采样员人数，取值范围[1, 100]；第二个值，志愿者人数，取值范围[1, 500]；<br> 第二行：各采样员基准效率值（单位人/小时），取值范围[60, 600]，保证序列中每项值计算10%为整数。</p> 
+<h4><a id="_18"></a>输出描述</h4> 
+<p>第一行：总最快检测效率（单位人/小时）</p> 
+<h4><a id="_22"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>2 2<br>200 200</td></tr><tr><td>输出</td><td>400</td></tr><tr><td>说明</td><td>输入需要保证采样员基准效率值序列的每个值*10%为整数。</td></tr></tbody></table> 
+<h4><a id="_26"></a>题目解析</h4> 
+<p>用例解析：</p> 
+<ol><li> <p>有两个采样员和两个志愿者；</p> </li><li> <p>每个采样员需要配合一个志愿者才能发挥正常效率，即200；</p> </li><li> <p>当采样员和志愿者数量相等时，可以发挥最大效率，为400；</p> </li><li> <p>如果一个采样员配合两个志愿者，其效率提高为220，但另一个采样员将没有志愿者，效率降为160，此时总效率为380；</p> <p><strong>由此可以得出，最大效率为400</strong></p> </li></ol> 
+<p>解题：</p> 
+<p>首先分两种情况：</p> 
+<p>1、志愿者数量少于采样员</p> 
+<p>2、志愿者数量不少于采样员，如果采样员：志愿者 的比例，超过了1：4，那么超出4倍采样员范围的志愿者将没有效率提升作用，因此有效志愿者数量最多是四倍的采样员数量。</p> 
+<p>情况1：</p> 
+<p>在情况1中，建议将有限数量的志愿者优先分配给高效率的采样员，并采取默认的一比一分配方式。如果高效率的采样员可以增加至少10%的效率，而剥夺低效率采样员的志愿者只会导致他们的效率下降20%以上，则应该将志愿者从低效率的采样员那里转移到高效率的采样员那里。此外，需要注意高效率采样员最多只能追加三个志愿者。</p> 
+<p>情况2：</p> 
+<p>在情况2中，建议首先按一比一的方式为每个采样员分配一个志愿者。如果有多余的志愿者，则应该优先分配给高效率的采样员，同样需要注意每个采样员最多只能追加三个志愿者。当所有的志愿者都分配完后，如果高效率的采样员可以增加至少10%的效率，而剥夺低效率采样员的志愿者只会导致他们的效率下降20%以上，则应该将志愿者从低效率的采样员那里转移到高效率的采样员那里。</p> 
+<h4><a id="C_62"></a>C++</h4> 
+<pre><code class="prism language-C++">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+// 按效率从高到低排序的比较函数
+bool cmp(int a, int b) {
+return a &gt; b;
+}
+
+int main() {
+int sample_num, volunteer_num;
+cin &gt;&gt; sample_num &gt;&gt; volunteer_num;
+
+vector&lt;int&gt; efficiencies;
+for (int i = 0; i &lt; sample_num; i++) {
+    int efficiency;
+    cin &gt;&gt; efficiency;
+    efficiencies.push_back(efficiency);
+}
+sort(efficiencies.begin(), efficiencies.end(), cmp);
+
+int result = 0;
+int volunteer_count = 0; // 每个采样员配备的志愿者个数
+int high_efficiency_index = 0; // 最高效率的采样员的索引
+int low_efficiency_index = sample_num - 1; // 最低效率的采样员的索引
+
+// 分支1: 志愿者人数少于采样员人数
+if (volunteer_num &lt; sample_num) {
+    for (int i = 0; i &lt; sample_num; i++) {
+        int efficiency = efficiencies[i];
+        if (i &lt; volunteer_num) {
+            result += efficiency; // 每个志愿者对应效率最高的采样员
+        } else {
+            result += efficiency * 0.8; // 志愿者数量不足时采样员效率下降20%
+        }
+    }
+    low_efficiency_index = volunteer_num - 1;
+}
+// 分支2: 志愿者人数多于或等于采样员人数
+else {
+    // 如果志愿者人数超过采样员四倍，则多出来的志愿者无效
+    if (volunteer_num &gt;= 4 * sample_num) {
+        volunteer_num = 4 * sample_num;
+    }
+    for (int efficiency : efficiencies) {
+        result += efficiency; // 每个采样员都有一个志愿者
+    }
+    int remain_volunteer_num = volunteer_num - sample_num;
+    high_efficiency_index = sample_num - 1;
+   while (remain_volunteer_num &gt; 0) {
+               result += efficiencies[high_efficiency_index] * 0.1;
+               remain_volunteer_num--;
+               if (++volunteer_count == 3) {
+                   volunteer_count = 0;
+                   high_efficiency_index++;
+               }
+           }
+       }
+        
+	       // 剥夺低效率采样员的志愿者给高效率的采样员
+	       while (high_efficiency_index &lt; low_efficiency_index) {
+	           // 最高效率的采样员上升10%的效率 &gt; 最低效率的采样员下降20%的效率
+	           if (efficiencies[high_efficiency_index] * 0.1 &gt; efficiencies[low_efficiency_index] * 0.2) {
+	               result += efficiencies[high_efficiency_index] * 0.1 - efficiencies[low_efficiency_index] * 0.2;
+	       
+	               // 最多就4个志愿者
+	               if (++volunteer_count == 3) {
+	                   volunteer_count = 0;
+	                   high_efficiency_index++;
+	               }
+	               low_efficiency_index--;
+	           } else {
+	               break;
+	           }
+	       }
+	    
+	       cout &lt;&lt; result;
+	    
+	   	return 0;
+}
+</code></pre> 
+<h4><a id="JavaScript_150"></a>JavaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"readline"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建 readline 接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 存储输入数据的数组</span>
+<span class="token keyword">const</span> inputLines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 监听输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将每行输入保存到 inputLines 数组中</span>
+  inputLines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 当输入达到两行时，开始计算结果并输出</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>inputLines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>numOfSamplers<span class="token punctuation">,</span> numOfVolunteers<span class="token punctuation">]</span> <span class="token operator">=</span> inputLines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> samplerEfficiencies <span class="token operator">=</span> inputLines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">getResult</span><span class="token punctuation">(</span>samplerEfficiencies<span class="token punctuation">,</span> numOfSamplers<span class="token punctuation">,</span> numOfVolunteers<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 清空 inputLines 数组，准备接收新一轮输入</span>
+    inputLines<span class="token punctuation">.</span>length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">/**
+ * 计算分配志愿者后采样员的最大效率值
+ * @param {Array} effs 采样员们的正常效率
+ * @param {number} numSamp 采样员人数
+ * @param {number} numVolun 志愿者人数
+ * @returns {number} 最大效率值
+ */</span>
+<span class="token keyword">function</span> <span class="token function">getResult</span><span class="token punctuation">(</span><span class="token parameter">effs<span class="token punctuation">,</span> numSamp<span class="token punctuation">,</span> numVolun</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 按照正常效率从高到低排序</span>
+  effs<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> b <span class="token operator">-</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> maxEff <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最大效率值</span>
+
+  <span class="token keyword">let</span> leftIndex<span class="token punctuation">;</span> <span class="token comment">// 左指针</span>
+  <span class="token keyword">let</span> rightIndex<span class="token punctuation">;</span> <span class="token comment">// 右指针</span>
+  <span class="token keyword">let</span> surplusVolunteers <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 多余的志愿者数量</span>
+  <span class="token keyword">let</span> counter <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 计数器</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>numVolun <span class="token operator">&lt;</span> numSamp<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 若志愿者人数少于采样员人数，则优先为效率高的采样员分配志愿者</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numSamp<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 0~numVolun-1 范围内效率高的采样员获得一个志愿者，其他采样员没有志愿者，效率降低 20%</span>
+      maxEff <span class="token operator">+=</span> i <span class="token operator">&lt;</span> numVolun <span class="token operator">?</span> effs<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">:</span> effs<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.8</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    leftIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    rightIndex <span class="token operator">=</span> numVolun <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果志愿者人数不少于采样员人数，那么默认情况下每个采样员都分配一个志愿者</span>
+    <span class="token comment">// 如果志愿者人数超过采样员人数的四倍，则多出来的志愿者就没有作用了</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>numVolun <span class="token operator">&gt;=</span> <span class="token number">4</span> <span class="token operator">*</span> numSamp<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      numVolun <span class="token operator">=</span> <span class="token number">4</span> <span class="token operator">*</span> numSamp<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 全部采样员发挥正常效率</span>
+    maxEff <span class="token operator">=</span> effs<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">prev<span class="token punctuation">,</span> curr</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> prev <span class="token operator">+</span> curr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 记录多余的志愿者数量</span>
+    surplusVolunteers <span class="token operator">=</span> numVolun <span class="token operator">-</span> numSamp<span class="token punctuation">;</span>
+
+    leftIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    rightIndex <span class="token operator">=</span> numSamp <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 优先将多余的志愿者分配给效率高的采样员</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>surplusVolunteers <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      maxEff <span class="token operator">+=</span> effs<span class="token punctuation">[</span>leftIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span><span class="token punctuation">;</span>
+      surplusVolunteers<span class="token operator">--</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">++</span>counter <span class="token operator">===</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        counter <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        leftIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 尝试将多余的志愿者从效率低的采样员中转移到效率高的采样员中</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>leftIndex <span class="token operator">&lt;</span> rightIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 判断如果最高效率的采样员上升 10% 的效率是否比最低效率的采样员下降 20% 的效率更加高效</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>effs<span class="token punctuation">[</span>leftIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span> <span class="token operator">&gt;</span> effs<span class="token punctuation">[</span>rightIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        maxEff <span class="token operator">+=</span> effs<span class="token punctuation">[</span>leftIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span> <span class="token operator">-</span> effs<span class="token punctuation">[</span>rightIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.2</span><span class="token punctuation">;</span>
+        leftIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+        rightIndex<span class="token operator">--</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  
+    <span class="token keyword">return</span> maxEff
+  <span class="token punctuation">}</span>
+  
+
+</code></pre> 
+<h4><a id="Java_255"></a>Java</h4> 
+<pre><code class="prism language-java">
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sampleCount <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> volunteerCount <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> efficiencies <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Integer</span><span class="token punctuation">[</span>sampleCount<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> sampleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 按效率从高到低排序</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>efficiencies<span class="token punctuation">,</span> <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">reverseOrder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 总效率值</span>
+        <span class="token keyword">int</span> volunteerIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前志愿者的下标</span>
+        <span class="token keyword">int</span> sampleIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前采样员的下标</span>
+
+        <span class="token comment">// 分支1: 志愿者&lt;采样员，优先将志愿者分配给效率高的采样员</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>volunteerCount <span class="token operator">&lt;</span> sampleCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> sampleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>volunteerIndex <span class="token operator">&lt;</span> volunteerCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    result <span class="token operator">+=</span> efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    volunteerIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    result <span class="token operator">+=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span>efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 分支2: 志愿者&gt;=采样员，先给每个采样员都分配一个志愿者</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> maxVolunteerCount <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>volunteerCount<span class="token punctuation">,</span> <span class="token number">4</span> <span class="token operator">*</span> sampleCount<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 最大有效志愿者数量</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> sampleCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">+=</span> efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                volunteerIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>volunteerIndex <span class="token operator">&lt;</span> maxVolunteerCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">+=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span>efficiencies<span class="token punctuation">[</span>sampleIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                volunteerIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">++</span>sampleIndex <span class="token operator">==</span> sampleCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    sampleIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 剥夺低效率采样员的志愿者给高效率的采样员</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>sampleIndex <span class="token operator">&lt;</span> sampleCount <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>efficiencies<span class="token punctuation">[</span>sampleIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span> <span class="token operator">&gt;</span> efficiencies<span class="token punctuation">[</span>sampleCount <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">+=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span>efficiencies<span class="token punctuation">[</span>sampleIndex<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span> <span class="token operator">-</span> efficiencies<span class="token punctuation">[</span>sampleCount <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                sampleIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+                volunteerIndex<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_322"></a>Python</h4> 
+<pre><code class="prism language-py"><span class="token comment"># 获取输入</span>
+num_of_samplers<span class="token punctuation">,</span> num_of_volunteers <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+efficiencies <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 算法入口</span>
+<span class="token keyword">def</span> <span class="token function">get_max_efficiency</span><span class="token punctuation">(</span>efficiencies<span class="token punctuation">,</span> num_of_samplers<span class="token punctuation">,</span> num_of_volunteers<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 按照效率降序排序</span>
+    efficiencies<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+    max_efficiency <span class="token operator">=</span> <span class="token number">0</span>
+    count <span class="token operator">=</span> <span class="token number">0</span>
+    i <span class="token operator">=</span> <span class="token boolean">None</span>
+    j <span class="token operator">=</span> <span class="token boolean">None</span>
+
+    <span class="token comment"># 如果志愿者少于采样员，则优先将志愿者分配给正常效率高的采样员</span>
+    <span class="token keyword">if</span> num_of_volunteers <span class="token operator">&lt;</span> num_of_samplers<span class="token punctuation">:</span>
+        <span class="token comment"># 0~num_of_volunteers-1范围内高效率的采样员优先获得一个志愿者，因此保持正常效率，而num_of_volunteers~num_of_samplers-1范围内的低效率采样员则没有志愿者，效率下降20%</span>
+        <span class="token keyword">for</span> k <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_of_samplers<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            max_efficiency <span class="token operator">+=</span> efficiencies<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token keyword">if</span> k <span class="token operator">&lt;</span> num_of_volunteers <span class="token keyword">else</span> efficiencies<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.8</span>
+
+        i <span class="token operator">=</span> <span class="token number">0</span>
+        j <span class="token operator">=</span> num_of_volunteers <span class="token operator">-</span> <span class="token number">1</span>
+    <span class="token comment"># 如果志愿者 不少于 采样员，那么默认情况下每个采样员都分配一个志愿者</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果志愿者人数超过采样员四倍，则多出来的志愿者就没有作用了</span>
+        <span class="token keyword">if</span> num_of_volunteers <span class="token operator">&gt;=</span> <span class="token number">4</span> <span class="token operator">*</span> num_of_samplers<span class="token punctuation">:</span>
+            num_of_volunteers <span class="token operator">=</span> <span class="token number">4</span> <span class="token operator">*</span> num_of_samplers
+
+        <span class="token comment"># 每个采样员都默认发挥正常效率</span>
+        <span class="token keyword">for</span> val <span class="token keyword">in</span> efficiencies<span class="token punctuation">:</span>
+            max_efficiency <span class="token operator">+=</span> val
+
+        <span class="token comment"># surplus记录每个采样员分配一个志愿者后，还多出来的志愿者</span>
+        surplus <span class="token operator">=</span> num_of_volunteers <span class="token operator">-</span> num_of_samplers
+
+        i <span class="token operator">=</span> <span class="token number">0</span>
+        j <span class="token operator">=</span> num_of_samplers <span class="token operator">-</span> <span class="token number">1</span>
+
+        <span class="token comment"># 优先将多出来的志愿者分配给高效率的采样员</span>
+        <span class="token keyword">while</span> surplus <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            max_efficiency <span class="token operator">+=</span> efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span>
+            surplus <span class="token operator">-=</span> <span class="token number">1</span>
+            count <span class="token operator">+=</span> <span class="token number">1</span>
+            <span class="token keyword">if</span> count <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">:</span>
+                count <span class="token operator">=</span> <span class="token number">0</span>
+                i <span class="token operator">+=</span> <span class="token number">1</span>
+
+    <span class="token comment"># 志愿者分配完后，则继续考虑剥夺低效率采样员的志愿者给高效率的采样员</span>
+    <span class="token keyword">while</span> i <span class="token operator">&lt;</span> j<span class="token punctuation">:</span>
+        <span class="token comment"># 如果最高效率的采样员上升10%的效率  是否大于  最低效率的采样员下降20%的效率，那么就值得剥夺</span>
+        <span class="token keyword">if</span> efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span> <span class="token operator">&gt;</span> efficiencies<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.2</span><span class="token punctuation">:</span>
+            max_efficiency <span class="token operator">+=</span> efficiencies<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.1</span> <span class="token operator">-</span> efficiencies<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">0.2</span>
+
+            <span class="token comment"># 由于一个采样员最多只能提升30%，即除了一个基础志愿者外，最多再配3个志愿者，多配了也没用</span>
+            count <span class="token operator">+=</span> <span class="token number">1</span>
+            <span class="token keyword">if</span> count <span class="token operator">==</span> <span class="token number">3</span><span class="token punctuation">:</span>
+                count <span class="token operator">=</span> <span class="token number">0</span>
+                i <span class="token operator">+=</span> <span class="token number">1</span>
+            j <span class="token operator">-=</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+
+    <span class="token keyword">return</span> <span class="token builtin">int</span><span class="token punctuation">(</span>max_efficiency<span class="token punctuation">)</span>
+
+
+<span class="token comment"># 调用算法并输出结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>get_max_efficiency<span class="token punctuation">(</span>efficiencies<span class="token punctuation">,</span> num_of_samplers<span class="token punctuation">,</span> num_of_volunteers<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_13" rel="nofollow">输入描述</a></li><li><a href="#_18" rel="nofollow">输出描述</a></li><li><a href="#_22" rel="nofollow">用例</a></li><li><a href="#_26" rel="nofollow">题目解析</a></li><li><a href="#C_62" rel="nofollow">C++</a></li><li><a href="#JavaScript_150" rel="nofollow">JavaScript</a></li><li><a href="#Java_255" rel="nofollow">Java</a></li><li><a href="#Python_322" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

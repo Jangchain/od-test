@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>无</p> 
+<h4><a id="_5"></a>输入描述</h4> 
+<p>输入一个字符串，都是以大写字母组成，每个相邻的距离是 1，</p> 
+<p>第二行输入一个字符串，表示必过的点。</p> 
+<p>说明每个点可过多次。</p> 
+<h4><a id="_13"></a>输出描述</h4> 
+<p>经过这些必过点的最小距离是多少</p> 
+<h4><a id="_17"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td><p>ANTSEDXQOKPUVGIFWHJLYMCRZB<br>ABC</p></td></tr><tr><td>输出</td><td>28</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h4><a id="_22"></a>题目解析</h4> 
+<p>这个题目是一个路径搜索问题，具体来说，是在一个字符串中寻找一条经过特定字符的最短路径。</p> 
+<p>输入包括两行字符串。第一行字符串由大写字母组成，每个字符可以看作是一个点，相邻字符之间的距离为1。第二行字符串指定了一些必须经过的点（字符）。</p> 
+<p>题目要求找出一条路径，这条路径必须经过所有在第二行字符串中指定的点，而且总距离要尽可能的小。注意，每个点可以经过多次，但在计算总距离时，每次经过都会计算其距离。<br> 例如，输入为：</p> 
+<pre><code class="prism language-csharp">ANTSEDXQOKPUVGIFWHJLYMCRZB
+ABC
+</code></pre> 
+<p>输出为：</p> 
+<pre><code class="prism language-csharp"><span class="token number">28</span>
+</code></pre> 
+<p>解释：在第一个字符串中，字母A的位置是0，字母B的位置是25，字母C的位置是24。所以，经过这些必过点的最小距离是 |0-25| + |25-24| = 28。</p> 
+<p>DFS (深度优先搜索) 是一种用于遍历或搜索图或树的算法。它通过从起始节点开始，沿着一条路径尽可能深入地探索，直到无法继续为止，然后回溯到前一步选择其他路径继续探索，直到遍历完所有可能的路径。</p> 
+<p>对于题目，我们需要找到经过指定的必过点的最小距离。下面是解题思路：</p> 
+<ol><li> <p>首先，我们需要构建一个映射表 <code>mustCharIdx</code>，用于存储每个必过点在字符串 <code>all</code> 中的索引位置。映射表的键是必过点的字符，值是一个列表，存储该字符在 <code>all</code> 中出现的索引位置。</p> </li><li> <p>接下来，我们定义一个递归函数 <code>dfs</code>，它接受以下参数：</p> 
+  <ul><li><code>index</code>：当前需要处理的必过点的索引。</li><li><code>must</code>：必过点的字符串。</li><li><code>mustCharIdx</code>：必过点的映射表。</li><li><code>path</code>：当前已经选择的路径。</li><li><code>ans</code>：用于存储最小距离的数组。</li></ul> </li><li> <p>在 <code>dfs</code> 函数中，我们首先检查是否已经遍历完所有的必过点。如果是，则计算当前路径的距离，并更新 <code>ans</code> 中的最小距离。</p> </li><li> <p>如果当前路径的长度大于0，我们还需要检查当前路径的距离是否已经超过了当前的最小距离 <code>ans[0]</code>。如果是，则可以提前终止当前路径的探索。</p> </li><li> <p>接下来，我们获取当前需要处理的必过点的字符 <code>c</code>，以及该字符在 <code>all</code> 中出现的索引位置列表 <code>idxs</code>。</p> </li><li> <p>对于每个索引位置 <code>idx</code>，我们将其添加到路径 <code>path</code> 中，然后递归调用 <code>dfs</code> 函数处理下一个必过点。</p> </li><li> <p>在递归调用返回后，我们需要将最后添加的索引位置从路径 <code>path</code> 中移除，以便尝试其他的索引位置。</p> </li><li> <p>最后，在主函数中，我们初始化最小距离 <code>ans</code> 为一个较大的值，创建一个空的路径 <code>path</code>，并调用 <code>dfs</code> 函数开始搜索。</p> </li><li> <p>最终，输出 <code>ans[0]</code>，即为经过这些必过点的最小距离。</p> </li></ol> 
+<h4><a id="c_72"></a>c++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;climits&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义一个深度优先搜索的函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> index<span class="token punctuation">,</span> string must<span class="token punctuation">,</span> unordered_map<span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> mustCharIdx<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> path<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&amp;</span> ans<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果路径长度等于必经点的长度，计算路径的距离</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> must<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> dis <span class="token operator">=</span> path<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            dis <span class="token operator">+=</span> <span class="token function">abs</span><span class="token punctuation">(</span>path<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> path<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 更新最小距离</span>
+        ans <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> dis<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取当前必经点的字符，然后获取该字符的所有索引</span>
+    <span class="token keyword">char</span> c <span class="token operator">=</span> must<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> idxs <span class="token operator">=</span> mustCharIdx<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 对于每个索引，添加到路径中，然后进行深度优先搜索，最后从路径中移除</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> idx <span class="token operator">:</span> idxs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        path<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        path<span class="token punctuation">.</span><span class="token function">pop_back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string all<span class="token punctuation">,</span> must<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> all <span class="token operator">&gt;&gt;</span> must<span class="token punctuation">;</span>
+    <span class="token comment">// 创建一个映射，用于存储每个必经点字符的所有索引</span>
+    unordered_map<span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> mustCharIdx<span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化映射</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> must<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        mustCharIdx<span class="token punctuation">[</span>c<span class="token punctuation">]</span> <span class="token operator">=</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历所有字符，如果字符是必经点，将其索引添加到映射中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> all<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> all<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mustCharIdx<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            mustCharIdx<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化最小距离为最大值</span>
+    <span class="token keyword">int</span> ans <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span>
+    <span class="token comment">// 创建一个列表，用于存储路径</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> path<span class="token punctuation">;</span>
+    <span class="token comment">// 进行深度优先搜索</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 输出最小距离</span>
+    cout <span class="token operator">&lt;&lt;</span> ans <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+
+</code></pre> 
+<h4><a id="java_143"></a>java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义一个深度优先搜索的方法</span>
+    <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> index<span class="token punctuation">,</span> <span class="token class-name">String</span> must<span class="token punctuation">,</span> <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Character</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> mustCharIdx<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> path<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> ans<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果路径长度等于必经点的长度，计算路径的距离</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> must<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> dis <span class="token operator">=</span> path<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                dis <span class="token operator">+=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">-</span> path<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 更新最小距离</span>
+            ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dis<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果路径长度大于0，计算路径的距离，如果大于等于当前最小距离，返回</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> dis <span class="token operator">=</span> path<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                dis <span class="token operator">+=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">-</span> path<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>dis <span class="token operator">&gt;=</span> ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> 
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 获取当前必经点的字符，然后获取该字符的所有索引</span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> must<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> idxs <span class="token operator">=</span> mustCharIdx<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 对于每个索引，添加到路径中，然后进行深度优先搜索，最后从路径中移除</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> idx <span class="token operator">:</span> idxs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            path<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            path<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取输入的两个字符串</span>
+        <span class="token class-name">String</span> all <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> must <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个映射，用于存储每个必经点字符的所有索引</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Character</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> mustCharIdx <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化映射</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> must<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            mustCharIdx<span class="token punctuation">.</span><span class="token function">putIfAbsent</span><span class="token punctuation">(</span>c<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 遍历所有字符，如果字符是必经点，将其索引添加到映射中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> all<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">char</span> c <span class="token operator">=</span> all<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>mustCharIdx<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                mustCharIdx<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化最小距离为最大值</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> ans <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token class-name">Integer</span><span class="token punctuation">.</span>MAX_VALUE<span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个列表，用于存储路径</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> path <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 进行深度优先搜索</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出最小距离</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h4><a id="javaScript_221"></a>javaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义一个深度优先搜索的函数</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">index<span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果路径长度等于必经点的长度，计算路径的距离</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">.</span>length <span class="token operator">===</span> must<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> dis <span class="token operator">=</span> path<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> path<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            dis <span class="token operator">+=</span> Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>path<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> path<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 更新最小距离</span>
+        ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dis<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取当前必经点的字符，然后获取该字符的所有索引</span>
+    <span class="token keyword">let</span> c <span class="token operator">=</span> must<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> idxs <span class="token operator">=</span> mustCharIdx<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 对于每个索引，添加到路径中，然后进行深度优先搜索，最后从路径中移除</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> idx <span class="token keyword">of</span> idxs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        path<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        path<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token parameter">all</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token parameter">must</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个映射，用于存储每个必经点字符的所有索引</span>
+        <span class="token keyword">let</span> mustCharIdx <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化映射</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> c <span class="token keyword">of</span> must<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            mustCharIdx<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>c<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 遍历所有字符，如果字符是必经点，将其索引添加到映射中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> all<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">let</span> c <span class="token operator">=</span> all<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>mustCharIdx<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                mustCharIdx<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化最小距离为最大值</span>
+        <span class="token keyword">let</span> ans <span class="token operator">=</span> <span class="token punctuation">[</span>Number<span class="token punctuation">.</span><span class="token constant">MAX_SAFE_INTEGER</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个列表，用于存储路径</span>
+        <span class="token keyword">let</span> path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 进行深度优先搜索</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出最小距离</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h4><a id="python_288"></a>python</h4> 
+<pre><code class="prism language-python">
+<span class="token comment"># 定义一个深度优先搜索的函数</span>
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果路径长度等于必经点的长度，计算路径的距离</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token builtin">len</span><span class="token punctuation">(</span>must<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        dis <span class="token operator">=</span> path<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            dis <span class="token operator">+=</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>path<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> path<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># 更新最小距离</span>
+        ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> dis<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+
+    <span class="token comment"># 获取当前必经点的字符，然后获取该字符的所有索引</span>
+    c <span class="token operator">=</span> must<span class="token punctuation">[</span>index<span class="token punctuation">]</span>
+    idxs <span class="token operator">=</span> mustCharIdx<span class="token punctuation">[</span>c<span class="token punctuation">]</span>
+    <span class="token comment"># 对于每个索引，添加到路径中，然后进行深度优先搜索，最后从路径中移除</span>
+    <span class="token keyword">for</span> idx <span class="token keyword">in</span> idxs<span class="token punctuation">:</span>
+        path<span class="token punctuation">.</span>append<span class="token punctuation">(</span>idx<span class="token punctuation">)</span>
+        dfs<span class="token punctuation">(</span>index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span>
+        path<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token builtin">all</span> <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+must <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 创建一个映射，用于存储每个必经点字符的所有索引</span>
+mustCharIdx <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>c<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token keyword">for</span> c <span class="token keyword">in</span> must<span class="token punctuation">}</span>
+
+<span class="token comment"># 遍历所有字符，如果字符是必经点，将其索引添加到映射中</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span><span class="token builtin">all</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    c <span class="token operator">=</span> <span class="token builtin">all</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    <span class="token keyword">if</span> c <span class="token keyword">in</span> mustCharIdx<span class="token punctuation">:</span>
+        mustCharIdx<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化最小距离为最大值</span>
+ans <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token comment"># 创建一个列表，用于存储路径</span>
+path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token comment"># 进行深度优先搜索</span>
+dfs<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> must<span class="token punctuation">,</span> mustCharIdx<span class="token punctuation">,</span> path<span class="token punctuation">,</span> ans<span class="token punctuation">)</span>
+<span class="token comment"># 输出最小距离</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_5" rel="nofollow">输入描述</a></li><li><a href="#_13" rel="nofollow">输出描述</a></li><li><a href="#_17" rel="nofollow">用例</a></li><li><a href="#_22" rel="nofollow">题目解析</a></li><li><a href="#c_72" rel="nofollow">c++</a></li><li><a href="#java_143" rel="nofollow">java</a></li><li><a href="#javaScript_221" rel="nofollow">javaScript</a></li><li><a href="#python_288" rel="nofollow">python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

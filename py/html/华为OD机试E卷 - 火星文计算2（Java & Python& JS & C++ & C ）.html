@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_0"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_4"></a>题目描述</h2> 
+<p>已知火星人使用的运算符为#、$，其与地球人的等价公式如下：</p> 
+<ul><li>x#y = 4<em>x+3</em>y+2</li><li>x$y = 2*x+y+3</li></ul> 
+<ol><li>其中 x、y 是无符号整数</li><li>地球人公式按C语言规则计算</li><li>火星人公式中，#的优先级高于$，相同的运算符，按从左到右的顺序计算</li></ol> 
+<p>现有一段火星人的字符串报文，请你来翻译并计算结果。</p> 
+<h2><a id="_17"></a>输入描述</h2> 
+<p>火星人字符串表达式（结尾不带回车换行）</p> 
+<p>输入的字符串说明： 字符串为仅由无符号整数和操作符（#、$）组成的计算表达式。例如：</p> 
+<blockquote> 
+ <p>123#4$5#67$78</p> 
+</blockquote> 
+<ol><li> <p>用例保证字符串中，操作数与操作符之间没有任何分隔符。</p> </li><li> <p>用例保证操作数取值范围为32位无符号整数。</p> </li><li> <p>保证输入以及计算结果不会出现整型溢出。</p> </li><li> <p>保证输入的字符串为合法的求值报文，例如：123#4$5#67$78</p> </li><li> <p>保证不会出现非法的求值报文，例如类似这样字符串：</p> <p>#4$5 //缺少操作数</p> <p>4$5# //缺少操作数</p> <p>4#$5 //缺少操作数</p> <p>4 $5 //有空格</p> <p>3+4-5*6/7 //有其它操作符</p> <p>12345678987654321$54321 //32位整数计算溢出</p> </li></ol> 
+<h2><a id="_47"></a>输出描述</h2> 
+<p>根据输入的火星人字符串输出计算结果（结尾不带回车换行）</p> 
+<h2><a id="_51"></a>用例</h2> 
+<p>输入</p> 
+<pre><code class="prism language-none">7#6$5#12
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-none">157
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>7#6$5#12<br> =(4<em>7+3</em>6+2)$5#12<br> =48<span class="katex--inline">KaTeX parse error: Expected 'EOF', got '#' at position 2: 5#̲12 =48</span>(4<em>5+3</em>12+2)<br> =48$58<br> =2*48+58+3<br> =157</p> 
+</blockquote> 
+<h2><a id="_75"></a>解题思路</h2> 
+<h2><a id="C_79"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;regex&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 处理字符串中的指定操作符</span>
+string <span class="token function">processOperations</span><span class="token punctuation">(</span>string input<span class="token punctuation">,</span> <span class="token keyword">const</span> string<span class="token operator">&amp;</span> operatorRegex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    regex <span class="token function">pattern</span><span class="token punctuation">(</span><span class="token string">"(\\d+)"</span> <span class="token operator">+</span> operatorRegex <span class="token operator">+</span> <span class="token string">"(\\d+)"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    smatch match<span class="token punctuation">;</span>
+
+    <span class="token comment">// 循环处理字符串中所有匹配的操作符</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">regex_search</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> match<span class="token punctuation">,</span> pattern<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 从匹配结果中提取两个操作数</span>
+        <span class="token keyword">long</span> <span class="token keyword">long</span> a <span class="token operator">=</span> <span class="token function">stoll</span><span class="token punctuation">(</span>match<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> <span class="token keyword">long</span> b <span class="token operator">=</span> <span class="token function">stoll</span><span class="token punctuation">(</span>match<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 根据操作符计算结果</span>
+        <span class="token keyword">long</span> <span class="token keyword">long</span> result <span class="token operator">=</span> operatorRegex <span class="token operator">==</span> <span class="token string">"#"</span> <span class="token operator">?</span> <span class="token number">4</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">3</span> <span class="token operator">*</span> b <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">:</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> b <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将匹配到的表达式替换为计算结果</span>
+        input<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span><span class="token function">position</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> match<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">to_string</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 返回处理后的字符串</span>
+    <span class="token keyword">return</span> input<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算火星文本表达式的值</span>
+<span class="token keyword">long</span> <span class="token keyword">long</span> <span class="token function">calculate</span><span class="token punctuation">(</span>string input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理所有的 '#' 操作</span>
+    input <span class="token operator">=</span> <span class="token function">processOperations</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"#"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 处理所有的 '$' 操作</span>
+    input <span class="token operator">=</span> <span class="token function">processOperations</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"\\$"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 将最终的字符串转换为长整型数字并返回</span>
+    <span class="token keyword">return</span> <span class="token function">stoll</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+<span class="token comment">// 主函数</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 提示用户输入数据</span>
+    string input<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> input<span class="token punctuation">;</span>
+    <span class="token comment">// 计算并输出结果</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">calculate</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_128"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>regex<span class="token punctuation">.</span></span><span class="token class-name">Matcher</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>regex<span class="token punctuation">.</span></span><span class="token class-name">Pattern</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 主类</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 主函数</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建扫描器对象，用于接收控制台输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入作为字符串</span>
+        <span class="token class-name">String</span> str <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算并输出结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">calculate</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算火星文本表达式的值</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">long</span> <span class="token function">calculate</span><span class="token punctuation">(</span><span class="token class-name">String</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 处理所有的 '#' 操作</span>
+        input <span class="token operator">=</span> <span class="token function">processOperations</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"#"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 处理所有的 '$' 操作</span>
+        input <span class="token operator">=</span> <span class="token function">processOperations</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"\\$"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将最终的字符串转换为长整型数字并返回</span>
+        <span class="token keyword">return</span> <span class="token class-name">Long</span><span class="token punctuation">.</span><span class="token function">parseLong</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 处理字符串中的指定操作符</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">processOperations</span><span class="token punctuation">(</span><span class="token class-name">String</span> input<span class="token punctuation">,</span> <span class="token class-name">String</span> operator<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建正则表达式模式，匹配操作符及其两侧的数字</span>
+        <span class="token class-name">Pattern</span> pattern <span class="token operator">=</span> <span class="token class-name">Pattern</span><span class="token punctuation">.</span><span class="token function">compile</span><span class="token punctuation">(</span><span class="token string">"(\\d+)"</span> <span class="token operator">+</span> operator <span class="token operator">+</span> <span class="token string">"(\\d+)"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Matcher</span> matcher<span class="token punctuation">;</span>
+
+        <span class="token comment">// 循环处理字符串中所有匹配的操作符</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>matcher <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token function">matcher</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 从匹配结果中提取两个操作数</span>
+            <span class="token keyword">long</span> a <span class="token operator">=</span> <span class="token class-name">Long</span><span class="token punctuation">.</span><span class="token function">parseLong</span><span class="token punctuation">(</span>matcher<span class="token punctuation">.</span><span class="token function">group</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">long</span> b <span class="token operator">=</span> <span class="token class-name">Long</span><span class="token punctuation">.</span><span class="token function">parseLong</span><span class="token punctuation">(</span>matcher<span class="token punctuation">.</span><span class="token function">group</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 根据操作符计算结果</span>
+            <span class="token keyword">long</span> result <span class="token operator">=</span> operator<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">"#"</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">4</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">3</span> <span class="token operator">*</span> b <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">:</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> b <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">;</span>
+            <span class="token comment">// 将匹配到的表达式替换为计算结果</span>
+            input <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">replaceFirst</span><span class="token punctuation">(</span><span class="token string">"(\\d+)"</span> <span class="token operator">+</span> operator <span class="token operator">+</span> <span class="token string">"(\\d+)"</span><span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 返回处理后的字符串</span>
+        <span class="token keyword">return</span> input<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_180"></a>javaScript</h2> 
+<pre><code class="prism language-js"> 
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>  
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout 
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+ 
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">calculate</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 计算火星文本表达式的值的函数</span>
+<span class="token keyword">function</span> <span class="token function">calculate</span><span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 首先处理所有的 '#' 操作</span>
+  input <span class="token operator">=</span> <span class="token function">processOperations</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">'#'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 然后处理所有的 '$' 操作</span>
+  input <span class="token operator">=</span> <span class="token function">processOperations</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">'\\$'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 将最终的字符串转换为长整型数字并返回</span>
+  <span class="token keyword">return</span> <span class="token function">BigInt</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 处理特定操作符的函数</span>
+<span class="token keyword">function</span> <span class="token function">processOperations</span><span class="token punctuation">(</span><span class="token parameter">input<span class="token punctuation">,</span> operator</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 创建正则表达式对象，用于匹配操作符和它周围的数字</span>
+  <span class="token keyword">let</span> pattern <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RegExp</span><span class="token punctuation">(</span><span class="token string">'(\\d+)'</span> <span class="token operator">+</span> operator <span class="token operator">+</span> <span class="token string">'(\\d+)'</span><span class="token punctuation">,</span> <span class="token string">'g'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> match<span class="token punctuation">;</span>
+  <span class="token keyword">let</span> prevInput<span class="token punctuation">;</span>
+
+  <span class="token keyword">do</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 保存当前输入字符串，用于后面的比较</span>
+    prevInput <span class="token operator">=</span> input<span class="token punctuation">;</span>
+    <span class="token comment">// 使用正则表达式匹配并处理所有相应的操作</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>match <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">!==</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 将匹配到的数字转换为 BigInt 类型</span>
+      <span class="token keyword">const</span> a <span class="token operator">=</span> <span class="token function">BigInt</span><span class="token punctuation">(</span>match<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">const</span> b <span class="token operator">=</span> <span class="token function">BigInt</span><span class="token punctuation">(</span>match<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 根据操作符计算结果</span>
+      <span class="token keyword">const</span> result <span class="token operator">=</span> operator <span class="token operator">===</span> <span class="token string">'#'</span> <span class="token operator">?</span> <span class="token number">4n</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">3n</span> <span class="token operator">*</span> b <span class="token operator">+</span> <span class="token number">2n</span> <span class="token operator">:</span> <span class="token number">2n</span> <span class="token operator">*</span> a <span class="token operator">+</span> b <span class="token operator">+</span> <span class="token number">3n</span><span class="token punctuation">;</span>
+      <span class="token comment">// 构造新的字符串</span>
+      input <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> match<span class="token punctuation">.</span>index<span class="token punctuation">)</span> <span class="token operator">+</span> result<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> input<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>index <span class="token operator">+</span> match<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 重置 pattern 的 lastIndex，以便重新开始新的匹配</span>
+      pattern<span class="token punctuation">.</span>lastIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果当前输入字符串改变了，则继续循环处理</span>
+  <span class="token punctuation">}</span> <span class="token keyword">while</span> <span class="token punctuation">(</span>prevInput <span class="token operator">!==</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 返回处理后的字符串</span>
+  <span class="token keyword">return</span> input<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_238"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> re
+
+<span class="token comment"># 计算火星文本表达式的值</span>
+<span class="token keyword">def</span> <span class="token function">calculate</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 处理所有的 '#' 操作</span>
+    <span class="token builtin">input</span> <span class="token operator">=</span> process_operations<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">,</span> <span class="token string">'#'</span><span class="token punctuation">)</span>
+    <span class="token comment"># 处理所有的 '$' 操作</span>
+    <span class="token builtin">input</span> <span class="token operator">=</span> process_operations<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">,</span> <span class="token string">r'\$'</span><span class="token punctuation">)</span>
+    <span class="token comment"># 将最终的字符串转换为长整型数字并返回</span>
+    <span class="token keyword">return</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 处理字符串中的指定操作符</span>
+<span class="token keyword">def</span> <span class="token function">process_operations</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">,</span> operator<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 创建正则表达式模式，匹配操作符及其两侧的数字</span>
+    pattern <span class="token operator">=</span> re<span class="token punctuation">.</span><span class="token builtin">compile</span><span class="token punctuation">(</span><span class="token string">r'(\d+)'</span> <span class="token operator">+</span> operator <span class="token operator">+</span> <span class="token string">r'(\d+)'</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 循环处理字符串中所有匹配的操作符</span>
+    <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+        match <span class="token operator">=</span> pattern<span class="token punctuation">.</span>search<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> match<span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+        <span class="token comment"># 从匹配结果中提取两个操作数</span>
+        a <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>group<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        b <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>match<span class="token punctuation">.</span>group<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token comment"># 根据操作符计算结果</span>
+        result <span class="token operator">=</span> <span class="token number">4</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">3</span> <span class="token operator">*</span> b <span class="token operator">+</span> <span class="token number">2</span> <span class="token keyword">if</span> operator <span class="token operator">==</span> <span class="token string">'#'</span> <span class="token keyword">else</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> b <span class="token operator">+</span> <span class="token number">3</span>
+        <span class="token comment"># 将匹配到的表达式替换为计算结果</span>
+        <span class="token builtin">input</span> <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">[</span><span class="token punctuation">:</span>match<span class="token punctuation">.</span>start<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token builtin">input</span><span class="token punctuation">[</span>match<span class="token punctuation">.</span>end<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 返回处理后的字符串</span>
+    <span class="token keyword">return</span> <span class="token builtin">input</span>
+<span class="token comment"># 提示用户输入数据</span>
+input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 计算并输出结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>calculate<span class="token punctuation">(</span>input_str<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_277"></a>C语言</h2> 
+<pre><code class="prism language-c">
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdbool.h&gt;</span></span>
+
+<span class="token comment">// 定义火星运算符的函数</span>
+<span class="token keyword">long</span> <span class="token keyword">long</span> <span class="token function">marsHash</span><span class="token punctuation">(</span><span class="token keyword">long</span> <span class="token keyword">long</span> x<span class="token punctuation">,</span> <span class="token keyword">long</span> <span class="token keyword">long</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token number">4</span> <span class="token operator">*</span> x <span class="token operator">+</span> <span class="token number">3</span> <span class="token operator">*</span> y <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 实现 x#y = 4*x + 3*y + 2</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">long</span> <span class="token keyword">long</span> <span class="token function">marsDollar</span><span class="token punctuation">(</span><span class="token keyword">long</span> <span class="token keyword">long</span> x<span class="token punctuation">,</span> <span class="token keyword">long</span> <span class="token keyword">long</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token number">2</span> <span class="token operator">*</span> x <span class="token operator">+</span> y <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">;</span> <span class="token comment">// 实现 x$y = 2*x + y + 3</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> expression<span class="token punctuation">[</span><span class="token number">10000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 输入表达式的缓冲区</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> expression<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取火星表达式</span>
+
+    <span class="token keyword">long</span> <span class="token keyword">long</span> nums<span class="token punctuation">[</span><span class="token number">5000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储数字的数组</span>
+    <span class="token keyword">int</span> numIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 数字数组的索引</span>
+    <span class="token keyword">char</span> ops<span class="token punctuation">[</span><span class="token number">5000</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储操作符的数组</span>
+    <span class="token keyword">int</span> opIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 操作符数组的索引</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> num <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 用于累积当前数字的变量，使用 unsigned long long</span>
+    bool readingNumber <span class="token operator">=</span> false<span class="token punctuation">;</span> <span class="token comment">// 标志，指示我们当前是否正在读取数字</span>
+
+    <span class="token comment">// 解析输入的火星表达式</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> expression<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token string">'\0'</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>expression<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> <span class="token string">'0'</span> <span class="token operator">&amp;&amp;</span> expression<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token string">'9'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果是数字</span>
+            num <span class="token operator">=</span> num <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> <span class="token punctuation">(</span>expression<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 累积数字</span>
+            readingNumber <span class="token operator">=</span> true<span class="token punctuation">;</span> <span class="token comment">// 我们正在读取数字</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果不是数字，那么它必须是一个操作符</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>readingNumber<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                nums<span class="token punctuation">[</span>numIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> num<span class="token punctuation">;</span> <span class="token comment">// 存储累积的数字</span>
+                num <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 为下一个数字重置 num</span>
+            <span class="token punctuation">}</span>
+            readingNumber <span class="token operator">=</span> false<span class="token punctuation">;</span>
+            ops<span class="token punctuation">[</span>opIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> expression<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储操作符</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>readingNumber<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果字符串以数字结束</span>
+        nums<span class="token punctuation">[</span>numIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> num<span class="token punctuation">;</span> <span class="token comment">// 存储最后一个数字</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 首先处理所有 '#' 操作，因为它们的优先级更高</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> opIndex<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>ops<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'#'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">marsHash</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> nums<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行 '#' 操作</span>
+            <span class="token comment">// 将剩余的数字和操作符向左移动</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> numIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                nums<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> nums<span class="token punctuation">[</span>j <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i<span class="token punctuation">;</span> j <span class="token operator">&lt;</span> opIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                ops<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> ops<span class="token punctuation">[</span>j <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            numIndex<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少数字索引</span>
+            opIndex<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少操作符索引</span>
+            i<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 重新评估当前位置</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 接下来处理所有 '$' 操作</span>
+    <span class="token keyword">long</span> <span class="token keyword">long</span> result <span class="token operator">=</span> nums<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用第一个数字初始化结果</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> opIndex<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>ops<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'$'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result <span class="token operator">=</span> <span class="token function">marsDollar</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> nums<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行 '$' 操作</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%lld\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/fa0220c4ecc155c6333721190973667f.png" alt="fengmian"></p> 
+<h2><a id="_354"></a>完整用例</h2> 
+<h3><a id="1_356"></a>用例1</h3> 
+<pre><code class="prism language-input1">1$2#3$4#5$6#7$8#9$10
+</code></pre> 
+<h3><a id="3_363"></a>用例3</h3> 
+<pre><code class="prism language-input3">6#7$8#9$10#11$12#13
+</code></pre> 
+<h3><a id="4_369"></a>用例4</h3> 
+<pre><code class="prism language-input4">2#3$4#5
+</code></pre> 
+<h3><a id="5_375"></a>用例5</h3> 
+<pre><code class="prism language-input5">10$20#30$40#50
+</code></pre> 
+<h3><a id="6_381"></a>用例6</h3> 
+<pre><code class="prism language-input6">100$200#300$400
+</code></pre> 
+<h3><a id="7_387"></a>用例7</h3> 
+<pre><code class="prism language-input7">50$60$70$80
+</code></pre> 
+<h3><a id="8_393"></a>用例8</h3> 
+<pre><code class="prism language-input8">123#456$789
+</code></pre> 
+<h3><a id="9_399"></a>用例9</h3> 
+<pre><code class="prism language-input9">1#2
+</code></pre> 
+<h3><a id="10_405"></a>用例10</h3> 
+<pre><code class="prism language-input10">17$13$10#19
+</code></pre>
+                </div>
+</body>
+</html>

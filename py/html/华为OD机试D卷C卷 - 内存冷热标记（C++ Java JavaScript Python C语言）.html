@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>现代计算机系统中通常存在多级的存储设备，针对海量 workload 的优化的一种思路是将热点内存页优先放到快速存储层级，这就需要对内存页进行冷热标记。</p> 
+<p>一种典型的方案是基于内存页的访问频次进行标记，如果统计窗口内访问次数大于等于设定阈值，则认为是热内存页，否则是冷内存页。</p> 
+<p>对于统计窗口内跟踪到的访存序列和阈值，现在需要实现基于频次的冷热标记。内存页使用页框号作为标识。</p> 
+<h2><a id="_9"></a>输入描述</h2> 
+<p>第一行输入为 <code>N</code>，表示访存序列的记录条数，0 &lt; <code>N</code> ≤ 10000</p> 
+<p>第二行为访存序列，空格分隔的 <code>N</code> 个内存页框号</p> 
+<p>第三行为阈值</p> 
+<h2><a id="_17"></a>输出描述</h2> 
+<p>第一行输出标记为热内存的内存页个数，如果没有被标记的热内存页，则输出 0 。</p> 
+<p>如果第一行 &gt; 0，则接下来按照访问频次降序输出内存页框号，一行一个，频次一样的页框号，页框号小的排前面。</p> 
+<h2><a id="1_23"></a>用例1</h2> 
+<table><thead><tr><th>输入</th><th>10 <br>1 2 1 2 1 2 1 2 1 2<br> 5</th></tr></thead><tbody><tr><td>输出</td><td>2 <br>1<br> 2</td></tr><tr><td>说明</td><td>在这个例子中，内存页框号 1 和 2 都被访问了 5 次，达到了阈值，因此它们被标记为热内存页。输出首先是热内存页的数量 2，然后是按照访问频次降序排列的页框号 1 和 2(频次一样的页框号，页框号小的排前面)。</td></tr></tbody></table> 
+<h2><a id="2_31"></a>用例2</h2> 
+<table><thead><tr><th>输入</th><th>5<br>1 2 3 4 5 <br>3</th></tr></thead><tbody><tr><td>输出</td><td>0</td></tr><tr><td>说明</td><td>在这个例子中，没有任何内存页的访问次数达到阈值 3，因此没有热内存页，输出为 0。</td></tr></tbody></table> 
+<h2><a id="C_39"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 用于存储输入行的字符串</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token comment">// 用于存储页面访问序列</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> pageAccessSequence<span class="token punctuation">;</span>
+    <span class="token comment">// 页面访问次数</span>
+    <span class="token keyword">int</span> pageAccessCount<span class="token punctuation">;</span>
+    <span class="token comment">// 热门页面的阈值</span>
+    <span class="token keyword">int</span> hotThreshold<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取页面访问次数</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    pageAccessCount <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取页面访问序列</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> page<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> page<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        pageAccessSequence<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>page<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取热门页面的阈值</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    hotThreshold <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 统计每个页面的访问频率</span>
+    unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> pageFrequency<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> page <span class="token operator">:</span> pageAccessSequence<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        pageFrequency<span class="token punctuation">[</span>page<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 过滤出热门页面</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> hotPages<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> kv <span class="token operator">:</span> pageFrequency<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>kv<span class="token punctuation">.</span>second <span class="token operator">&gt;=</span> hotThreshold<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            hotPages<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>kv<span class="token punctuation">.</span>first<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出热门页面的数量</span>
+    cout <span class="token operator">&lt;&lt;</span> hotPages<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果存在热门页面</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>hotPages<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 对热门页面进行排序</span>
+        <span class="token function">sort</span><span class="token punctuation">(</span>hotPages<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> hotPages<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">&amp;</span>pageFrequency<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>pageFrequency<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">==</span> pageFrequency<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> a <span class="token operator">&lt;</span> b<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> pageFrequency<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">&gt;</span> pageFrequency<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出排序后的热门页面</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> page <span class="token operator">:</span> hotPages<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> page <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_111"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> accesses <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> threshold <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 使用 TreeMap 来存储内存页框号和对应的访问次数</span>
+        <span class="token comment">// TreeMap 默认按照 key 升序排列，这里我们需要按照访问次数降序，页框号升序排列</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> frequencyMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">TreeMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> access <span class="token operator">:</span> accesses<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> pageFrame <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>access<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            frequencyMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>pageFrame<span class="token punctuation">,</span> frequencyMap<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>pageFrame<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 使用 PriorityQueue 来对内存页框号进行排序</span>
+        <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> hotPages <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> freqCompare <span class="token operator">=</span> frequencyMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">compareTo</span><span class="token punctuation">(</span>frequencyMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>freqCompare <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> a<span class="token punctuation">.</span><span class="token function">compareTo</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">return</span> freqCompare<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 将达到阈值的热内存页加入到优先队列中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">Map<span class="token punctuation">.</span>Entry</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> entry <span class="token operator">:</span> frequencyMap<span class="token punctuation">.</span><span class="token function">entrySet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>entry<span class="token punctuation">.</span><span class="token function">getValue</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> threshold<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                hotPages<span class="token punctuation">.</span><span class="token function">offer</span><span class="token punctuation">(</span>entry<span class="token punctuation">.</span><span class="token function">getKey</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出结果</span>
+        <span class="token keyword">int</span> hotCount <span class="token operator">=</span> hotPages<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>hotCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>hotPages<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>hotPages<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_158"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入 readline 模块用于读取命令行输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建 readline 接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span> <span class="token comment">// 标准输入流</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 标准输出流</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 用于存储输入行的数组</span>
+<span class="token keyword">let</span> inputLines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 监听 'line' 事件，每次输入后触发</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 将输入的每一行添加到 inputLines 数组</span>
+  inputLines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 当输入行数达到 3 行时，关闭 readline 接口</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>inputLines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 解析输入的第一行为页面访问次数</span>
+  <span class="token keyword">const</span> pageAccessCount <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 解析输入的第二行为页面访问序列，转换为数字数组</span>
+  <span class="token keyword">const</span> pageAccessSequence <span class="token operator">=</span> inputLines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 解析输入的第三行为热门页面的阈值</span>
+  <span class="token keyword">const</span> hotThreshold <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 使用 reduce 方法统计每个页面的访问频率</span>
+  <span class="token keyword">const</span> pageFrequency <span class="token operator">=</span> pageAccessSequence<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">acc<span class="token punctuation">,</span> page</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    acc<span class="token punctuation">[</span>page<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>acc<span class="token punctuation">[</span>page<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果页面已存在则增加计数，否则初始化为 1</span>
+    <span class="token keyword">return</span> acc<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 根据阈值过滤出热门页面，并转换为数字数组</span>
+  <span class="token keyword">const</span> hotPages <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">entries</span><span class="token punctuation">(</span>pageFrequency<span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">[</span>page<span class="token punctuation">,</span> freq<span class="token punctuation">]</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> freq <span class="token operator">&gt;=</span> hotThreshold<span class="token punctuation">)</span>
+    <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">[</span>page<span class="token punctuation">]</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>page<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出热门页面的数量</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>hotPages<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 如果存在热门页面</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>hotPages<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 对热门页面进行排序，先按访问频率降序，频率相同则按页面号升序</span>
+    hotPages<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> pageFrequency<span class="token punctuation">[</span>b<span class="token punctuation">]</span> <span class="token operator">-</span> pageFrequency<span class="token punctuation">[</span>a<span class="token punctuation">]</span> <span class="token operator">||</span> a <span class="token operator">-</span> b<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出排序后的热门页面</span>
+    hotPages<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">page</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>page<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+ 
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_222"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 获取输入</span>
+page_access_count <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+page_access_sequence <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+hot_threshold <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 统计内存页框号出现的次数</span>
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> Counter
+page_frequency <span class="token operator">=</span> Counter<span class="token punctuation">(</span>page_access_sequence<span class="token punctuation">)</span>
+
+<span class="token comment"># 确定热内存页</span>
+hot_pages <span class="token operator">=</span> <span class="token punctuation">[</span>page <span class="token keyword">for</span> page<span class="token punctuation">,</span> freq <span class="token keyword">in</span> page_frequency<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">if</span> freq <span class="token operator">&gt;=</span> hot_threshold<span class="token punctuation">]</span>
+
+<span class="token comment"># 输出热内存页数量</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>hot_pages<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 如果存在热内存页，按照要求排序并输出</span>
+<span class="token keyword">if</span> hot_pages<span class="token punctuation">:</span>
+    hot_pages<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> page<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token operator">-</span>page_frequency<span class="token punctuation">[</span>page<span class="token punctuation">]</span><span class="token punctuation">,</span> page<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> page <span class="token keyword">in</span> hot_pages<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>page<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_247"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_NUM</span> <span class="token expression"><span class="token number">10000</span></span></span>
+
+<span class="token comment">// 定义一个结构体，用于存储页面和对应的访问频率</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> page<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> frequency<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> PageFrequency<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义一个比较函数，用于 qsort 函数</span>
+<span class="token keyword">int</span> <span class="token function">cmp</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    PageFrequency <span class="token operator">*</span>pf1 <span class="token operator">=</span> <span class="token punctuation">(</span>PageFrequency <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    PageFrequency <span class="token operator">*</span>pf2 <span class="token operator">=</span> <span class="token punctuation">(</span>PageFrequency <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pf1<span class="token operator">-&gt;</span>frequency <span class="token operator">==</span> pf2<span class="token operator">-&gt;</span>frequency<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> pf1<span class="token operator">-&gt;</span>page <span class="token operator">-</span> pf2<span class="token operator">-&gt;</span>page<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> pf2<span class="token operator">-&gt;</span>frequency <span class="token operator">-</span> pf1<span class="token operator">-&gt;</span>frequency<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 页面访问次数</span>
+    <span class="token keyword">int</span> pageAccessCount<span class="token punctuation">;</span>
+    <span class="token comment">// 热门页面的阈值</span>
+    <span class="token keyword">int</span> hotThreshold<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取页面访问次数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>pageAccessCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个数组存储页面访问序列</span>
+    <span class="token keyword">int</span> pageAccessSequence<span class="token punctuation">[</span>MAX_NUM<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 循环读取每个页面的访问序列</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pageAccessCount<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>pageAccessSequence<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取热门页面的阈值</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>hotThreshold<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个结构体数组，用于存储每个页面的访问频率</span>
+    PageFrequency pageFrequency<span class="token punctuation">[</span>MAX_NUM<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pageAccessCount<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        pageFrequency<span class="token punctuation">[</span>pageAccessSequence<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>page <span class="token operator">=</span> pageAccessSequence<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        pageFrequency<span class="token punctuation">[</span>pageAccessSequence<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>frequency<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 过滤出热门页面</span>
+    PageFrequency hotPages<span class="token punctuation">[</span>MAX_NUM<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> hotPagesCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_NUM<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pageFrequency<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>frequency <span class="token operator">&gt;=</span> hotThreshold<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            hotPages<span class="token punctuation">[</span>hotPagesCount<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> pageFrequency<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出热门页面的数量</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> hotPagesCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果存在热门页面</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>hotPagesCount <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 对热门页面进行排序</span>
+        <span class="token function">qsort</span><span class="token punctuation">(</span>hotPages<span class="token punctuation">,</span> hotPagesCount<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>PageFrequency<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出排序后的热门页面</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> hotPagesCount<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> hotPages<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>page<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_321"></a>完整用例</h2> 
+<h3><a id="1_323"></a>用例1</h3> 
+<pre><code class="prism language-input1">10
+1 1 2 2 3 3 4 4 5 5
+2
+</code></pre> 
+<h3><a id="2_331"></a>用例2</h3> 
+<pre><code class="prism language-input2">10
+1 1 1 1 1 1 1 1 1 2
+3
+</code></pre> 
+<h3><a id="3_339"></a>用例3</h3> 
+<pre><code class="prism language-input3">10
+1 2 3 4 5 6 7 8 9 10
+11
+</code></pre> 
+<h3><a id="4_347"></a>用例4</h3> 
+<pre><code class="prism language-input4">10
+1 2 2 3 3 3 4 4 4 4
+3
+</code></pre> 
+<h3><a id="5_355"></a>用例5</h3> 
+<pre><code class="prism language-input5">10
+1 1 1 1 2 2 2 3 3 4
+3
+</code></pre> 
+<h3><a id="6_363"></a>用例6</h3> 
+<pre><code class="prism language-input6">10
+100 200 300 100 200 100 400 500 100 200
+3
+</code></pre> 
+<h3><a id="7_371"></a>用例7</h3> 
+<pre><code class="prism language-input7">10
+1 2 3 4 5 6 7 8 9 10
+1
+</code></pre> 
+<h3><a id="8_379"></a>用例8</h3> 
+<pre><code class="prism language-input8">10
+1 2 3 4 5 6 7 8 9 10
+2
+</code></pre> 
+<h3><a id="9_387"></a>用例9</h3> 
+<pre><code class="prism language-input9">10
+65535 65535 65535 65535 65535 1 1 1 1 1
+5
+</code></pre> 
+<h3><a id="10_395"></a>用例10</h3> 
+<pre><code class="prism language-input10">10
+1 2 1 2 1 2 1 2 1 2
+5
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_17" rel="nofollow">输出描述</a></li><li><a href="#1_23" rel="nofollow">用例1</a></li><li><a href="#2_31" rel="nofollow">用例2</a></li><li><a href="#C_39" rel="nofollow">C++</a></li><li><a href="#Java_111" rel="nofollow">Java</a></li><li><a href="#javaScript_158" rel="nofollow">javaScript</a></li><li><a href="#Python_222" rel="nofollow">Python</a></li><li><a href="#C_247" rel="nofollow">C语言</a></li><li><a href="#_321" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_323" rel="nofollow">用例1</a></li><li><a href="#2_331" rel="nofollow">用例2</a></li><li><a href="#3_339" rel="nofollow">用例3</a></li><li><a href="#4_347" rel="nofollow">用例4</a></li><li><a href="#5_355" rel="nofollow">用例5</a></li><li><a href="#6_363" rel="nofollow">用例6</a></li><li><a href="#7_371" rel="nofollow">用例7</a></li><li><a href="#8_379" rel="nofollow">用例8</a></li><li><a href="#9_387" rel="nofollow">用例9</a></li><li><a href="#10_395" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/758d68c7b5d4e7bf18ca3d10e5a3fe68.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>一支N个士兵的军队正在趁夜色逃亡，途中遇到一条湍急的大河。<br> 敌军在T的时长后到达河面，没到过对岸的士兵都会被消灭。<br> 现在军队只找到了1只小船，这船最多能同时坐上2个士兵。</p> 
+<ol><li>当1个士兵划船过河，用时为 a[i]；0 &lt;= i &lt; N</li><li>当2个士兵坐船同时划船过河时，用时为max(a[j],a[i])两士兵中用时最长的。</li><li>当2个士兵坐船1个士兵划船时，用时为 a[i]*10；a[i]为划船士兵用时。</li><li>如果士兵下河游泳，则会被湍急水流直接带走，算作死亡。</li></ol> 
+<p>请帮忙给出一种解决方案，保证存活的士兵最多，且过河用时最短。</p> 
+<h4><a id="_14"></a>输入描述</h4> 
+<p>第一行：N 表示士兵数(0&lt;N&lt;1,000,000)<br> 第二行：T 表示敌军到达时长(0 &lt; T &lt; 100,000,000)<br> 第三行：a[0] a[1] … a[i]… a[N- 1]<br> a[i]表示每个士兵的过河时长。<br> (10 &lt; a[i]&lt; 100; 0&lt;= i&lt; N）</p> 
+<h4><a id="_22"></a>输出描述</h4> 
+<p>第一行：”最多存活士兵数” “最短用时”</p> 
+<h4><a id="_26"></a>备注</h4> 
+<p>1）两个士兵的同时划船时，如果划速不同则会导致船原地转圈圈；所以为保持两个士兵划速相同，则需要向划的慢的士兵看齐。<br> 2）两个士兵坐船时，重量增加吃水加深，水的阻力增大；同样的力量划船速度会变慢；<br> 3）由于河水湍急大量的力用来抵消水流的阻力，所以2）中过河用时不是a[i] *2，<br> 而是a[i] * 10。</p> 
+<h4><a id="_33"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>5<br>43<br>12 13 15 20 50</td></tr><tr><td>输出</td><td>3 40</td></tr><tr><td>说明</td><td>可以达到或小于43的一种方案：<br>第一步：a[0] a[1] 过河用时：13<br>第二步：a[0] 返回用时：12<br>第三步：a[0] a[2] 过河用时：15</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>5<br>130<br>50 12 13 15 20</td></tr><tr><td>输出</td><td>5 128</td></tr><tr><td>说明</td><td>可以达到或小于130的一种方案：<br>第一步：a[1] a[2] 过河用时：13<br>第二步：a[1] 返回用时：12<br>第三步：a[0] a[4] 过河用时：50<br>第四步：a[2] 返回用时：13<br>第五步：a[1] a[2] 过河用时：13<br>第六步：a[1] 返回用时：12<br>第七步：a[1] a[3] 过河用时：15<br>所以输出为：<br><code>5 128</code></td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>7<br>171<br>25 12 13 15 20 35 20</td></tr><tr><td>输出</td><td>7 171</td></tr><tr><td>说明</td><td><p>可以达到或小于171的一种方案：<br>第一步：a[1] a[2] 过桥用时：13<br>第二步：a[1] 带火把返回用时：12<br>第三步：a[0] a[5] 过桥用时：35<br>第四步：a[2] 带火把返回用时：13<br>第五步：a[1] a[2] 过桥用时：13<br>第六步：a[1] 带火把返回用时：12<br>第七步：a[4] a[6] 过桥用时：20<br>第八步：a[2] 带火把返回用时：13<br>第九步：a[1] a[3] 过桥用时：15<br>第十步：a[1] 带火把返回用时：12<br>第十一步：a[1] a[2] 过桥用时：13</p><p>所以输出为：</p><p><code>7 171</code></p></td></tr></tbody></table> 
+<h4><a id="_41"></a>题目解析</h4> 
+<p>这道题是一道动态规划题。首先将输入的士兵过河时间排序，然后定义一个dp数组，长度为N，初始值为0。dp[i]表示前i个士兵过河所需的最短时间。接下来考虑状态转移方程。</p> 
+<p>对于第i个士兵，有两种选择：</p> 
+<p>第i个士兵和第1个士兵一起划船过河。此时需要加上dp[i-1]和前两个士兵的时间，即dp[i] = dp[i-1] + nums[0] + get_shorter_time(nums[0], nums[i])。</p> 
+<p>第i个士兵不和第1个士兵一起划船过河。此时需要加上dp[i-2]和前两个士兵的时间，即dp[i] = dp[i-2] + nums[0] + get_shorter_time(nums[i-1], nums[i]) + nums[1] + get_shorter_time(nums[0], nums[1])。</p> 
+<p>在以上两种选择中，选择时间最短的那个作为dp[i]的值。如果dp[i]的值已经超过了限制时间T，则输出i和dp[i-1]，表示前i-1个士兵过河所需的最短时间。如果循环结束了还没有超过限制时间T，则输出N和dp[N-1]，表示所有士兵过河所需的最短时间。</p> 
+<h4><a id="_53"></a>代码思路</h4> 
+<p>这道题是一道动态规划的问题。首先按照给定的时间数组对所有士兵的过河时间进行排序，然后定义一个长度为n的dp数组，dp[i]表示前i个士兵过河所需要的最短时间。然后对于每一个士兵，有三种情况：自己划船过河、和另一个士兵一起划船过河、和另一个士兵一起坐船但只有一个人划船过河。这三种情况的时间分别为a[i]、max(a[j],a[i])、a[i]*10，其中j&lt;i。因为要保证存活的士兵最多，且过河用时最短，所以对于第i个士兵，dp[i]等于前i-1个士兵过河的最短时间加上第i个士兵过河的时间和第一个士兵过河的时间（因为只有一个小船），和前i-2个士兵过河的最短时间加上两个士兵一起过河的时间（因为只有一个小船）。最后输出n和dp[n-1]即可。需要注意的是，如果dp[i]大于限制时间，就需要输出i和dp[i-1]并结束程序</p> 
+<h4><a id="C_59"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> limit<span class="token punctuation">;</span>
+    <span class="token comment">// 输入n和限制时间</span>
+    cin <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> limit<span class="token punctuation">;</span>
+    <span class="token comment">// 定义一个长度为n的数组time</span>
+    <span class="token keyword">int</span> time<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 输入n个时间值</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> time<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 对时间数组进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>time<span class="token punctuation">,</span> time <span class="token operator">+</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 定义一个长度为n的数组dp</span>
+    <span class="token keyword">int</span> dp<span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历时间数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果是第一个时间值</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// dp[0]等于第一个时间值</span>
+            dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> time<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果dp[0]大于限制时间，输出0 0并结束程序</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> limit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                cout <span class="token operator">&lt;&lt;</span> <span class="token string">"0 0"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+                <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果是第二个时间值，dp[1]等于第二个时间值</span>
+            dp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> time<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果是第三个及以后的时间值</span>
+            <span class="token comment">// t1表示只有一个士兵划船的时间，t2表示有两个士兵划船的时间</span>
+            <span class="token keyword">int</span> t1 <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> time<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> time<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 1个士兵划船</span>
+            <span class="token keyword">int</span> t2 <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">+</span> time<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> time<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> time<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> time<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 2个士兵划船</span>
+            <span class="token comment">// dp[i]等于t1和t2中的最小值</span>
+            dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>t1<span class="token punctuation">,</span> t2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果dp[i]大于限制时间，输出i和dp[i-1]并结束程序</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> limit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> i <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 输出n和dp[n-1]</span>
+    cout <span class="token operator">&lt;&lt;</span> n <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> dp<span class="token punctuation">[</span>n <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_22" rel="nofollow">输出描述</a></li><li><a href="#_26" rel="nofollow">备注</a></li><li><a href="#_33" rel="nofollow">用例</a></li><li><a href="#_41" rel="nofollow">题目解析</a></li><li><a href="#_53" rel="nofollow">代码思路</a></li><li><a href="#C_59" rel="nofollow">C++</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

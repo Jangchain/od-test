@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>现有两组服务器A和B，每组有多个算力不同的CPU，其中 A[i] 是 A 组第 i 个CPU的运算能力，B[i] 是 B组 第 i 个CPU的运算能力。</p> 
+<p>一组服务器的总算力是各CPU的算力之和。</p> 
+<p>为了让两组服务器的算力相等，允许从每组各选出一个CPU进行一次交换，</p> 
+<p>求两组服务器中，用于交换的CPU的算力，并且要求从A组服务器中选出的CPU，算力尽可能小。</p> 
+<h2><a id="_12"></a>输入描述</h2> 
+<p>第一行输入为L1和L2，以空格分隔，L1表示A组服务器中的CPU数量，L2表示B组服务器中的CPU数量。</p> 
+<p>第二行输入为A组服务器中各个CPU的算力值，以空格分隔。</p> 
+<p>第三行输入为B组服务器中各个CPU的算力值，以空格分隔。</p> 
+<p>1 ≤ L1 ≤ 10000<br> 1 ≤ L2 ≤ 10000<br> 1 ≤ A[i] ≤ 100000<br> 1 ≤ B[i] ≤ 100000</p> 
+<h2><a id="_25"></a>输出描述</h2> 
+<p>对于每组测试数据，输出两个整数，以空格分隔，依次表示A组选出的CPU算力，B组选出的CPU算力。</p> 
+<p>要求从A组选出的CPU的算力尽可能小。</p> 
+<h2><a id="_31"></a>备注</h2> 
+<ul><li>保证两组服务器的初始总算力不同。</li><li>答案肯定存在</li></ul> 
+<h2><a id="1_36"></a>用例1</h2> 
+<table><thead><tr><th>输入</th><th>2 2 <br>1 1 <br>2 2</th></tr></thead><tbody><tr><td>输出</td><td>1 2</td></tr><tr><td>说明</td><td>从A组中选出算力为1的CPU，与B组中算力为2的进行交换，使两组服务器的算力都等于3。</td></tr></tbody></table> 
+<h2><a id="2_44"></a>用例2</h2> 
+<table><thead><tr><th>输入</th><th>2 2 <br>1 2 <br>2 3</th></tr></thead><tbody><tr><td>输出</td><td>1 2</td></tr></tbody></table> 
+<h2><a id="3_48"></a>用例3</h2> 
+<table><thead><tr><th>输入</th><th>1 2 <br>2<br>1 3</th></tr></thead><tbody><tr><td>输出</td><td>2 3</td></tr></tbody></table> 
+<h2><a id="4_52"></a>用例4</h2> 
+<table><thead><tr><th>输入</th><th>3 2 <br>1 2 5 <br>2 4</th></tr></thead><tbody><tr><td>输出</td><td>5 4</td></tr></tbody></table> 
+<h2><a id="_57"></a>解题思路</h2> 
+<p>这个问题的目标是通过交换A组和B组的服务器，使得两组的总算力尽可能接近。为了达到这个目标，我们需要找到一对服务器，使得交换后两组的总算力差最小。</p> 
+<p>假设A组的总算力为a，B组的总算力为b，且a &gt; b。我们希望找到A组的一个服务器，其算力为x，和B组的一个服务器，其算力为y，使得交换后的总算力差为(a - x + y) - (b - y + x) = a - b - 2(x - y)尽可能小。也就是说，我们希望x - y尽可能接近(a - b) / 2，也就是两组总算力差的一半。</p> 
+<p>因此，我们需要计算两组总算力差的一半，然后在A组的服务器中找到一个算力，使得它减去这个值后的结果在B组的服务器中存在。这样，我们就找到了一对可以交换的服务器，使得交换后两组的总算力尽可能接近。</p> 
+<h2><a id="C_65"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取A组和B组的服务器数量</span>
+    <span class="token keyword">int</span> serverCountGroupA<span class="token punctuation">,</span> serverCountGroupB<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> serverCountGroupA <span class="token operator">&gt;&gt;</span> serverCountGroupB<span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化A组的总算力为0</span>
+    <span class="token keyword">int</span> totalPowerGroupA <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 创建数组存储A组的服务器算力</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">powerGroupA</span><span class="token punctuation">(</span>serverCountGroupA<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取A组的服务器算力，并计算总算力</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> serverCountGroupA<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> powerGroupA<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        totalPowerGroupA <span class="token operator">+=</span> powerGroupA<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化B组的总算力为0</span>
+    <span class="token keyword">int</span> totalPowerGroupB <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 创建map存储B组的服务器算力和对应的数量</span>
+    map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> powerCountGroupB<span class="token punctuation">;</span>
+    <span class="token comment">// 读取B组的服务器算力，并计算总算力</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> serverCountGroupB<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> power<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> power<span class="token punctuation">;</span>
+        totalPowerGroupB <span class="token operator">+=</span> power<span class="token punctuation">;</span>
+        powerCountGroupB<span class="token punctuation">[</span>power<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算两组总算力差的一半</span>
+    <span class="token keyword">int</span> halfDifference <span class="token operator">=</span> <span class="token punctuation">(</span>totalPowerGroupA <span class="token operator">-</span> totalPowerGroupB<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对A组的服务器算力进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>powerGroupA<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> powerGroupA<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 从小到大遍历A组的服务器</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> powerA <span class="token operator">:</span> powerGroupA<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算需要在B组中找到的服务器算力</span>
+        <span class="token keyword">int</span> powerB <span class="token operator">=</span> powerA <span class="token operator">-</span> halfDifference<span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果B组中存在这样的服务器，并且数量大于0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>powerCountGroupB<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>powerB<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> powerCountGroupB<span class="token punctuation">[</span>powerB<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 输出A组和B组选出的服务器的算力</span>
+            cout <span class="token operator">&lt;&lt;</span> powerA <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> powerB <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_124"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建扫描器读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取A组和B组的服务器数量</span>
+        <span class="token keyword">int</span> serverCountGroupA <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> serverCountGroupB <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化A组的总算力为0</span>
+        <span class="token keyword">int</span> totalPowerGroupA <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建数组存储A组的服务器算力</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> powerGroupA <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>serverCountGroupA<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取A组的服务器算力，并计算总算力</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> serverCountGroupA<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            powerGroupA<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            totalPowerGroupA <span class="token operator">+=</span> powerGroupA<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化B组的总算力为0</span>
+        <span class="token keyword">int</span> totalPowerGroupB <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建HashMap存储B组的服务器算力和对应的数量</span>
+        <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> powerCountGroupB <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取B组的服务器算力，并计算总算力</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> serverCountGroupB<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> power <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            totalPowerGroupB <span class="token operator">+=</span> power<span class="token punctuation">;</span>
+            powerCountGroupB<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>power<span class="token punctuation">,</span> powerCountGroupB<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>power<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 计算两组总算力差的一半，四舍五入取整</span>
+        <span class="token keyword">int</span> halfDifference <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">round</span><span class="token punctuation">(</span><span class="token punctuation">(</span>totalPowerGroupA <span class="token operator">-</span> totalPowerGroupB<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2.0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 对A组的服务器算力进行排序</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>powerGroupA<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 从小到大遍历A组的服务器</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> powerA <span class="token operator">:</span> powerGroupA<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算需要在B组中找到的服务器算力</span>
+            <span class="token keyword">int</span> powerB <span class="token operator">=</span> powerA <span class="token operator">-</span> halfDifference<span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果B组中存在这样的服务器，并且数量大于0</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>powerCountGroupB<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>powerB<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> powerCountGroupB<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>powerB<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 输出A组和B组选出的服务器的算力</span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>powerA <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> powerB<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_180"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 将输入行存储在数组中</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">line</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 在所有输入行都读取完毕后处理这些行</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取A组和B组的服务器数量</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>serverCountGroupA<span class="token punctuation">,</span> serverCountGroupB<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化A组的总算力为0</span>
+    <span class="token keyword">let</span> totalPowerGroupA <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 创建数组存储A组的服务器算力</span>
+    <span class="token keyword">let</span> powerGroupA <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 计算A组的服务器算力总和</span>
+    totalPowerGroupA <span class="token operator">=</span> powerGroupA<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">+</span> b<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化B组的总算力为0</span>
+    <span class="token keyword">let</span> totalPowerGroupB <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 创建map存储B组的服务器算力和对应的数量</span>
+    <span class="token keyword">let</span> powerCountGroupB <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取B组的服务器算力，并计算总算力</span>
+    <span class="token keyword">const</span> powers <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> power <span class="token keyword">of</span> powers<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        totalPowerGroupB <span class="token operator">+=</span> power<span class="token punctuation">;</span>
+        powerCountGroupB<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>power<span class="token punctuation">,</span> <span class="token punctuation">(</span>powerCountGroupB<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>power<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算两组总算力差的一半，四舍五入取整</span>
+    <span class="token keyword">let</span> halfDifference <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">round</span><span class="token punctuation">(</span><span class="token punctuation">(</span>totalPowerGroupA <span class="token operator">-</span> totalPowerGroupB<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对A组的服务器算力进行排序</span>
+    powerGroupA<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">-</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 从小到大遍历A组的服务器</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> powerA <span class="token keyword">of</span> powerGroupA<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算需要在B组中找到的服务器算力</span>
+        <span class="token keyword">let</span> powerB <span class="token operator">=</span> powerA <span class="token operator">-</span> halfDifference<span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果B组中存在这样的服务器，并且数量大于0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>powerCountGroupB<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>powerB<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> powerCountGroupB<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>powerB<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 输出A组和B组选出的服务器的算力</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>powerA <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> powerB<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_240"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入需要的库</span>
+<span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取A组和B组的服务器数量</span>
+serverCountGroupA<span class="token punctuation">,</span> serverCountGroupB <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化A组的总算力为0</span>
+totalPowerGroupA <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 读取A组的服务器算力，并计算总算力</span>
+powerGroupA <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+totalPowerGroupA <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>powerGroupA<span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化B组的总算力为0</span>
+totalPowerGroupB <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 创建字典存储B组的服务器算力和对应的数量</span>
+powerCountGroupB <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+<span class="token comment"># 读取B组的服务器算力，并计算总算力</span>
+powers <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> power <span class="token keyword">in</span> powers<span class="token punctuation">:</span>
+    totalPowerGroupB <span class="token operator">+=</span> power
+    powerCountGroupB<span class="token punctuation">[</span>power<span class="token punctuation">]</span> <span class="token operator">=</span> powerCountGroupB<span class="token punctuation">.</span>get<span class="token punctuation">(</span>power<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+
+<span class="token comment"># 计算两组总算力差的一半，四舍五入取整</span>
+halfDifference <span class="token operator">=</span> <span class="token builtin">round</span><span class="token punctuation">(</span><span class="token punctuation">(</span>totalPowerGroupA <span class="token operator">-</span> totalPowerGroupB<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 对A组的服务器算力进行排序</span>
+powerGroupA<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 从小到大遍历A组的服务器</span>
+<span class="token keyword">for</span> powerA <span class="token keyword">in</span> powerGroupA<span class="token punctuation">:</span>
+    <span class="token comment"># 计算需要在B组中找到的服务器算力</span>
+    powerB <span class="token operator">=</span> powerA <span class="token operator">-</span> halfDifference
+
+    <span class="token comment"># 如果B组中存在这样的服务器，并且数量大于0</span>
+    <span class="token keyword">if</span> powerB <span class="token keyword">in</span> powerCountGroupB <span class="token keyword">and</span> powerCountGroupB<span class="token punctuation">[</span>powerB<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># 输出A组和B组选出的服务器的算力</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>powerA<span class="token punctuation">,</span> powerB<span class="token punctuation">)</span>
+        <span class="token keyword">break</span>
+</code></pre> 
+<h2><a id="C_282"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 比较函数，用于整数数组排序</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span>a <span class="token operator">-</span> <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> L1<span class="token punctuation">,</span> L2<span class="token punctuation">;</span>
+    <span class="token comment">// 读取A组和B组的服务器数量</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>L1<span class="token punctuation">,</span> <span class="token operator">&amp;</span>L2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> A<span class="token punctuation">[</span>L1<span class="token punctuation">]</span><span class="token punctuation">,</span> B<span class="token punctuation">[</span>L2<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> totalPowerA <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> totalPowerB <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取A组的服务器算力，并计算总算力</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> L1<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>A<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        totalPowerA <span class="token operator">+=</span> A<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取B组的服务器算力，并计算总算力</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> L2<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>B<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        totalPowerB <span class="token operator">+=</span> B<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算两组总算力差的一半</span>
+    <span class="token keyword">int</span> halfDifference <span class="token operator">=</span> <span class="token punctuation">(</span>totalPowerA <span class="token operator">-</span> totalPowerB<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对A组的服务器算力进行排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>A<span class="token punctuation">,</span> L1<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用哈希表记录B组的服务器算力</span>
+    <span class="token keyword">int</span> hash<span class="token punctuation">[</span><span class="token number">100001</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> L2<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        hash<span class="token punctuation">[</span>B<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 从小到大遍历A组的服务器</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> L1<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> powerA <span class="token operator">=</span> A<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算需要在B组中找到的服务器算力</span>
+        <span class="token keyword">int</span> powerB <span class="token operator">=</span> powerA <span class="token operator">-</span> halfDifference<span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果B组中存在这样的服务器</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>powerB <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> powerB <span class="token operator">&lt;=</span> <span class="token number">100000</span> <span class="token operator">&amp;&amp;</span> hash<span class="token punctuation">[</span>powerB<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 输出A组和B组选出的服务器的算力</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d %d\n"</span><span class="token punctuation">,</span> powerA<span class="token punctuation">,</span> powerB<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_342"></a>完整用例</h2> 
+<h3><a id="1_343"></a>用例1</h3> 
+<p>3 3<br> 1 2 3<br> 4 5 6</p> 
+<h3><a id="2_348"></a>用例2</h3> 
+<p>2 2<br> 10 20<br> 10 20</p> 
+<h3><a id="3_353"></a>用例3</h3> 
+<p>3 3<br> 1 2 3<br> 10 20 30</p> 
+<h3><a id="4_358"></a>用例4</h3> 
+<p>4 4<br> 5 10 15 20<br> 30 25 20 15</p> 
+<h3><a id="5_363"></a>用例5</h3> 
+<p>2 2<br> 99999 100000<br> 99998 99997</p> 
+<h3><a id="6_368"></a>用例6</h3> 
+<p>2 2<br> 1 2<br> 3 4</p> 
+<h3><a id="7_373"></a>用例7</h3> 
+<p>5 5<br> 17 23 42 50 60<br> 22 35 37 41 55</p> 
+<h3><a id="8_378"></a>用例8</h3> 
+<p>3 3<br> 20 20 20<br> 10 15 25</p> 
+<h3><a id="9_385"></a>用例9</h3> 
+<p>3 3<br> 10 15 25<br> 20 20 20</p> 
+<h3><a id="10_392"></a>用例10</h3> 
+<p>3 2<br> 1 2 5<br> 2 4<br> </p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_12" rel="nofollow">输入描述</a></li><li><a href="#_25" rel="nofollow">输出描述</a></li><li><a href="#_31" rel="nofollow">备注</a></li><li><a href="#1_36" rel="nofollow">用例1</a></li><li><a href="#2_44" rel="nofollow">用例2</a></li><li><a href="#3_48" rel="nofollow">用例3</a></li><li><a href="#4_52" rel="nofollow">用例4</a></li><li><a href="#_57" rel="nofollow">解题思路</a></li><li><a href="#C_65" rel="nofollow">C++</a></li><li><a href="#Java_124" rel="nofollow">Java</a></li><li><a href="#javaScript_180" rel="nofollow">javaScript</a></li><li><a href="#Python_240" rel="nofollow">Python</a></li><li><a href="#C_282" rel="nofollow">C语言</a></li><li><a href="#_342" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_343" rel="nofollow">用例1</a></li><li><a href="#2_348" rel="nofollow">用例2</a></li><li><a href="#3_353" rel="nofollow">用例3</a></li><li><a href="#4_358" rel="nofollow">用例4</a></li><li><a href="#5_363" rel="nofollow">用例5</a></li><li><a href="#6_368" rel="nofollow">用例6</a></li><li><a href="#7_373" rel="nofollow">用例7</a></li><li><a href="#8_378" rel="nofollow">用例8</a></li><li><a href="#9_385" rel="nofollow">用例9</a></li><li><a href="#10_392" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/d8d0876830a16b00847a4bff999c57ec.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

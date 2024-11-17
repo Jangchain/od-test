@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>快递公司每日早晨，给每位快递员推送需要送到客户手中的快递以及路线信息，快递员自己又查找了一些客户与客户之间的路线距离信息，请你依据这些信息，给快递员设计一条最例短路径， 告诉他最短路径的距离。</p> 
+<p>注意：</p> 
+<ol><li>不限制快递包裹送到客户手中的顺序，但必须保证都送到客户手中</li><li>用例保证一定存在投递站到每位客户之间的路线，但不保证客户与客户之间有路线，客户位置及投递站均允许多次经过。</li><li>所有快递送完后，快递员需回到投递站</li></ol> 
+<h2><a id="_11"></a>输入描述</h2> 
+<p>首行输入两个正整数n,m。</p> 
+<p>接下面n行，输入快递公司发布的客户快递信息，<br> 格式为：客户id 投递站到客户之间的距离distance</p> 
+<p>再接下来的m行，是快递员自行查找的客户与客户之间的距离信息，<br> 格式为：客户1id 客户2id distance</p> 
+<p>在每行数据中，数据与数据之间均以单个空格分割</p> 
+<p>规格;<br> 0 &lt; n &lt;=10<br> 0 &lt;= m &lt;= 10<br> 0&lt; 客户id &lt;= 1000<br> 0&lt; distance &lt;= 10000</p> 
+<h2><a id="_29"></a>输出描述</h2> 
+<p>最短路径距离，如无法找到，请输出 -1</p> 
+<h2><a id="1_32"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c"><span class="token number">2</span> <span class="token number">1</span>
+<span class="token number">1</span> <span class="token number">1000</span>
+<span class="token number">2</span> <span class="token number">1200</span>
+<span class="token number">1</span> <span class="token number">2</span> <span class="token number">300</span>
+</code></pre> 
+<p>输出</p> 
+<pre><code>2500
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>路径1： 快递员先把快递送到客户1手中，接下来直接走客户1到客户2之间的直通路线，最后走投递站与客户2之间的路，回到投递站，距离为1000 + 300 + 1200 = 2500<br> 路径2： 快递员先把快递送到客户1手中，接下来回快递站，再出发把客户2的快递送到，在返回到快递站，距离为：1000 + 1000 + 1200 + 1200 = 4400</p> 
+ <p>路径3：快递员先把快递送到客户2手中，接下来直接走客户2到客户1之间的直通线路，最后走投递站和客户1之间的路，回到投递站，距离为1200 + 300 + 1000 =2500</p> 
+ <p>其他路径……</p> 
+ <p>所有路径中，最短路径距离为2500</p> 
+</blockquote> 
+<h2><a id="2_57"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c"><span class="token number">5</span>  <span class="token number">1</span>
+<span class="token number">5</span> <span class="token number">1000</span>
+<span class="token number">9</span> <span class="token number">1200</span>
+<span class="token number">17</span> <span class="token number">300</span>
+<span class="token number">132</span> <span class="token number">700</span>
+<span class="token number">500</span> <span class="token number">2300</span>
+<span class="token number">5</span> <span class="token number">9</span> <span class="token number">400</span>
+</code></pre> 
+<p>输出</p> 
+<pre><code>9200
+</code></pre> 
+<blockquote> 
+ <p>说明：在所有可行的路径中，最短路径长度为1000 + 400 + 1200 + 300 + 300 + 700 + 700 + 2300 + 2300 = 9200</p> 
+</blockquote> 
+<h2><a id="_77"></a>解题思路</h2> 
+<ul><li> <p>读取每个客户的ID和该客户到配送站的距离，更新距离矩阵和映射字典。</p> </li><li> <p>读取额外路线信息，更新距离矩阵中客户之间的距离。</p> </li><li> <p>创建一个动态规划数组，用于记录到达每个状态（客户的访问情况）的最短距离。</p> </li><li> <p>初始化一个队列，用于执行广度优先搜索（BFS）。</p> </li></ul> 
+<ol><li><strong>广度优先搜索和动态规划</strong>： 
+  <ul><li>从配送站开始，对每个可能的客户位置进行搜索。</li><li>对于当前位置，遍历所有其他客户位置，检查是否存在一条到达下一个客户的路线。</li><li>计算到达下一个客户的新状态，如果该状态未被访问过或者可以通过更短的距离到达，则更新动态规划数组。</li><li>将新状态加入队列，以便继续搜索。</li></ul> </li><li><strong>搜索结束条件</strong>： 
+  <ul><li>当队列为空时，搜索结束。</li></ul> </li><li><strong>输出结果</strong>： 
+  <ul><li>从动态规划数组中获取访问所有客户并返回配送站的最短距离。</li><li>如果最短距离不是无穷大，则存在有效路径，输出最短距离；否则输出-1表示无法访问所有客户。</li></ul> </li></ol> 
+<p>在这个过程中，<strong>动态规划</strong>用于存储和更新到达每个客户集合状态的最短距离，而<strong>广度优先搜索</strong>用于遍历所有可能的客户访问顺序。动态规划数组的索引表示客户访问的状态（使用位掩码表示哪些客户已被访问），值表示到达该状态的最短距离。通过结合这两种方法，算法能够有效地找到访问所有客户并返回配送站的最短路径。</p> 
+<p>扩展：</p> 
+<p>位掩码（Bitmask）是一种利用位操作（比如位与、位或、位非等）来处理数据的技术。在编程中，位掩码通常用于以下目的：</p> 
+<ol><li> <p><strong>表示状态集合</strong>：</p> 
+  <ul><li>通过单个整数的不同位来表示多个状态或选项。例如，如果有 4 个选项，可以用一个 4 位的数字来表示这些选项的开启或关闭状态（0 表示关闭，1 表示开启）。如 <code>1010</code> 可以表示第一个和第三个选项被选中。</li></ul> </li><li> <p><strong>高效的状态操作</strong>：</p> 
+  <ul><li>位掩码允许使用位操作来高效地改变、查询或比较状态。例如，使用位与操作 (<code>&amp;</code>) 检查特定位的状态，使用位或操作 (<code>|</code>) 设置状态，使用位异或操作 (<code>^</code>) 切换状态。</li></ul> </li><li> <p><strong>节省空间</strong>：</p> 
+  <ul><li>相比于使用多个布尔变量或者数组，位掩码通过将多个状态压缩在一个整数内，能更加节省空间。</li></ul> </li></ol> 
+<p>在本题中位掩码用于表示不同客户的访问状态。每个位对应一个客户，如果该位为1，则表示相应的客户已被访问；如果为0，则表示客户未被访问。</p> 
+<h2><a id="_118"></a>模拟计算过程</h2> 
+<p>对于给定的用例，我们有2个客户和1条额外的路线。下面是模拟计算过程的详细步骤：</p> 
+<ol><li> <p><strong>初始化变量</strong>：</p> 
+  <ul><li>客户数量 <code>n = 2</code>，额外路线数量 <code>m = 1</code>。</li><li>无穷大值 <code>inf</code> 用于初始化距离。</li><li>距离矩阵 <code>dis</code> 初始化为 <code>[[inf, inf, inf], [inf, inf, inf], [inf, inf, inf]]</code>。</li><li>映射字典 <code>mapping</code> 初始化为空。</li></ul> </li><li> <p><strong>构建距离矩阵和映射字典</strong>：</p> 
+  <ul><li>客户1的ID为1，到配送站的距离为1000，更新 <code>dis</code> 和 <code>mapping</code>：<code>dis[0][1] = dis[1][0] = 1000</code>，<code>mapping[1] = 1</code>。</li><li>客户2的ID为2，到配送站的距离为1200，更新 <code>dis</code> 和 <code>mapping</code>：<code>dis[0][2] = dis[2][0] = 1200</code>，<code>mapping[2] = 2</code>。</li><li>额外路线连接客户1和客户2，距离为300，更新 <code>dis</code>：<code>dis[1][2] = dis[2][1] = 300</code>。</li></ul> </li><li> <p><strong>初始化动态规划数组和队列</strong>：</p> 
+  <ul><li>动态规划数组 <code>f</code> 初始化为 <code>[[inf, inf, inf], [inf, inf, inf], [inf, inf, inf], [inf, inf, inf]]</code>。</li><li>队列 <code>q</code> 初始化为 <code>[(0, 0, 0)]</code>。</li></ul> </li><li> <p><strong>广度优先搜索</strong>：</p> 
+  <ul><li>从队列中取出 <code>(0, 0, 0)</code>，表示当前没有访问任何客户，位置在配送站，当前距离为0。</li><li>尝试访问客户1，状态更新为 <code>1 &lt;&lt; (1 - 1) = 1</code>，距离更新为 <code>0 + 1000 = 1000</code>，将 <code>(1, 1, 1000)</code> 加入队列。</li><li>尝试访问客户2，状态更新为 <code>1 &lt;&lt; (2 - 1) = 2</code>，距离更新为 <code>0 + 1200 = 1200</code>，将 <code>(2, 2, 1200)</code> 加入队列。</li><li>队列现在为 <code>[(1, 1, 1000), (2, 2, 1200)]</code>。</li></ul> </li><li> <p><strong>继续广度优先搜索</strong>：</p> 
+  <ul><li>取出 <code>(1, 1, 1000)</code>，尝试访问客户2，状态更新为 <code>1 | (1 &lt;&lt; (2 - 1)) = 3</code>，距离更新为 <code>1000 + 300 = 1300</code>，将 <code>(3, 2, 1300)</code> 加入队列。</li><li>取出 <code>(2, 2, 1200)</code>，尝试访问客户1，状态更新为 <code>2 | (1 &lt;&lt; (1 - 1)) = 3</code>，距离更新为 <code>1200 + 300 = 1500</code>，但由于状态 <code>3</code> 已经以更短的距离 <code>1300</code> 被访问过，所以不更新。</li></ul> </li><li> <p><strong>输出结果</strong>：</p> 
+  <ul><li>最终状态为 <code>3</code>，表示所有客户都被访问过，返回配送站的距离为 <code>f[3][0]</code>。</li><li>由于我们没有直接从客户返回配送站的距离，我们需要考虑从最后一个客户返回配送站的距离。</li><li>最短路径为从配送站到客户1，然后到客户2，再返回配送站，距离为 <code>1000 + 300 + 1200 = 2500</code>。</li><li>输出最短距离 <code>2500</code>。</li></ul> </li></ol> 
+<h2><a id="C_153"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> r<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> r<span class="token punctuation">;</span> <span class="token comment">// 读取客户数量和路线数量</span>
+
+    <span class="token comment">// 定义无穷大用于初始化距离矩阵</span>
+    <span class="token keyword">const</span> <span class="token keyword">int</span> inf <span class="token operator">=</span> numeric_limits<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">::</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化距离矩阵，所有值设为无穷大</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">d</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> inf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建映射字典，将客户ID映射到矩阵索引</span>
+    unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> m<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取客户信息，填充距离矩阵和映射字典</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> id<span class="token punctuation">,</span> dist<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> id <span class="token operator">&gt;&gt;</span> dist<span class="token punctuation">;</span>
+        m<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取额外的路线信息，更新距离矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> r<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> id1<span class="token punctuation">,</span> id2<span class="token punctuation">,</span> dist<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> id1 <span class="token operator">&gt;&gt;</span> id2 <span class="token operator">&gt;&gt;</span> dist<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> i1 <span class="token operator">=</span> m<span class="token punctuation">[</span>id1<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> i2 <span class="token operator">=</span> m<span class="token punctuation">[</span>id2<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        d<span class="token punctuation">[</span>i1<span class="token punctuation">]</span><span class="token punctuation">[</span>i2<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i2<span class="token punctuation">]</span><span class="token punctuation">[</span>i1<span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化动态规划数组，用于记录到达每个状态的最短距离</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">dp</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> inf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化队列，用于广度优先搜索</span>
+    queue<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> q<span class="token punctuation">;</span>
+    q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将起始状态加入队列</span>
+
+    <span class="token comment">// 设置起始点到起始点的距离为0</span>
+    dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 执行广度优先搜索</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>q<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> curr <span class="token operator">=</span> q<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        q<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> cs <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> cp <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 当前状态和当前位置</span>
+        <span class="token keyword">int</span> cd <span class="token operator">=</span> dp<span class="token punctuation">[</span>cs<span class="token punctuation">]</span><span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 当前状态的最短距离</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> np <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> np <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>np<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有可能的下一个位置</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>np <span class="token operator">!=</span> cp <span class="token operator">&amp;&amp;</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">!=</span> inf<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果下一个位置不是当前位置且可达</span>
+                <span class="token keyword">int</span> ns <span class="token operator">=</span> <span class="token punctuation">(</span>np <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> cs <span class="token operator">|</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>np <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">:</span> cs<span class="token punctuation">;</span> <span class="token comment">// 计算新状态</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果新状态的距离可以被更新</span>
+                    dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">=</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 更新距离</span>
+                    q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>ns<span class="token punctuation">,</span> np<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将新状态加入队列</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取访问所有客户并返回配送站的最短距离</span>
+    <span class="token keyword">int</span> min_d <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 打印最短距离或-1（如果不存在有效路径）</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>min_d <span class="token operator">!=</span> inf <span class="token operator">?</span> min_d <span class="token operator">:</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_231"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">LinkedList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Map</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Queue</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取客户数量和路线数量</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> r <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 定义无穷大用于初始化距离矩阵</span>
+        <span class="token keyword">int</span> inf <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化距离矩阵，所有值设为无穷大</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> d <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> row <span class="token operator">:</span> d<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> inf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 创建映射字典，将客户ID映射到矩阵索引</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> m <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取客户信息，填充距离矩阵和映射字典</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> id <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> dist <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            m<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取额外的路线信息，更新距离矩阵</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> r<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> id1 <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> id2 <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> dist <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> i1 <span class="token operator">=</span> m<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> i2 <span class="token operator">=</span> m<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            d<span class="token punctuation">[</span>i1<span class="token punctuation">]</span><span class="token punctuation">[</span>i2<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i2<span class="token punctuation">]</span><span class="token punctuation">[</span>i1<span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化动态规划数组，用于记录到达每个状态的最短距离</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">]</span><span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> row <span class="token operator">:</span> dp<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> inf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化队列，用于广度优先搜索</span>
+        <span class="token class-name">Queue</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> q <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">LinkedList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        q<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 设置起始点到起始点的距离为0</span>
+        dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 执行广度优先搜索</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>q<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> curr <span class="token operator">=</span> q<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> cs <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> cp <span class="token operator">=</span> curr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> cd <span class="token operator">=</span> dp<span class="token punctuation">[</span>cs<span class="token punctuation">]</span><span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> np <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> np <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> np<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>np <span class="token operator">!=</span> cp <span class="token operator">&amp;&amp;</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">!=</span> inf<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">int</span> ns <span class="token operator">=</span> <span class="token punctuation">(</span>np <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> cs <span class="token operator">|</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>np <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">:</span> cs<span class="token punctuation">;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">=</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                        q<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span>ns<span class="token punctuation">,</span> np<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 获取访问所有客户并返回配送站的最短距离</span>
+        <span class="token keyword">int</span> min_d <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 打印最短距离或-1（如果不存在有效路径）</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>min_d <span class="token operator">!=</span> inf <span class="token operator">?</span> min_d <span class="token operator">:</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_317"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>lines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 解构输入，获取客户数量和路线数量</span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>n<span class="token punctuation">,</span> r<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义无穷大值，用于初始化距离矩阵</span>
+    <span class="token keyword">const</span> inf <span class="token operator">=</span> <span class="token number">Infinity</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化距离矩阵，所有值设置为无穷大</span>
+    <span class="token keyword">const</span> d <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">length</span><span class="token operator">:</span> n <span class="token operator">+</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token function">Array</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span>inf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建映射字典，将客户ID映射到矩阵索引</span>
+    <span class="token keyword">const</span> m <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取客户信息，填充距离矩阵和映射字典</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> <span class="token punctuation">[</span>id<span class="token punctuation">,</span> dist<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        m<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取额外的路线信息，更新距离矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n <span class="token operator">+</span> r<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> <span class="token punctuation">[</span>id1<span class="token punctuation">,</span> id2<span class="token punctuation">,</span> dist<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> i1 <span class="token operator">=</span> m<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> i2 <span class="token operator">=</span> m<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        d<span class="token punctuation">[</span>i1<span class="token punctuation">]</span><span class="token punctuation">[</span>i2<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i2<span class="token punctuation">]</span><span class="token punctuation">[</span>i1<span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化动态规划数组，用于记录到达每个状态的最短距离</span>
+    <span class="token keyword">const</span> dp <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">length</span><span class="token operator">:</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token function">Array</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span>inf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化队列，用于广度优先搜索</span>
+    <span class="token keyword">const</span> q <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">cs</span><span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token literal-property property">cp</span><span class="token operator">:</span> <span class="token number">0</span> <span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 设置起始点到起始点的距离为0</span>
+    dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 执行广度优先搜索</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>q<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> <span class="token punctuation">{<!-- --></span> cs<span class="token punctuation">,</span> cp <span class="token punctuation">}</span> <span class="token operator">=</span> q<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> cd <span class="token operator">=</span> dp<span class="token punctuation">[</span>cs<span class="token punctuation">]</span><span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> np <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> np <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> np<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>np <span class="token operator">!==</span> cp <span class="token operator">&amp;&amp;</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">!==</span> inf<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">const</span> ns <span class="token operator">=</span> np <span class="token operator">!==</span> <span class="token number">0</span> <span class="token operator">?</span> cs <span class="token operator">|</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>np <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">:</span> cs<span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">=</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> <span class="token literal-property property">cs</span><span class="token operator">:</span> ns<span class="token punctuation">,</span> <span class="token literal-property property">cp</span><span class="token operator">:</span> np <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取访问所有客户并返回配送站的最短距离</span>
+    <span class="token keyword">const</span> minD <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 打印最短距离或-1（如果不存在有效路径）</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>minD <span class="token operator">!==</span> inf <span class="token operator">?</span> minD <span class="token operator">:</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_399"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 读取客户数量和路线数量</span>
+n<span class="token punctuation">,</span> r <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 定义无穷大用于初始化距离矩阵</span>
+inf <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化距离矩阵，所有值设为无穷大</span>
+d <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span>inf<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 创建映射字典，将客户ID映射到矩阵索引</span>
+m <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+<span class="token comment"># 读取客户信息，填充距离矩阵和映射字典</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token builtin">id</span><span class="token punctuation">,</span> dist <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取客户ID和到配送站的距离</span>
+    m<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span> <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span>  <span class="token comment"># 将客户ID映射到索引</span>
+    d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> dist  <span class="token comment"># 设置配送站到客户和客户到配送站的距离</span>
+
+<span class="token comment"># 读取额外的路线信息，更新距离矩阵</span>
+<span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    id1<span class="token punctuation">,</span> id2<span class="token punctuation">,</span> dist <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取两个客户ID和它们之间的距离</span>
+    i1 <span class="token operator">=</span> m<span class="token punctuation">[</span>id1<span class="token punctuation">]</span>  <span class="token comment"># 获取客户1的矩阵索引</span>
+    i2 <span class="token operator">=</span> m<span class="token punctuation">[</span>id2<span class="token punctuation">]</span>  <span class="token comment"># 获取客户2的矩阵索引</span>
+    d<span class="token punctuation">[</span>i1<span class="token punctuation">]</span><span class="token punctuation">[</span>i2<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i2<span class="token punctuation">]</span><span class="token punctuation">[</span>i1<span class="token punctuation">]</span> <span class="token operator">=</span> dist  <span class="token comment"># 设置客户1到客户2和客户2到客户1的距离</span>
+
+<span class="token comment"># 初始化动态规划数组，用于记录到达每个状态的最短距离</span>
+dp <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span>inf<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 初始化队列，用于广度优先搜索</span>
+q <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 设置起始点到起始点的距离为0</span>
+dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 执行广度优先搜索</span>
+<span class="token keyword">while</span> q<span class="token punctuation">:</span>
+    cs<span class="token punctuation">,</span> cp<span class="token punctuation">,</span> cd <span class="token operator">=</span> q<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>  <span class="token comment"># 取出当前状态，当前位置和当前距离</span>
+    <span class="token keyword">for</span> np <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果下一个位置不是当前位置且两者之间有路线</span>
+        <span class="token keyword">if</span> np <span class="token operator">!=</span> cp <span class="token keyword">and</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">!=</span> inf<span class="token punctuation">:</span>
+            <span class="token comment"># 计算下一个状态，如果不是配送站，则更新状态</span>
+            ns <span class="token operator">=</span> cs <span class="token operator">|</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>np <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">if</span> np <span class="token operator">!=</span> <span class="token number">0</span> <span class="token keyword">else</span> cs
+            <span class="token comment"># 如果到达下一个状态的距离更短，则更新动态规划数组并将其加入队列</span>
+            <span class="token keyword">if</span> dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">:</span>
+                dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">=</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span>
+                q<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span>ns<span class="token punctuation">,</span> np<span class="token punctuation">,</span> dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 获取访问所有客户并返回配送站的最短距离</span>
+min_d <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 打印最短距离或-1（如果不存在有效路径）</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>min_d <span class="token keyword">if</span> min_d <span class="token operator">!=</span> inf <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>  <span class="token comment"># 打印结果</span>
+</code></pre> 
+<h2><a id="C_458"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_N</span> <span class="token expression"><span class="token number">20</span>  </span></span>
+
+<span class="token comment">// 用于表示队列中的元素</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> cs<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cp<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> QueueElement<span class="token punctuation">;</span>
+
+<span class="token comment">// 队列结构</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    QueueElement elements<span class="token punctuation">[</span>MAX_N <span class="token operator">*</span> MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> front<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> rear<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> Queue<span class="token punctuation">;</span>
+
+<span class="token comment">// 初始化队列</span>
+<span class="token keyword">void</span> <span class="token function">initQueue</span><span class="token punctuation">(</span>Queue <span class="token operator">*</span>q<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    q<span class="token operator">-&gt;</span>front <span class="token operator">=</span> q<span class="token operator">-&gt;</span>rear <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 判断队列是否为空</span>
+<span class="token keyword">int</span> <span class="token function">isEmpty</span><span class="token punctuation">(</span>Queue <span class="token operator">*</span>q<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> q<span class="token operator">-&gt;</span>front <span class="token operator">==</span> q<span class="token operator">-&gt;</span>rear<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 入队</span>
+<span class="token keyword">void</span> <span class="token function">enqueue</span><span class="token punctuation">(</span>Queue <span class="token operator">*</span>q<span class="token punctuation">,</span> QueueElement element<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    q<span class="token operator">-&gt;</span>elements<span class="token punctuation">[</span>q<span class="token operator">-&gt;</span>rear<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> element<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 出队</span>
+QueueElement <span class="token function">dequeue</span><span class="token punctuation">(</span>Queue <span class="token operator">*</span>q<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> q<span class="token operator">-&gt;</span>elements<span class="token punctuation">[</span>q<span class="token operator">-&gt;</span>front<span class="token operator">++</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> r<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">,</span> <span class="token operator">&amp;</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> inf <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> d<span class="token punctuation">[</span>MAX_N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> dp<span class="token punctuation">[</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> MAX_N<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化距离矩阵和动态规划数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            d<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> j<span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">0</span> <span class="token operator">:</span> inf<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> inf<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 映射ID到索引</span>
+    <span class="token keyword">int</span> idToIndex<span class="token punctuation">[</span>MAX_N <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取客户信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> id<span class="token punctuation">,</span> dist<span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>id<span class="token punctuation">,</span> <span class="token operator">&amp;</span>dist<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        idToIndex<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        d<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取路线信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> r<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> id1<span class="token punctuation">,</span> id2<span class="token punctuation">,</span> dist<span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>id1<span class="token punctuation">,</span> <span class="token operator">&amp;</span>id2<span class="token punctuation">,</span> <span class="token operator">&amp;</span>dist<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> i1 <span class="token operator">=</span> idToIndex<span class="token punctuation">[</span>id1<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> i2 <span class="token operator">=</span> idToIndex<span class="token punctuation">[</span>id2<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        d<span class="token punctuation">[</span>i1<span class="token punctuation">]</span><span class="token punctuation">[</span>i2<span class="token punctuation">]</span> <span class="token operator">=</span> d<span class="token punctuation">[</span>i2<span class="token punctuation">]</span><span class="token punctuation">[</span>i1<span class="token punctuation">]</span> <span class="token operator">=</span> dist<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化队列</span>
+    Queue q<span class="token punctuation">;</span>
+    <span class="token function">initQueue</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">enqueue</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token punctuation">,</span> <span class="token punctuation">(</span>QueueElement<span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 广度优先搜索</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        QueueElement curr <span class="token operator">=</span> <span class="token function">dequeue</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> cs <span class="token operator">=</span> curr<span class="token punctuation">.</span>cs<span class="token punctuation">,</span> cp <span class="token operator">=</span> curr<span class="token punctuation">.</span>cp<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> cd <span class="token operator">=</span> dp<span class="token punctuation">[</span>cs<span class="token punctuation">]</span><span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> np <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> np <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> np<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>np <span class="token operator">!=</span> cp <span class="token operator">&amp;&amp;</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">!=</span> inf<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> ns <span class="token operator">=</span> <span class="token punctuation">(</span>np <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> cs <span class="token operator">|</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>np <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">:</span> cs<span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    dp<span class="token punctuation">[</span>ns<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span> <span class="token operator">=</span> cd <span class="token operator">+</span> d<span class="token punctuation">[</span>cp<span class="token punctuation">]</span><span class="token punctuation">[</span>np<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token function">enqueue</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>q<span class="token punctuation">,</span> <span class="token punctuation">(</span>QueueElement<span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>ns<span class="token punctuation">,</span> np<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算结果</span>
+    <span class="token keyword">int</span> min_d <span class="token operator">=</span> dp<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> n<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> min_d <span class="token operator">!=</span> inf <span class="token operator">?</span> min_d <span class="token operator">:</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_570"></a>完整用例</h2> 
+<h3><a id="1_572"></a>用例1</h3> 
+<pre><code class="prism language-input1">2 1
+1 1000
+2 1200
+1 2 300
+</code></pre> 
+<h3><a id="2_581"></a>用例2</h3> 
+<pre><code class="prism language-input2">3 2
+1 800
+2 500
+3 600
+1 2 300
+2 3 400
+</code></pre> 
+<h3><a id="3_592"></a>用例3</h3> 
+<pre><code class="prism language-input3">4 3
+1 100
+2 200
+3 300
+4 400
+1 2 50
+2 3 50
+3 4 50
+</code></pre> 
+<h3><a id="4_605"></a>用例4</h3> 
+<pre><code class="prism language-input4">3 3
+1 1000
+2 1000
+3 1000
+1 2 500
+2 3 500
+1 3 1500
+</code></pre> 
+<h3><a id="5_617"></a>用例5</h3> 
+<pre><code class="prism language-input5">2 0
+1 1000
+2 2000
+</code></pre> 
+<h3><a id="6_625"></a>用例6</h3> 
+<pre><code class="prism language-input6">5 4
+1 500
+2 600
+3 700
+4 800
+5 900
+1 2 100
+2 3 100
+3 4 100
+4 5 100
+</code></pre> 
+<h3><a id="7_640"></a>用例7</h3> 
+<pre><code class="prism language-input7">4 2
+1 1000
+2 1000
+3 1000
+4 1000
+1 3 500
+2 4 500
+</code></pre> 
+<h3><a id="8_652"></a>用例8</h3> 
+<pre><code class="prism language-input8">3 1
+1 800
+2 1500
+3 1200
+1 3 400
+</code></pre> 
+<h3><a id="9_662"></a>用例9</h3> 
+<pre><code class="prism language-input9">5 5
+1 100
+2 200
+3 300
+4 400
+5 500
+1 2 50
+2 3 50
+3 4 50
+4 5 50
+1 5 250
+</code></pre> 
+<h3><a id="10_678"></a>用例10</h3> 
+<pre><code class="prism language-input10">2 2
+1 500
+2 600
+1 2 300
+2 1 300
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_11" rel="nofollow">输入描述</a></li><li><a href="#_29" rel="nofollow">输出描述</a></li><li><a href="#1_32" rel="nofollow">用例1</a></li><li><a href="#2_57" rel="nofollow">用例2</a></li><li><a href="#_77" rel="nofollow">解题思路</a></li><li><a href="#_118" rel="nofollow">模拟计算过程</a></li><li><a href="#C_153" rel="nofollow">C++</a></li><li><a href="#Java_231" rel="nofollow">Java</a></li><li><a href="#javaScript_317" rel="nofollow">javaScript</a></li><li><a href="#Python_399" rel="nofollow">Python</a></li><li><a href="#C_458" rel="nofollow">C语言</a></li><li><a href="#_570" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_572" rel="nofollow">用例1</a></li><li><a href="#2_581" rel="nofollow">用例2</a></li><li><a href="#3_592" rel="nofollow">用例3</a></li><li><a href="#4_605" rel="nofollow">用例4</a></li><li><a href="#5_617" rel="nofollow">用例5</a></li><li><a href="#6_625" rel="nofollow">用例6</a></li><li><a href="#7_640" rel="nofollow">用例7</a></li><li><a href="#8_652" rel="nofollow">用例8</a></li><li><a href="#9_662" rel="nofollow">用例9</a></li><li><a href="#10_678" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/84f08244fc527f690675dcd133f90c67.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

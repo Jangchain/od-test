@@ -1,0 +1,569 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>算法工程师小明面对着这样一个问题 ，需要将通信用的信道分配给尽量多的用户:</p> 
+<p>信道的条件及分配规则如下:</p> 
+<ol><li>所有信道都有属性:”阶”。阶为 r的信道的容量为 2^r比特;</li><li>所有用户需要传输的数据量都一样:D比特;</li><li>一个用户可以分配多个信道，但每个信道只能分配给一个用户;</li><li>只有当分配给一个用户的所有信道的容量和&gt;=D，用户才能传输数据;</li></ol> 
+<p>给出一组信道资源，最多可以为多少用户传输数据?</p> 
+<h2><a id="_18"></a>输入描述</h2> 
+<p>第一行，一个数字 R。R为最大阶数。</p> 
+<p>0&lt;=R&lt;20</p> 
+<p>第二行，R+1个数字，用空格隔开。代表每种信道的数量 Ni。按照阶的值从小到大排列。</p> 
+<p>0&lt;=i&lt;=R,0&lt;=Ni&lt;1000.</p> 
+<p>第三行，一个数字 D。D为单个用户需要传输的数据量。</p> 
+<p>0&lt;D&lt;1000000</p> 
+<h2><a id="_32"></a>输出描述</h2> 
+<p>一个数字,代表最多可以供多少用户传输数据。</p> 
+<h2><a id="_36"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>5
+10 5 0 1 3 2
+30
+</code></pre> 
+<p>输出</p> 
+<pre><code>4
+</code></pre> 
+<h2><a id="_52"></a>解题思路</h2> 
+<p>对于给定的用例，我们可以通过以下步骤模拟计算过程来理解题目的要求和解决方案：</p> 
+<ol><li> <p><strong>理解输入</strong>：</p> 
+  <ul><li>最大阶数 <code>R = 5</code>，意味着信道的阶从0到5，共有6种不同阶的信道。</li><li>信道数量 <code>N = [10, 5, 0, 1, 3, 2]</code>，表示阶0的信道有10个，阶1的信道有5个，阶2的信道有0个，依此类推。</li><li>单个用户需要传输的数据量 <code>D = 30</code> 比特。</li></ul> </li><li> <p><strong>计算每种阶信道的容量</strong>：</p> 
+  <ul><li>阶0的信道容量为 <code>2^0 = 1</code> 比特。有10个这种的。</li><li>阶1的信道容量为 <code>2^1 = 2</code> 比特。有5个这种的。</li><li>阶2的信道容量为 <code>2^2 = 4</code> 比特。有0个这种的。</li><li>阶3的信道容量为 <code>2^3 = 8</code> 比特。有1个这种的。</li><li>阶4的信道容量为 <code>2^4 = 16</code> 比特。有3个这种的。</li><li>阶5的信道容量为 <code>2^5 = 32</code> 比特。有2个这种的。</li></ul> </li></ol> 
+<h3><a id="_71"></a>用例</h3> 
+<p>每个用户需要传输的数据量为30比特。存在多种信道分配方案，例如：</p> 
+<ul><li> <p><strong>方案1</strong>：</p> 
+  <ul><li>使用一个32比特信道满足一个用户（32比特）。</li><li>再次使用一个32比特信道满足另一个用户（32比特）。</li><li>使用两个16比特信道满足一个用户（32比特）。</li><li>组合一个16比特信道、一个8比特信道和三个2比特信道满足一个用户（30比特）。</li><li>剩余信道（两个2比特信道和十个1比特信道，共14比特）不足以满足另一个用户。</li></ul> </li><li> <p><strong>方案2</strong>：</p> 
+  <ul><li>组合一个16比特信道、一个8比特信道和三个2比特信道满足一个用户（30比特）。</li><li>组合一个16比特信道、两个2比特信道和十个1比特信道满足一个用户（30比特）。</li><li>使用一个32比特信道满足一个用户（32比特）。</li><li>再次使用一个32比特信道满足另一个用户（32比特）。</li><li>剩余一个16比特信道（16比特）不足以满足另一个用户。</li></ul> </li><li> <p><strong>方案3</strong>：</p> 
+  <ul><li>组合一个16比特信道、一个8比特信道和三个2比特信道满足一个用户（30比特）。</li><li>组合一个16比特信道、两个2比特信道和十个1比特信道满足一个用户（30比特）。</li><li>使用一个32比特信道满足一个用户（32比特）。</li><li>再次使用一个32比特信道满足另一个用户（32比特）。</li><li>所有信道恰好用完。</li></ul> </li></ul> 
+<h2><a id="C_99"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 将二进制向量转换为十进制数，使用了一个更直接的方法</span>
+<span class="token keyword">int</span> <span class="token function">binaryToDecimal</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> binary<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> decimal <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 十进制结果</span>
+    <span class="token keyword">int</span> base <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 基数，初始为1，之后每次循环翻倍</span>
+
+    <span class="token comment">// 遍历二进制向量，从最低位开始转换</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> binary<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        decimal <span class="token operator">+=</span> binary<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> base<span class="token punctuation">;</span> <span class="token comment">// 累加到十进制结果中</span>
+        base <span class="token operator">*=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 基数翻倍，对应二进制的位权增加</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> decimal<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 将十进制数转换为二进制向量</span>
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">decimalToBinary</span><span class="token punctuation">(</span><span class="token keyword">int</span> decimal<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> binary<span class="token punctuation">;</span> <span class="token comment">// 二进制向量结果</span>
+
+    <span class="token comment">// 循环直到十进制数为0</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>decimal <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        binary<span class="token punctuation">.</span><span class="token function">emplace_back</span><span class="token punctuation">(</span>decimal <span class="token operator">%</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将十进制数除以2的余数作为二进制位</span>
+        decimal <span class="token operator">/=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 十进制数除以2，向下取整</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> binary<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 根据需求分配通道</span>
+bool <span class="token function">allocateChannels</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>availableChannels<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>requirementBits<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从最高位向最低位遍历</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> availableChannels<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> requirementBits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirementBits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 如果当前位的可用通道数足够，直接分配</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前位的可用通道数不够，需要检查是否能从更高位借用</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">binaryToDecimal</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>availableChannels<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> availableChannels<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span>
+                <span class="token function">binaryToDecimal</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>requirementBits<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> requirementBits<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果更高位的通道总数也不够，分配失败</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> availableChannels<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>availableChannels<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        availableChannels<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 从更高位借用一个通道</span>
+                        <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果更高位的通道总数足够，进行调整</span>
+                availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirementBits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    availableChannels<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 向下一位借用通道</span>
+                <span class="token punctuation">}</span>
+                availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> maxLevel<span class="token punctuation">;</span> <span class="token comment">// 最大级别</span>
+    cin <span class="token operator">&gt;&gt;</span> maxLevel<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">channelCounts</span><span class="token punctuation">(</span>maxLevel <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储每个级别的通道数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> maxLevel<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 输入每个级别的通道数</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> dataRequirement<span class="token punctuation">;</span> <span class="token comment">// 数据需求量</span>
+    cin <span class="token operator">&gt;&gt;</span> dataRequirement<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> requirementBits <span class="token operator">=</span> <span class="token function">decimalToBinary</span><span class="token punctuation">(</span>dataRequirement<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将需求量转换为二进制向量</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">availableChannels</span><span class="token punctuation">(</span>requirementBits<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化可用通道向量</span>
+    <span class="token keyword">int</span> usersServed <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 已服务的用户数</span>
+
+    <span class="token comment">// 初始化可用通道向量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> maxLevel<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> requirementBits<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            usersServed <span class="token operator">+=</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 如果级别超过需求位数，直接累加到已服务的用户数</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 设置每个级别的可用通道数</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 尝试分配通道直到不再可能</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">allocateChannels</span><span class="token punctuation">(</span>availableChannels<span class="token punctuation">,</span> requirementBits<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        usersServed<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 每成功一次，已服务的用户数增加</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> usersServed <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出已服务的用户数</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_202"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 用户输入最大信道阶数</span>
+        <span class="token keyword">int</span> maxLevel <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 消耗换行符，避免影响下一次读取</span>
+        <span class="token comment">// 用户输入每种信道的数量，按阶数从小到大</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> inputCounts <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 使用流将字符串数组转换为整数数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> channelCounts <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>inputCounts<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 用户输入单个用户需要的数据量</span>
+        <span class="token keyword">int</span> dataNeed <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 将用户需求的数据量转换为二进制位数组，并反转以符合从低阶到高阶的顺序</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> requirementBits <span class="token operator">=</span> <span class="token function">toBitsArray</span><span class="token punctuation">(</span>dataNeed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化能服务的用户数</span>
+        <span class="token keyword">int</span> usersServed <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 对超出需求位长度的高阶信道，直接累加其数量至能服务的用户数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> requirementBits<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> maxLevel<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            usersServed <span class="token operator">+=</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 初始化当前可用信道数组，长度与需求位相同</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> currentChannels <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">copyOfRange</span><span class="token punctuation">(</span>channelCounts<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> requirementBits<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 尝试分配信道直到不再能满足任何用户的需求</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">allocateChannels</span><span class="token punctuation">(</span>currentChannels<span class="token punctuation">,</span> requirementBits<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 成功分配则用户数加一</span>
+            usersServed<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 输出能服务的用户总数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>usersServed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 将十进制数转换为二进制位数组的函数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">toBitsArray</span><span class="token punctuation">(</span><span class="token keyword">int</span> number<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将整数转换为二进制字符串</span>
+        <span class="token class-name">String</span> binaryString <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">toBinaryString</span><span class="token punctuation">(</span>number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建与二进制字符串长度相同的数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bits <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>binaryString<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 填充数组，字符串末尾的位对应数组的开始</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> binaryString<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            bits<span class="token punctuation">[</span>binaryString<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">-</span> i<span class="token punctuation">]</span> <span class="token operator">=</span> binaryString<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token char">'0'</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> bits<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 定义分配信道的函数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">allocateChannels</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> channels<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> requirement<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 从最高阶开始向下遍历，尝试分配信道以满足需求</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> channels<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果当前阶信道数量不足以满足需求</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">bitsToNum</span><span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">copyOfRange</span><span class="token punctuation">(</span>channels<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token function">bitsToNum</span><span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">copyOfRange</span><span class="token punctuation">(</span>requirement<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 尝试从更高阶借用一个信道</span>
+                    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> channels<span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token keyword">if</span> <span class="token punctuation">(</span>channels<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                            channels<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+                            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                        <span class="token punctuation">}</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果当前及更低阶信道总容量足够，进行分配</span>
+                    channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token comment">// 将不足部分的需求通过倍增转移到下一低阶</span>
+                        channels<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 将二进制位数组转换为十进制数的函数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">bitsToNum</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bits<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> number <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历二进制位数组，计算十进制数值</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> bits<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            number <span class="token operator">+=</span> bits<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">pow</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> number<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_300"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> inputLines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  inputLines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">processInput</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">processInput</span><span class="token punctuation">(</span><span class="token parameter">inputLines</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 解析输入</span>
+  <span class="token keyword">const</span> maxLevel <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> channelCounts <span class="token operator">=</span> inputLines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> dataNeed <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 定义将二进制数组转换为十进制数的函数</span>
+  <span class="token keyword">function</span> <span class="token function">bitsToNum</span><span class="token punctuation">(</span><span class="token parameter">bits</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> bits<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">acc<span class="token punctuation">,</span> val<span class="token punctuation">,</span> idx</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> acc <span class="token operator">+</span> val <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token function">pow</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> idx<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 定义信道分配函数</span>
+  <span class="token keyword">function</span> <span class="token function">allocateChannels</span><span class="token punctuation">(</span><span class="token parameter">channels<span class="token punctuation">,</span> requirement</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> channels<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">bitsToNum</span><span class="token punctuation">(</span>channels<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token function">bitsToNum</span><span class="token punctuation">(</span>requirement<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 从更高阶尝试借用信道</span>
+          <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> channels<span class="token punctuation">.</span>length<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>channels<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+              channels<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+              <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">}</span>
+          <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 如果无法借用，则返回false</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 分配信道</span>
+          channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+          <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            channels<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span>
+          <span class="token punctuation">}</span>
+          channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 返回true表示成功分配</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 将数据需求转换为二进制位数组，并反转以符合从低阶到高阶的顺序</span>
+  <span class="token keyword">let</span> requirementBits <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">...</span>dataNeed<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">reverse</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> usersServed <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 对超出需求位长度的高阶信道，直接累加其数量至能服务的用户数</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> requirementBits<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> maxLevel<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    usersServed <span class="token operator">+=</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 初始化当前可用信道数组，长度与需求位相同</span>
+  <span class="token keyword">let</span> currentChannels <span class="token operator">=</span> channelCounts<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> requirementBits<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>currentChannels<span class="token punctuation">.</span>length <span class="token operator">&lt;</span> requirementBits<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    currentChannels<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 补充长度不足的部分为0</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 尝试分配信道直到不再能满足任何用户的需求</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">allocateChannels</span><span class="token punctuation">(</span>currentChannels<span class="token punctuation">,</span> requirementBits<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    usersServed<span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出能服务的用户总数</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>usersServed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_385"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 用户输入最大信道阶数</span>
+max_level <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  
+<span class="token comment"># 用户输入每种信道的数量，按阶数从小到大</span>
+channel_counts <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  
+<span class="token comment"># 用户输入单个用户需要的数据量</span>
+data_need <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  
+
+<span class="token comment"># 定义将二进制位数组转换为十进制数的函数</span>
+<span class="token keyword">def</span> <span class="token function">bits_to_num</span><span class="token punctuation">(</span>bits<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 对二进制位数组进行遍历，每位的值乘以其对应的2的幂次求和得到十进制数</span>
+    <span class="token keyword">return</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>val <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token number">2</span> <span class="token operator">**</span> idx<span class="token punctuation">)</span> <span class="token keyword">for</span> idx<span class="token punctuation">,</span> val <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>bits<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 定义分配信道的函数</span>
+<span class="token keyword">def</span> <span class="token function">allocate_channels</span><span class="token punctuation">(</span>channel阿s<span class="token punctuation">,</span> requirement<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 从最高阶开始向下遍历，尝试分配信道以满足需求</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">reversed</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>channels<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前阶信道数量足够，直接减去需求量</span>
+        <span class="token keyword">if</span> channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果当前阶信道数量不足以满足需求，需要判断是否可以通过低阶信道组合满足需求</span>
+            <span class="token comment"># 首先判断当前及更低阶信道总容量是否小于需求的总容量</span>
+            <span class="token keyword">if</span> bits_to_num<span class="token punctuation">(</span>channels<span class="token punctuation">[</span><span class="token punctuation">:</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> bits_to_num<span class="token punctuation">(</span>requirement<span class="token punctuation">[</span><span class="token punctuation">:</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果低阶总容量不足，尝试从更高阶借用一个信道</span>
+                <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>channels<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    <span class="token keyword">if</span> channels<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                        channels<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>
+                        <span class="token keyword">return</span> <span class="token boolean">True</span>
+                <span class="token comment"># 如果高阶也无法借用，说明无法满足当前需求，返回False</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果当前及更低阶信道总容量足够，先尝试分配当前阶，不足部分由更低阶信道通过倍增补足</span>
+                channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirement<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+                <span class="token keyword">if</span> i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                    <span class="token comment"># 将不足部分的需求通过倍增转移到下一低阶，即需求翻倍</span>
+                    channels<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">2</span>
+                <span class="token comment"># 将当前阶信道数量清零，因为已尽可能分配</span>
+                channels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token comment"># 如果所有需求都能满足，返回True</span>
+    <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+<span class="token comment"># 将用户需求的数据量转换为二进制位数组，并反转以符合从低阶到高阶的顺序</span>
+requirement_bits <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">bin</span><span class="token punctuation">(</span>data_need<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+users_served <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 初始化能服务的用户数</span>
+<span class="token comment"># 对超出需求位长度的高阶信道，直接累加其数量至能服务的用户数</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>requirement_bits<span class="token punctuation">)</span><span class="token punctuation">,</span> max_level <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    users_served <span class="token operator">+=</span> channel_counts<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+<span class="token comment"># 初始化当前可用信道数组，长度与需求位相同</span>
+current_channels <span class="token operator">=</span> channel_counts<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token builtin">len</span><span class="token punctuation">(</span>requirement_bits<span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token keyword">while</span> <span class="token builtin">len</span><span class="token punctuation">(</span>current_channels<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>requirement_bits<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果当前可用信道数组长度不足，补零以匹配需求位长度</span>
+    current_channels<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token comment"># 尝试分配信道直到不再能满足任何用户的需求</span>
+<span class="token keyword">while</span> allocate_channels<span class="token punctuation">(</span>current_channels<span class="token punctuation">,</span> requirement_bits<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    users_served <span class="token operator">+=</span> <span class="token number">1</span>  <span class="token comment"># 成功分配则用户数加一</span>
+
+<span class="token comment"># 输出能服务的用户总数</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>users_served<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_448"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">/**
+ * 将十进制数转换为二进制数组
+ * @param decimal 十进制输入
+ * @param size 用于存储生成的二进制数组的大小
+ * @return 返回二进制数组的指针
+ */</span>
+<span class="token keyword">int</span><span class="token operator">*</span> <span class="token function">decimalToBinary</span><span class="token punctuation">(</span><span class="token keyword">int</span> decimal<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 动态分配足够大的空间以存储二进制数</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> binary <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">32</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token operator">*</span>size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化大小为0</span>
+
+    <span class="token comment">// 循环直到十进制数被完全转换</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>decimal <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        binary<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token operator">*</span>size<span class="token punctuation">)</span><span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> decimal <span class="token operator">%</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 存储余数，即当前二进制位</span>
+        decimal <span class="token operator">/=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 将十进制数除以2进行下一步转换</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> binary<span class="token punctuation">;</span> <span class="token comment">// 返回二进制数组</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">/**
+ * 将二进制数组转换为十进制数
+ * @param binary 二进制数组指针
+ * @param size 二进制数组的大小
+ * @return 返回转换得到的十进制数
+ */</span>
+<span class="token keyword">int</span> <span class="token function">binaryToDecimal</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span> binary<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> decimal <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化十进制结果为0</span>
+    <span class="token keyword">int</span> base <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始化基数为1</span>
+
+    <span class="token comment">// 遍历二进制数组，从最低位开始转换</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        decimal <span class="token operator">+=</span> binary<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> base<span class="token punctuation">;</span> <span class="token comment">// 累加计算十进制结果</span>
+        base <span class="token operator">*=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 基数翻倍，准备下一个二进制位的转换</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> decimal<span class="token punctuation">;</span> <span class="token comment">// 返回十进制结果</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">/**
+ * 根据需求分配通道
+ * @param availableChannels 可用通道数组
+ * @param requirementBits 需求位数组
+ * @param size 数组的大小
+ * @return 分配成功返回1，否则返回0
+ */</span>
+<span class="token keyword">int</span> <span class="token function">allocateChannels</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span> availableChannels<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> requirementBits<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从最高位向最低位遍历</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> size <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> requirementBits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前位的可用通道数足够，则直接分配</span>
+            availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirementBits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算当前位及以上位的可用通道总数与需求总数</span>
+            <span class="token keyword">int</span> availableDecimal <span class="token operator">=</span> <span class="token function">binaryToDecimal</span><span class="token punctuation">(</span>availableChannels<span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> requirementDecimal <span class="token operator">=</span> <span class="token function">binaryToDecimal</span><span class="token punctuation">(</span>requirementBits<span class="token punctuation">,</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>availableDecimal <span class="token operator">&lt;</span> requirementDecimal<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果不够，则尝试从更高位借用通道</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>availableChannels<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        availableChannels<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token operator">--</span><span class="token punctuation">;</span>
+                        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 成功借用通道</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 无法借用通道，分配失败</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果足够，则进行相应调整</span>
+                availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-=</span> requirementBits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    availableChannels<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 向下一位借用通道</span>
+                <span class="token punctuation">}</span>
+                availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 成功分配通道</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> maxLevel<span class="token punctuation">;</span> <span class="token comment">// 存储最大级别</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>maxLevel<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入最大级别</span>
+
+    <span class="token comment">// 根据最大级别动态分配存储通道数的数组</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> channelCounts <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>maxLevel <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> maxLevel<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入每个级别的通道数</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> dataRequirement<span class="token punctuation">;</span> <span class="token comment">// 存储数据需求量</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>dataRequirement<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入数据需求量</span>
+
+    <span class="token keyword">int</span> size<span class="token punctuation">;</span>  
+        <span class="token comment">// 将数据需求量转换为二进制表示</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> requirementBits <span class="token operator">=</span> <span class="token function">decimalToBinary</span><span class="token punctuation">(</span>dataRequirement<span class="token punctuation">,</span> <span class="token operator">&amp;</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 动态分配数组以存储每个级别的可用通道数，初始化为0</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> availableChannels <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>size <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 根据输入的通道数，更新可用通道数组</span>
+    <span class="token keyword">int</span> usersServed <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化已服务的用户数为0</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> maxLevel<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;=</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前级别超过了需求的二进制表示长度，直接累加该级别的通道数到已服务用户数</span>
+            usersServed <span class="token operator">+=</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则，更新对应二进制位的可用通道数</span>
+            availableChannels<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> channelCounts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 循环尝试分配通道直到无法再分配</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">allocateChannels</span><span class="token punctuation">(</span>availableChannels<span class="token punctuation">,</span> requirementBits<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        usersServed<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 成功分配则用户数增加</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> usersServed<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最终可以服务的用户数</span>
+
+    <span class="token comment">// 释放之前动态分配的内存资源</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>channelCounts<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>requirementBits<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>availableChannels<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 程序结束</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_584"></a>完整用例</h2> 
+<h3><a id="1_585"></a>用例1</h3> 
+<pre><code class="prism language-input1">3
+5 3 2 1
+10
+</code></pre> 
+<h3><a id="2_593"></a>用例2</h3> 
+<pre><code class="prism language-input2">2
+0 0 5
+2
+</code></pre> 
+<h3><a id="3_601"></a>用例3</h3> 
+<pre><code class="prism language-input3">3
+1 1 1 1
+14
+</code></pre> 
+<h3><a id="4_609"></a>用例4</h3> 
+<pre><code class="prism language-input4">4
+2 3 1 0 4
+16
+</code></pre> 
+<h3><a id="5_617"></a>用例5</h3> 
+<pre><code class="prism language-input5">4
+4 5 6 7 8
+30
+</code></pre> 
+<h3><a id="6_625"></a>用例6</h3> 
+<pre><code class="prism language-input6">3
+10 10 10 10
+100000
+</code></pre> 
+<h3><a id="7_633"></a>用例7</h3> 
+<pre><code class="prism language-input7">10
+1 1 1 1 1 1 1 1 1 1 1
+100
+</code></pre> 
+<h3><a id="8_641"></a>用例8</h3> 
+<pre><code class="prism language-input8">19
+999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999
+1
+</code></pre> 
+<h3><a id="9_649"></a>用例9</h3> 
+<pre><code class="prism language-input9">5
+3 2 1 0 1 2
+1
+</code></pre> 
+<h3><a id="10_657"></a>用例10</h3> 
+<pre><code class="prism language-input10">9
+943 868 691 837 999 585 786 979 842 835
+669785
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/ac15ed0b49bc7a3dce026b7a6073cbfd.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="strstr_1"></a>题目描述:增强的strstr</h4> 
+<p>C 语言有一个库函数： char *strstr(const char *haystack, const char *needle) ，实现在字符串 haystack 中查找第一次出现字符串 needle 的位置，如果未找到则返回 null。</p> 
+<p>现要求实现一个strstr的增强函数，可以使用带可选段的字符串来模糊查询，与strstr一样返回首次查找到的字符串位置。</p> 
+<p>可选段使用“[]”标识，表示该位置是可选段中任意一个字符即可满足匹配条件。比如“a[bc]”表示可以匹配“ab”或“ac”。</p> 
+<p>注意目标字符串中可选段可能出现多次。</p> 
+<h4><a id="_11"></a>输入描述</h4> 
+<p>与strstr函数一样，输入参数是两个字符串指针，分别是源字符串和目标字符串。</p> 
+<h4><a id="_15"></a>输出描述</h4> 
+<p>与strstr函数不同，返回的是源字符串中，匹配子字符串相对于源字符串地址的偏移（从0开始算），如果没有匹配返回-1。</p> 
+<p>补充说明：源字符串中必定不包含‘[]’；目标字符串中‘[]’必定成对出现，且不会出现嵌套。</p> 
+<p>输入的字符串长度在[1,100]之间。</p> 
+<h5><a id="ACM_22"></a>ACM输入输出模式</h5> 
+<p>如果你经常使用<strong>Leetcode</strong>,会知道<strong>letcode</strong>是不需要编写输入输出函数的。但是华为OD机考使用的是 <strong>ACM 模式</strong>，需要手动编写输入和输出。</p> 
+<p>所以最好在牛-客上提前熟悉这种模式。例如C++使用<code>cin/cout</code>,python使用<code>input()/print()</code>。JavaScript使用node的<code>readline()</code>和<code>console.log()</code>。Java 使用<code>sacnner/system.out.print()</code></p> 
+<h4><a id="_29"></a>用例</h4> 
+<p>输入</p> 
+<pre><code>abcd
+b[cd]
+</code></pre> 
+<p>输出</p> 
+<pre><code>1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>相当于是在源字符串中查找bc或者bd，bc子字符串相对于abcd的偏移是1</p> 
+</blockquote> 
+<h4><a id="_48"></a>机考代码查重</h4> 
+<p>华为OD机考完成之后，官方会进行代码查重。<strong>华为 od 机考确实有很大的概率抽到原题</strong>。如果碰到了题库中的原题，一定不要直接使用题解中的代码，尤其是变量名，一定要修改，可以改成毫无意义的单词。除了变量名之外，代码的组织结构和逻辑一定要进行改变，这就要求在日常的刷题中，提前编写好属于自己的代码。</p> 
+<h4><a id="Java_54"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>regex<span class="token punctuation">.</span></span><span class="token class-name">Matcher</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>regex<span class="token punctuation">.</span></span><span class="token class-name">Pattern</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 读取源字符串和目标字符串</span>
+        <span class="token class-name">String</span> source <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> target <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 将目标字符串中的可选段标记转换为正则表达式的可选字符</span>
+        target <span class="token operator">=</span> target<span class="token punctuation">.</span><span class="token function">replaceAll</span><span class="token punctuation">(</span><span class="token string">"\\[(.*?)\\]"</span><span class="token punctuation">,</span> <span class="token string">"[$1]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 编译目标字符串为正则表达式模式</span>
+        <span class="token class-name">Pattern</span> pattern <span class="token operator">=</span> <span class="token class-name">Pattern</span><span class="token punctuation">.</span><span class="token function">compile</span><span class="token punctuation">(</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建匹配器，用于在源字符串中查找匹配的子字符串</span>
+        <span class="token class-name">Matcher</span> matcher <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token function">matcher</span><span class="token punctuation">(</span>source<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果找到匹配的子字符串，则输出匹配的子字符串在源字符串中的起始位置</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>matcher<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>matcher<span class="token punctuation">.</span><span class="token function">start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果没有找到匹配的子字符串，则输出-1</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p> 
+<h4><a id="_97"></a>完整用例</h4> 
+<h5><a id="1_98"></a>用例1</h5> 
+<pre><code class="prism language-input1">abcd
+b[cd]
+</code></pre> 
+<h5><a id="2_105"></a>用例2</h5> 
+<pre><code class="prism language-input2">abcdefg
+c[de]
+</code></pre> 
+<h5><a id="3_112"></a>用例3</h5> 
+<pre><code class="prism language-input3">hello world
+o[ ]w
+</code></pre> 
+<h5><a id="4_119"></a>用例4</h5> 
+<pre><code class="prism language-input4">123456789
+4[56]
+</code></pre> 
+<h5><a id="5_126"></a>用例5</h5> 
+<pre><code class="prism language-input5">abcde
+f[ghi]
+</code></pre> 
+<h5><a id="6_133"></a>用例6</h5> 
+<pre><code class="prism language-input6">abcdefg
+[aef]c[bd]e
+</code></pre> 
+<h5><a id="7_140"></a>用例7</h5> 
+<pre><code class="prism language-input7">abcde
+[ab]cd[e]
+</code></pre> 
+<h5><a id="8_147"></a>用例8</h5> 
+<pre><code class="prism language-input8">hello world
+h[eo]l[l ]o
+</code></pre> 
+<h5><a id="9_154"></a>用例9</h5> 
+<pre><code class="prism language-input9">abcdabcd
+a[bcd]a[bcd]
+</code></pre> 
+<h5><a id="10_161"></a>用例10</h5> 
+<pre><code class="prism language-input10">123456789
+1[23]4[56]7[89]
+</code></pre>
+                </div>
+</body>
+</html>

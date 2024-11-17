@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>给定一个由若干整数组成的数组nums，请检查数组是否是由某个子数组重复循环拼接而成，请输出这个最小的子数组。</p> 
+<h4><a id="_5"></a>输入描述</h4> 
+<p>第一行输入数组中元素个数n，1 ≤ n ≤ 100000</p> 
+<p>第二行输入数组的数字序列nums，以空格分割，0 ≤ nums[i] &lt; 10</p> 
+<h4><a id="_11"></a>输出描述</h4> 
+<p>输出最小的子数组的数字序列，以空格分割；</p> 
+<h4><a id="_15"></a>备注</h4> 
+<p>数组本身是其最大的子数组，循环1次可生成的自身；</p> 
+<h4><a id="_19"></a>用例</h4> 
+<p>输入</p> 
+<pre><code>9
+1 2 1 1 2 1 1 2 1
+</code></pre> 
+<p>输出</p> 
+<pre><code>1 2 1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>数组[1,2,1,1,2,1,1,2,1] 可由子数组[1,2,1]重复循环3次拼接而成</p> 
+</blockquote> 
+<h4><a id="__38"></a>解题思路 ：</h4> 
+<p>题目要求找到一个最小的子数组，使得原数组可以由这个子数组重复循环拼接而成。为了解决这个问题，我们可以借鉴KMP算法中的next数组的构建思想。</p> 
+<ol><li>首先，读取输入数据，包括数组长度和数组元素。</li><li>初始化一个next数组，用于存储KMP算法中的前缀信息。同时初始化两个索引，一个是前缀索引（prefixIndex），另一个是当前索引（currentIndex）。</li><li>使用KMP算法的思想构建next数组： 
+  <ul><li>如果当前元素与前缀元素相等，更新next数组，并将当前索引和前缀索引同时向前移动。</li><li>如果前缀索引大于0，但当前元素与前缀元素不相等，将前缀索引回退到前一个前缀。</li><li>如果前缀索引为0，但当前元素与前缀元素不相等，将当前索引向前移动。</li></ul> </li><li>当next数组构建完成后，获取next数组的最后一个值（lastNextValue）。根据这个值，我们可以计算子数组的长度（subArrayLength）。 
+  <ul><li>如果原数组长度减去lastNextValue能被原数组长度整除，那么子数组长度为原数组长度减去lastNextValue。</li><li>否则，子数组长度就是原数组长度。</li></ul> </li><li>最后，使用StringJoiner构建输出字符串，将子数组的元素添加到输出字符串中，并输出结果。</li></ol> 
+<h4><a id="C_54"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建输入流对象以读取用户输入</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token comment">// 读取数组长度</span>
+    <span class="token keyword">int</span> arrayLength<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    arrayLength <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取数组元素并将其转换为整数数组</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">nums</span><span class="token punctuation">(</span>arrayLength<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> arrayLength<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        iss <span class="token operator">&gt;&gt;</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化next数组，用于存储KMP算法中的前缀信息</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">next</span><span class="token punctuation">(</span>arrayLength<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化前缀索引</span>
+    <span class="token keyword">int</span> prefixIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化当前索引</span>
+    <span class="token keyword">int</span> currentIndex <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用KMP算法的思想构建next数组</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">&lt;</span> arrayLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前元素与前缀元素相等，则更新next数组</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nums<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span> <span class="token operator">==</span> nums<span class="token punctuation">[</span>prefixIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            next<span class="token punctuation">[</span>currentIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">++</span>prefixIndex<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>prefixIndex <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果前缀索引大于0，则回退到前一个前缀</span>
+            prefixIndex <span class="token operator">=</span> next<span class="token punctuation">[</span>prefixIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果前缀索引为0，则移动到下一个元素</span>
+            currentIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取next数组的最后一个值</span>
+    <span class="token keyword">int</span> lastNextValue <span class="token operator">=</span> next<span class="token punctuation">[</span>arrayLength <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 计算子数组长度</span>
+    <span class="token keyword">int</span> subArrayLength <span class="token operator">=</span> arrayLength <span class="token operator">%</span> <span class="token punctuation">(</span>arrayLength <span class="token operator">-</span> lastNextValue<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">?</span> arrayLength <span class="token operator">-</span> lastNextValue <span class="token operator">:</span> arrayLength<span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用ostringstream构建输出字符串</span>
+    ostringstream oss<span class="token punctuation">;</span>
+    <span class="token comment">// 将子数组的元素添加到输出字符串中</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> subArrayLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        oss <span class="token operator">&lt;&lt;</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> subArrayLength <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            oss <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 输出结果</span>
+    cout <span class="token operator">&lt;&lt;</span> oss<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JavaScript_123"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ 
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取用户输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">arrayLength</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">arrayElements</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将输入的字符串转换为整数数组</span>
+    <span class="token keyword">const</span> nums <span class="token operator">=</span> arrayElements<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> next <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token function">parseInt</span><span class="token punctuation">(</span>arrayLength<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">let</span> prefixIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> currentIndex <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用KMP算法的思想构建next数组</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">&lt;</span> nums<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>nums<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span> <span class="token operator">===</span> nums<span class="token punctuation">[</span>prefixIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        next<span class="token punctuation">[</span>currentIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">++</span>prefixIndex<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>prefixIndex <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        prefixIndex <span class="token operator">=</span> next<span class="token punctuation">[</span>prefixIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        currentIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取next数组的最后一个值</span>
+    <span class="token keyword">const</span> lastNextValue <span class="token operator">=</span> next<span class="token punctuation">[</span>nums<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 计算子数组长度</span>
+    <span class="token keyword">const</span> subArrayLength <span class="token operator">=</span> nums<span class="token punctuation">.</span>length <span class="token operator">%</span> <span class="token punctuation">(</span>nums<span class="token punctuation">.</span>length <span class="token operator">-</span> lastNextValue<span class="token punctuation">)</span> <span class="token operator">===</span> <span class="token number">0</span> <span class="token operator">?</span> nums<span class="token punctuation">.</span>length <span class="token operator">-</span> lastNextValue <span class="token operator">:</span> nums<span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+
+    <span class="token comment">// 构建输出字符串</span>
+    <span class="token keyword">const</span> output <span class="token operator">=</span> nums<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> subArrayLength<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>output<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span> 
+</code></pre> 
+<h4><a id="Java_169"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">StringJoiner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象以读取用户输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取数组长度</span>
+        <span class="token keyword">int</span> arrayLength <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取数组元素并将其转换为整数数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> nums <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化next数组，用于存储KMP算法中的前缀信息</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> next <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>arrayLength<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化前缀索引</span>
+        <span class="token keyword">int</span> prefixIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化当前索引</span>
+        <span class="token keyword">int</span> currentIndex <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 使用KMP算法的思想构建next数组</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>currentIndex <span class="token operator">&lt;</span> arrayLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前元素与前缀元素相等，则更新next数组</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>nums<span class="token punctuation">[</span>currentIndex<span class="token punctuation">]</span> <span class="token operator">==</span> nums<span class="token punctuation">[</span>prefixIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                next<span class="token punctuation">[</span>currentIndex<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">++</span>prefixIndex<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>prefixIndex <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果前缀索引大于0，则回退到前一个前缀</span>
+                prefixIndex <span class="token operator">=</span> next<span class="token punctuation">[</span>prefixIndex <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果前缀索引为0，则移动到下一个元素</span>
+                currentIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 获取next数组的最后一个值</span>
+        <span class="token keyword">int</span> lastNextValue <span class="token operator">=</span> next<span class="token punctuation">[</span>arrayLength <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算子数组长度</span>
+        <span class="token keyword">int</span> subArrayLength <span class="token operator">=</span> arrayLength <span class="token operator">%</span> <span class="token punctuation">(</span>arrayLength <span class="token operator">-</span> lastNextValue<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">?</span> arrayLength <span class="token operator">-</span> lastNextValue <span class="token operator">:</span> arrayLength<span class="token punctuation">;</span>
+
+        <span class="token comment">// 使用StringJoiner构建输出字符串</span>
+        <span class="token class-name">StringJoiner</span> sj <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringJoiner</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将子数组的元素添加到输出字符串中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> subArrayLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> sj<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>sj<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="Python_222"></a>Python</h4> 
+<pre><code class="prism language-python">
+<span class="token keyword">import</span> sys
+
+<span class="token comment"># 从控制台读取输入</span>
+input_lines <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取数组长度</span>
+array_length <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>input_lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取数组元素并将其转换为整数数组</span>
+nums <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> input_lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化next数组，用于存储KMP算法中的前缀信息</span>
+<span class="token builtin">next</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> array_length
+<span class="token comment"># 初始化前缀索引</span>
+prefix_index <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 初始化当前索引</span>
+current_index <span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token comment"># 使用KMP算法的思想构建next数组</span>
+<span class="token keyword">while</span> current_index <span class="token operator">&lt;</span> array_length<span class="token punctuation">:</span>
+    <span class="token comment"># 如果当前元素与前缀元素相等，则更新next数组</span>
+    <span class="token keyword">if</span> nums<span class="token punctuation">[</span>current_index<span class="token punctuation">]</span> <span class="token operator">==</span> nums<span class="token punctuation">[</span>prefix_index<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        prefix_index <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token builtin">next</span><span class="token punctuation">[</span>current_index<span class="token punctuation">]</span> <span class="token operator">=</span> prefix_index
+        current_index <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">elif</span> prefix_index <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果前缀索引大于0，则回退到前一个前缀</span>
+        prefix_index <span class="token operator">=</span> <span class="token builtin">next</span><span class="token punctuation">[</span>prefix_index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果前缀索引为0，则移动到下一个元素</span>
+        current_index <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 获取next数组的最后一个值</span>
+last_next_value <span class="token operator">=</span> <span class="token builtin">next</span><span class="token punctuation">[</span>array_length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+<span class="token comment"># 计算子数组长度</span>
+sub_array_length <span class="token operator">=</span> array_length <span class="token operator">-</span> last_next_value <span class="token keyword">if</span> array_length <span class="token operator">%</span> <span class="token punctuation">(</span>array_length <span class="token operator">-</span> last_next_value<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">else</span> array_length
+
+<span class="token comment"># 使用列表构建输出字符串</span>
+output <span class="token operator">=</span> <span class="token string">' '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>sub_array_length<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 输出结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>output<span class="token punctuation">)</span>
+
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_5" rel="nofollow">输入描述</a></li><li><a href="#_11" rel="nofollow">输出描述</a></li><li><a href="#_15" rel="nofollow">备注</a></li><li><a href="#_19" rel="nofollow">用例</a></li><li><a href="#__38" rel="nofollow">解题思路 ：</a></li><li><a href="#C_54" rel="nofollow">C++</a></li><li><a href="#JavaScript_123" rel="nofollow">JavaScript</a></li><li><a href="#Java_169" rel="nofollow">Java</a></li><li><a href="#Python_222" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

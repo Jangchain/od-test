@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>中秋节，公司分月饼，m 个员工，买了 n 个月饼，m ≤ n，每个员工至少分 1 个月饼，但可以分多个，<br> 单人分到最多月饼的个数是 Max1 ，单人分到第二多月饼个数是 Max2 ，Max1 - Max2 ≤ 3 ，<br> 单人分到第 n - 1 多月饼个数是 Max(n-1)，单人分到第n多月饼个数是 Max(n) ，Max(n-1) – Max(n) ≤ 3,<br> 问有多少种分月饼的方法？</p> 
+<h2><a id="_10"></a>输入描述</h2> 
+<p>每一行输入m n，表示m个员工，n个月饼，m ≤ n</p> 
+<h2><a id="_14"></a>输出描述</h2> 
+<p>输出有多少种月饼分法</p> 
+<h2><a id="1_18"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>2 4
+</code></pre> 
+<p>输出</p> 
+<pre><code>2
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>分法有2种:<br> 4 = 1 + 3<br> 4 = 2 + 2</p> 
+ <p>注意：1+3和3+1算一种分法</p> 
+</blockquote> 
+<h2><a id="2_39"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>3 5
+</code></pre> 
+<p>输出</p> 
+<pre><code>2
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>5 = 1 + 1 + 3<br> 5 = 1 + 2 + 2</p> 
+</blockquote> 
+<h2><a id="3_59"></a>用例3</h2> 
+<p>输入</p> 
+<pre><code>3 12
+</code></pre> 
+<p>输出</p> 
+<pre><code>6
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>满足要求的有6种分法：<br> 12 = 1 + 1 + 10（Max1 = 10, Max2 = 1，不满足Max1 - Max2 ≤ 3要求）<br> 12 = 1 + 2 + 9（Max1 = 9, Max2 = 2，不满足Max1 - Max2 ≤ 3要求）<br> 12 = 1 + 3 + 8（Max1 = 8, Max2 = 3，不满足Max1 - Max2 ≤ 3要求）<br> 12 = 1 + 4 + 7（Max1 = 7, Max2 = 4，Max3 = 1，满足要求）<br> 12 = 1 + 5 + 6（Max1 = 6, Max2 = 5，Max3 = 1，不满足要求）<br> 12 = 2 + 2 + 8（Max1 = 8, Max2 = 2，不满足要求）<br> 12 = 2 + 3 + 7（Max1 = 7, Max2 = 3，不满足要求）<br> 12 = 2 + 4 + 6（Max1 = 6, Max2 = 4，Max3 = 2，满足要求）<br> 12 = 2 + 5 + 5（Max1 = 5, Max2 = 2，满足要求）<br> 12 = 3 + 3 + 6（Max1 = 6, Max2 = 3，满足要求）<br> 12 = 3 + 4 + 5（Max1 = 5, Max2 = 4，Max3 = 3，满足要求）<br> 12 = 4 + 4 + 4（Max1 = 4，满足要求）</p> 
+</blockquote> 
+<h2><a id="_88"></a>解题思路</h2> 
+<ol><li> <p><code>distribute</code> 函数接收五个参数：员工数量 <code>m</code>，剩余月饼数量 <code>remaining</code>，当前允许的最大月饼数量 <code>maxAllowed</code>，当前处理的员工索引 <code>index</code>，以及一个记录每个员工分配月饼数量的向量 <code>distribution</code>。</p> </li><li> <p><strong>递归终止条件</strong>：如果当前处理的是最后一个员工（<code>index == m - 1</code>），则检查是否可以将所有剩余的月饼分配给他，同时满足月饼数量差的限制（不超过3）。如果可以，返回1表示找到一种方法；如果不可以，返回0表示这条路径不可行。</p> </li><li> <p><strong>初始化方法数</strong>：变量 <code>ways</code> 用于记录总的分配方法数，初始值为0。</p> </li><li> <p><strong>确定分配范围</strong>：计算当前员工可以分配的月饼数量的起始值 <code>start</code> 和结束值 <code>end</code>。起始值是上一个员工分配的月饼数减3（或者1，如果是第一个员工），结束值是剩余月饼数和 <code>maxAllowed</code> 中的较小值减去为剩下的员工至少保留1个月饼的数量。</p> </li><li> <p><strong>遍历分配</strong>：从 <code>start</code> 到 <code>end</code> 遍历所有可能分配给当前员工的月饼数量。对于每个可能的分配数量 <code>i</code>：</p> 
+  <ul><li>将 <code>i</code> 个月饼分配给当前员工，并记录在 <code>distribution</code> 中。</li><li>如果这个分配满足月饼数量差的限制（对于第一个员工没有前一个月饼数，所以不需要比较），则递归调用 <code>distribute</code> 函数处理下一个员工，剩余月饼数减去 <code>i</code>，并更新 <code>maxAllowed</code> 为 <code>i</code>（因为下一个员工分配的月饼数不能超过当前员工）。</li><li>将递归调用返回的方法数加到 <code>ways</code> 上。</li></ul> </li><li> <p><strong>返回结果</strong>：函数返回总的分配方法数 <code>ways</code>。</p> </li></ol> 
+<p>这个算法通过递归遍历所有可能的分配组合，并在每一步检查是否满足条件，直到找到所有合法的分配方法。</p> 
+<h2><a id="C_109"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 递归分配月饼的函数</span>
+<span class="token keyword">int</span> <span class="token function">distribute</span><span class="token punctuation">(</span><span class="token keyword">int</span> m<span class="token punctuation">,</span> <span class="token keyword">int</span> remaining<span class="token punctuation">,</span> <span class="token keyword">int</span> maxAllowed<span class="token punctuation">,</span> <span class="token keyword">int</span> index<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> distribution<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前是最后一个员工</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 检查剩余的月饼是否可以分配给最后一个员工</span>
+        <span class="token comment">// 并且满足最大和最小月饼数差值不超过3的条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>remaining <span class="token operator">&lt;=</span> maxAllowed <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> remaining<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果满足条件，返回1种方法</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果不满足条件，返回0种方法</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> ways <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化分配方法数为0</span>
+    <span class="token comment">// 确定当前员工可以分配的月饼数的起始值</span>
+    <span class="token keyword">int</span> start <span class="token operator">=</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token number">3</span><span class="token punctuation">;</span>
+    <span class="token comment">// 确定当前员工可以分配的月饼数的结束值</span>
+    <span class="token keyword">int</span> end <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>remaining <span class="token operator">-</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> maxAllowed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有可能的分配数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> start<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> end<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        distribution<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 尝试分配i个月饼给当前员工</span>
+        <span class="token comment">// 如果当前分配满足最大和最小月饼数差值不超过3的条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 递归调用distribute函数，计算剩余员工和月饼的分配方法</span>
+            ways <span class="token operator">+=</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> remaining <span class="token operator">-</span> i<span class="token punctuation">,</span> i<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> ways<span class="token punctuation">;</span> <span class="token comment">// 返回总的分配方法数</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> m<span class="token punctuation">,</span> n<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> m <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span> <span class="token comment">// 读取员工数量m和月饼数量n</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">distribution</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个大小为m的向量用于存储分配情况</span>
+    <span class="token comment">// 调用distribute函数并输出返回的分配方法总数</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_158"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">int</span> m <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取员工数量m</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取月饼数量n</span>
+        <span class="token comment">// 调用distribute方法并打印返回的分配方法总数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        sc<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 递归分配月饼的方法</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">distribute</span><span class="token punctuation">(</span><span class="token keyword">int</span> m<span class="token punctuation">,</span> <span class="token keyword">int</span> remaining<span class="token punctuation">,</span> <span class="token keyword">int</span> maxAllowed<span class="token punctuation">,</span> <span class="token keyword">int</span> index<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> distribution<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前是最后一个员工</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 检查剩余的月饼是否可以分配给最后一个员工</span>
+            <span class="token comment">// 并且满足最大和最小月饼数差值不超过3的条件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>remaining <span class="token operator">&lt;=</span> maxAllowed <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> remaining<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果满足条件，返回1种方法</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果不满足条件，返回0种方法</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> ways <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化分配方法数为0</span>
+        <span class="token comment">// 确定当前员工可以分配的月饼数的起始值</span>
+        <span class="token keyword">int</span> start <span class="token operator">=</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token number">3</span><span class="token punctuation">;</span>
+        <span class="token comment">// 确定当前员工可以分配的月饼数的结束值</span>
+        <span class="token keyword">int</span> end <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>remaining <span class="token operator">-</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> maxAllowed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历所有可能的分配数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> start<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> end<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            distribution<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 尝试分配i个月饼给当前员工</span>
+            <span class="token comment">// 如果当前分配满足最大和最小月饼数差值不超过3的条件</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 递归调用distribute方法，计算剩余员工和月饼的分配方法</span>
+                ways <span class="token operator">+=</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> remaining <span class="token operator">-</span> i<span class="token punctuation">,</span> i<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">return</span> ways<span class="token punctuation">;</span> <span class="token comment">// 返回总的分配方法数</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_206"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 递归分配月饼的函数</span>
+<span class="token keyword">function</span> <span class="token function">distribute</span><span class="token punctuation">(</span><span class="token parameter">m<span class="token punctuation">,</span> remaining<span class="token punctuation">,</span> maxAllowed<span class="token punctuation">,</span> index<span class="token punctuation">,</span> distribution</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 如果当前是最后一个员工</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">===</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 检查剩余的月饼是否可以分配给最后一个员工</span>
+    <span class="token comment">// 并且满足最大和最小月饼数差值不超过3的条件</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>remaining <span class="token operator">&lt;=</span> maxAllowed <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>index <span class="token operator">===</span> <span class="token number">0</span> <span class="token operator">||</span> Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> remaining<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果满足条件，返回1种方法</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果不满足条件，返回0种方法</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">let</span> ways <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化分配方法数为0</span>
+  <span class="token comment">// 确定当前员工可以分配的月饼数的起始值</span>
+  <span class="token keyword">let</span> start <span class="token operator">=</span> <span class="token punctuation">(</span>index <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token number">3</span><span class="token punctuation">;</span>
+  <span class="token comment">// 确定当前员工可以分配的月饼数的结束值</span>
+  <span class="token keyword">let</span> end <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>remaining <span class="token operator">-</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> maxAllowed<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历所有可能的分配数量</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> start<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> end<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    distribution<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 尝试分配i个月饼给当前员工</span>
+    <span class="token comment">// 如果当前分配满足最大和最小月饼数差值不超过3的条件</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">===</span> <span class="token number">0</span> <span class="token operator">||</span> Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 递归调用distribute函数，计算剩余员工和月饼的分配方法</span>
+      ways <span class="token operator">+=</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> remaining <span class="token operator">-</span> i<span class="token punctuation">,</span> i<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">return</span> ways<span class="token punctuation">;</span> <span class="token comment">// 返回总的分配方法数</span>
+<span class="token punctuation">}</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>m<span class="token punctuation">,</span> n<span class="token punctuation">]</span> <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 调用distribute函数并输出返回的分配方法总数</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token function">Array</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_256"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 递归分配月饼的函数</span>
+<span class="token keyword">def</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> remaining<span class="token punctuation">,</span> max_allowed<span class="token punctuation">,</span> index<span class="token punctuation">,</span> distribution<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果当前是最后一个员工</span>
+    <span class="token keyword">if</span> index <span class="token operator">==</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token comment"># 检查剩余的月饼是否可以分配给最后一个员工</span>
+        <span class="token comment"># 并且满足最大和最小月饼数差值不超过3的条件</span>
+        <span class="token keyword">if</span> remaining <span class="token operator">&lt;=</span> max_allowed <span class="token keyword">and</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">or</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> remaining<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token number">1</span>  <span class="token comment"># 如果满足条件，返回1种方法</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>  <span class="token comment"># 如果不满足条件，返回0种方法</span>
+
+    ways <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 初始化分配方法数为0</span>
+    <span class="token comment"># 确定当前员工可以分配的月饼数的起始值</span>
+    start <span class="token operator">=</span> <span class="token number">1</span> <span class="token keyword">if</span> index <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">else</span> distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token number">3</span>
+    <span class="token comment"># 确定当前员工可以分配的月饼数的结束值</span>
+    end <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>remaining <span class="token operator">-</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> max_allowed<span class="token punctuation">)</span>
+
+    <span class="token comment"># 遍历所有可能的分配数量</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span> end <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        distribution<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> i  <span class="token comment"># 尝试分配i个月饼给当前员工</span>
+        <span class="token comment"># 如果当前分配满足最大和最小月饼数差值不超过3的条件</span>
+        <span class="token keyword">if</span> index <span class="token operator">==</span> <span class="token number">0</span> <span class="token keyword">or</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">:</span>
+            <span class="token comment"># 递归调用distribute函数，计算剩余员工和月饼的分配方法</span>
+            ways <span class="token operator">+=</span> distribute<span class="token punctuation">(</span>m<span class="token punctuation">,</span> remaining <span class="token operator">-</span> i<span class="token punctuation">,</span> i<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> ways  <span class="token comment"># 返回总的分配方法数</span>
+
+<span class="token comment"># 主函数，程序的入口点</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    m<span class="token punctuation">,</span> n <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 调用distribute函数并打印返回的分配方法总数</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>distribute<span class="token punctuation">(</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> m<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_292"></a>C语言</h2> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 递归分配月饼的函数</span>
+<span class="token keyword">int</span> <span class="token function">distribute</span><span class="token punctuation">(</span><span class="token keyword">int</span> m<span class="token punctuation">,</span> <span class="token keyword">int</span> remaining<span class="token punctuation">,</span> <span class="token keyword">int</span> maxAllowed<span class="token punctuation">,</span> <span class="token keyword">int</span> index<span class="token punctuation">,</span> <span class="token keyword">int</span> distribution<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前是最后一个员工</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 检查剩余的月饼是否可以分配给最后一个员工</span>
+        <span class="token comment">// 并且满足最大和最小月饼数差值不超过3的条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>remaining <span class="token operator">&lt;=</span> maxAllowed <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> remaining<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果满足条件，返回1种方法</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果不满足条件，返回0种方法</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> ways <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化分配方法数为0</span>
+    <span class="token comment">// 确定当前员工可以分配的月饼数的起始值</span>
+    <span class="token keyword">int</span> start <span class="token operator">=</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token number">3</span><span class="token punctuation">;</span>
+    <span class="token comment">// 确定当前员工可以分配的月饼数的结束值</span>
+    <span class="token keyword">int</span> end <span class="token operator">=</span> <span class="token punctuation">(</span>remaining <span class="token operator">-</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> maxAllowed<span class="token punctuation">)</span> <span class="token operator">?</span> remaining <span class="token operator">-</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">:</span> maxAllowed<span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有可能的分配数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> start<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> end<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        distribution<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span> <span class="token comment">// 尝试分配i个月饼给当前员工</span>
+        <span class="token comment">// 如果当前分配满足最大和最小月饼数差值不超过3的条件</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token function">abs</span><span class="token punctuation">(</span>distribution<span class="token punctuation">[</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 递归调用distribute函数，计算剩余员工和月饼的分配方法</span>
+            ways <span class="token operator">+=</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> remaining <span class="token operator">-</span> i<span class="token punctuation">,</span> i<span class="token punctuation">,</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> ways<span class="token punctuation">;</span> <span class="token comment">// 返回总的分配方法数</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> m<span class="token punctuation">,</span> n<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取员工数量m和月饼数量n</span>
+    <span class="token keyword">int</span> <span class="token operator">*</span>distribution <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>m <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 动态分配数组用于存储分配情况</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        distribution<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化分配数组</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 调用distribute函数并输出返回的分配方法总数</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> <span class="token function">distribute</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> n<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> distribution<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>distribution<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 释放分配的内存</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_342"></a>完整用例</h2> 
+<h3><a id="1_344"></a>用例1</h3> 
+<pre><code class="prism language-input1">2 4
+</code></pre> 
+<h3><a id="2_350"></a>用例2</h3> 
+<pre><code class="prism language-input2">3 5
+</code></pre> 
+<h3><a id="3_356"></a>用例3</h3> 
+<pre><code class="prism language-input3">3 12
+</code></pre> 
+<h3><a id="4_362"></a>用例4</h3> 
+<pre><code class="prism language-input4">4 10
+</code></pre> 
+<h3><a id="5_368"></a>用例5</h3> 
+<pre><code class="prism language-input5">5 20
+</code></pre> 
+<h3><a id="6_374"></a>用例6</h3> 
+<pre><code class="prism language-input6">6 18
+</code></pre> 
+<h3><a id="7_380"></a>用例7</h3> 
+<pre><code class="prism language-input7">4 15
+</code></pre> 
+<h3><a id="8_386"></a>用例8</h3> 
+<pre><code class="prism language-input8">3 6
+</code></pre> 
+<h3><a id="9_392"></a>用例9</h3> 
+<pre><code class="prism language-input9">7 21
+</code></pre> 
+<h3><a id="10_398"></a>用例10</h3> 
+<pre><code class="prism language-input10">8 24
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_10" rel="nofollow">输入描述</a></li><li><a href="#_14" rel="nofollow">输出描述</a></li><li><a href="#1_18" rel="nofollow">用例1</a></li><li><a href="#2_39" rel="nofollow">用例2</a></li><li><a href="#3_59" rel="nofollow">用例3</a></li><li><a href="#_88" rel="nofollow">解题思路</a></li><li><a href="#C_109" rel="nofollow">C++</a></li><li><a href="#Java_158" rel="nofollow">Java</a></li><li><a href="#javaScript_206" rel="nofollow">javaScript</a></li><li><a href="#Python_256" rel="nofollow">Python</a></li><li><a href="#C_292" rel="nofollow">C语言</a></li><li><a href="#_342" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_344" rel="nofollow">用例1</a></li><li><a href="#2_350" rel="nofollow">用例2</a></li><li><a href="#3_356" rel="nofollow">用例3</a></li><li><a href="#4_362" rel="nofollow">用例4</a></li><li><a href="#5_368" rel="nofollow">用例5</a></li><li><a href="#6_374" rel="nofollow">用例6</a></li><li><a href="#7_380" rel="nofollow">用例7</a></li><li><a href="#8_386" rel="nofollow">用例8</a></li><li><a href="#9_392" rel="nofollow">用例9</a></li><li><a href="#10_398" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/13fe82e454dc397fd3d51c8f5f779393.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

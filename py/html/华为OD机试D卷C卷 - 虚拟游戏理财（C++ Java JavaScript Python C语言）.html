@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>在一款虚拟游戏中生活，你必须进行投资以增强在虚拟游戏中的资产以免被淘汰出局。</p> 
+<p>现有一家Bank，它提供有若干理财产品 m 个，风险及投资回报不同，你有 N（元）进行投资，能接收的总风险值为X。</p> 
+<p>你要在可接受范围内选择最优的投资方式获得最大回报。</p> 
+<p>备注：</p> 
+<ul><li>在虚拟游戏中，每项投资风险值相加为总风险值；</li><li>在虚拟游戏中，最多只能投资2个理财产品；</li><li>在虚拟游戏中，最小单位为整数，不能拆分为小数；</li><li>投资额*回报率=投资回报</li></ul> 
+<h2><a id="_19"></a>输入描述</h2> 
+<p>第一行：</p> 
+<ul><li> <p>产品数（取值范围[1,20]）</p> </li><li> <p>总投资额（整数，取值范围[1, 10000]）</p> </li><li> <p>可接受的总风险（整数，取值范围[1,200]）</p> </li></ul> 
+<p>第二行：产品投资回报率序列，输入为整数，取值范围[1,60]</p> 
+<p>第三行：产品风险值序列，输入为整数，取值范围[1, 100]</p> 
+<p>第四行：最大投资额度序列，输入为整数，取值范围[1, 10000]</p> 
+<h2><a id="_35"></a>输出描述</h2> 
+<p>每个产品的投资额序列</p> 
+<h2><a id="_39"></a>用例</h2> 
+<table><thead><tr><th>输入</th><th>5 100 10 <br>10 20 30 40 50 <br>3 4 5 6 10 <br>20 30 20 40 30</th></tr></thead><tbody><tr><td>输出</td><td>0 30 0 40 0</td></tr><tr><td>说明</td><td>投资第二项30个单位，第四项40个单位，总的投资风险为两项相加为4+6=10</td></tr></tbody></table> 
+<h2><a id="_48"></a>解题思路</h2> 
+<p>在满足总风险不超过容忍度和总投资额不超过预算的前提下，通过遍历选择<strong>单个</strong>或<strong>两个</strong>理财产品的组合来最大化投资回报。</p> 
+<p>伪代码如下：</p> 
+<ol><li>初始化最大回报值为0。</li><li>遍历所有理财产品：<br> a. 如果单个产品的风险值和投资额均不超过限制，考虑其回报值。<br> b. 更新最大回报值。</li><li>再次遍历所有理财产品组合（两两配对）：<br> a. 如果两个产品的风险值之和和投资额之和均不超过限制，考虑这两个产品的回报值之和。<br> b. 更新最大回报值。</li><li>返回最大回报值。</li></ol> 
+<h2><a id="C_63"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取一行输入</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> numbers<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> num<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> num<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 将字符串分割并转换为整数数组</span>
+        numbers<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> numbers<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取投资项目数量m、总投资额N和风险容忍度X</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> tmp <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> m <span class="token operator">=</span> tmp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> N <span class="token operator">=</span> tmp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> X <span class="token operator">=</span> tmp<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取每个项目的预期回报率</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> returns <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取每个项目的风险值</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> risks <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取每个项目的最大投资额</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> maxInvestments <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化最大回报为0</span>
+    <span class="token keyword">int</span> maxReturn <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化最大回报对应的投资方案数组</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">bestInvestments</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有项目</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果单个项目的风险在容忍度范围内</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> X<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算对项目i的投资额，不超过总投资额N和项目i的最大投资额</span>
+            <span class="token keyword">int</span> investmentForI <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 计算当前回报</span>
+            <span class="token keyword">int</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 更新最大回报</span>
+                maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span>
+                <span class="token comment">// 重置最佳投资方案数组，并为项目i分配投资额</span>
+                <span class="token function">fill</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> bestInvestments<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 遍历项目i之后的项目，寻找两个项目的组合投资方案</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果两个项目的风险总和在容忍度范围内</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> risks<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> X<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> investmentForI<span class="token punctuation">,</span> investmentForJ<span class="token punctuation">;</span>
+                <span class="token comment">// 根据预期回报率决定投资额分配</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果项目i的回报率高于项目j，优先投资项目i</span>
+                    investmentForI <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    investmentForJ <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N <span class="token operator">-</span> investmentForI<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果项目j的回报率高于项目i，优先投资项目j</span>
+                    investmentForJ <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    investmentForI <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N <span class="token operator">-</span> investmentForJ<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 计算当前两个项目组合的回报</span>
+                <span class="token keyword">int</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> investmentForJ <span class="token operator">*</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 更新最大回报</span>
+                    maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span>
+                    <span class="token comment">// 重置最佳投资方案数组，并为两个项目分配投资额</span>
+                    <span class="token function">fill</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> bestInvestments<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span>
+                    bestInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForJ<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最佳投资方案</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> investment <span class="token operator">:</span> bestInvestments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> investment <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    cout <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_158"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">StringJoiner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于获取用户输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入并将其分割为字符串数组，然后转换为整数数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> tmp <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取投资项目数量m、总投资额N和风险容忍度X</span>
+        <span class="token keyword">int</span> m <span class="token operator">=</span> tmp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> tmp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">X</span> <span class="token operator">=</span> tmp<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取每个项目的预期回报率</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> returns <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取每个项目的风险值</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> risks <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取每个项目的最大投资额</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> maxInvestments <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化最大回报为0</span>
+        <span class="token keyword">int</span> maxReturn <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化最大回报对应的投资方案数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bestInvestments <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历所有项目</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果单个项目的风险在容忍度范围内</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token class-name">X</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算对项目i的投资额，不超过总投资额N和项目i的最大投资额</span>
+                <span class="token keyword">int</span> investmentForI <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token class-name">N</span><span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 计算当前回报</span>
+                <span class="token keyword">int</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 更新最大回报</span>
+                    maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span>
+                    <span class="token comment">// 重置最佳投资方案数组，并为项目i分配投资额</span>
+                    bestInvestments <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 遍历项目i之后的项目，寻找两个项目的组合投资方案</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果两个项目的风险总和在容忍度范围内</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> risks<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token class-name">X</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">int</span> investmentForI<span class="token punctuation">,</span> investmentForJ<span class="token punctuation">;</span>
+                    <span class="token comment">// 根据预期回报率决定投资额分配</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token comment">// 如果项目i的回报率高于项目j，优先投资项目i</span>
+                        investmentForI <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token class-name">N</span><span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        investmentForJ <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token class-name">N</span> <span class="token operator">-</span> investmentForI<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token comment">// 如果项目j的回报率高于项目i，优先投资项目j</span>
+                        investmentForJ <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token class-name">N</span><span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        investmentForI <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token class-name">N</span> <span class="token operator">-</span> investmentForJ<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token comment">// 计算当前两个项目组合的回报</span>
+                    <span class="token keyword">int</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> investmentForJ <span class="token operator">*</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token comment">// 更新最大回报</span>
+                        maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span>
+                        <span class="token comment">// 重置最佳投资方案数组，并为两个项目分配投资额</span>
+                        bestInvestments <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>m<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                        bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span>
+                        bestInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForJ<span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 创建StringJoiner对象，用于构建输出格式</span>
+        <span class="token class-name">StringJoiner</span> sj <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringJoiner</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历最佳投资方案数组，将投资额添加到StringJoiner中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> investment <span class="token operator">:</span> bestInvestments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sj<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>investment<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最佳投资方案</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>sj<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 关闭Scanner对象</span>
+        sc<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_250"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 用于存储输入行的数组</span>
+<span class="token keyword">const</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入行的事件监听</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 当输入完成时，开始处理数据</span>
+
+  <span class="token comment">// 读取一行输入并将其转换为整数数组的函数</span>
+  <span class="token keyword">const</span> <span class="token function-variable function">readIntArray</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 读取投资项目数量m、总投资额N和风险容忍度X</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>m<span class="token punctuation">,</span> <span class="token constant">N</span><span class="token punctuation">,</span> <span class="token constant">X</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 读取每个项目的预期回报率</span>
+  <span class="token keyword">const</span> returns <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 读取每个项目的风险值</span>
+  <span class="token keyword">const</span> risks <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 读取每个项目的最大投资额</span>
+  <span class="token keyword">const</span> maxInvestments <span class="token operator">=</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span>lines<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化最大回报为0</span>
+  <span class="token keyword">let</span> maxReturn <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化最大回报对应的投资方案数组</span>
+  <span class="token keyword">let</span> bestInvestments <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历所有项目</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 检查项目i的风险是否在容忍度X以内</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token constant">X</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 计算项目i的投资额，不超过总投资额N和项目i的最大投资额</span>
+      <span class="token keyword">const</span> investmentForI <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 计算当前项目的回报</span>
+      <span class="token keyword">const</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 更新最大回报</span>
+        maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span>
+        <span class="token comment">// 重置最佳投资方案数组，并为项目i分配投资额</span>
+        bestInvestments <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历项目i之后的项目，寻找两个项目的组合投资方案</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 如果两个项目的风险总和在容忍度范围内</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> risks<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token constant">X</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> investmentForI<span class="token punctuation">,</span> investmentForJ<span class="token punctuation">;</span>
+        <span class="token comment">// 根据预期回报率决定投资额分配</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 如果项目i的回报率高于项目j，优先投资项目i</span>
+          investmentForI <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token comment">// 计算项目j的剩余可投资额</span>
+          investmentForJ <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token constant">N</span> <span class="token operator">-</span> investmentForI<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 如果项目j的回报率高于项目i，优先投资项目j</span>
+          investmentForJ <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token comment">// 计算项目i的剩余可投资额</span>
+          investmentForI <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token constant">N</span> <span class="token operator">-</span> investmentForJ<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 计算两个项目组合的当前回报</span>
+        <span class="token keyword">const</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> investmentForJ <span class="token operator">*</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 更新最大回报</span>
+          maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span>
+          <span class="token comment">// 重置最佳投资方案数组，并为两个项目分配投资额</span>
+          bestInvestments <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span>
+          bestInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForJ<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出最佳投资方案</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_344"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取一行输入并将其转换为整数列表的函数</span>
+<span class="token keyword">def</span> <span class="token function">read_int_array</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 使用input()替换sys.stdin.readline()以适应在线编译器</span>
+    <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 读取投资项目数量m、总投资额N和风险容忍度X</span>
+m<span class="token punctuation">,</span> N<span class="token punctuation">,</span> X <span class="token operator">=</span> read_int_array<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取每个项目的预期回报率</span>
+returns <span class="token operator">=</span> read_int_array<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取每个项目的风险值</span>
+risks <span class="token operator">=</span> read_int_array<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取每个项目的最大投资额</span>
+max_investments <span class="token operator">=</span> read_int_array<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化最大回报为0</span>
+max_return <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 初始化最大回报对应的投资方案列表</span>
+best_investments <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> m
+
+<span class="token comment"># 遍历所有项目</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 检查项目i的风险是否在容忍度X以内</span>
+    <span class="token keyword">if</span> risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> X<span class="token punctuation">:</span>
+        <span class="token comment"># 计算项目i的投资额，不超过总投资额N和项目i的最大投资额</span>
+        investment_for_i <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> max_investments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># 计算当前项目的回报</span>
+        current_return <span class="token operator">=</span> investment_for_i <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        <span class="token comment"># 如果当前回报大于已知的最大回报</span>
+        <span class="token keyword">if</span> current_return <span class="token operator">&gt;</span> max_return<span class="token punctuation">:</span>
+            <span class="token comment"># 更新最大回报</span>
+            max_return <span class="token operator">=</span> current_return
+            <span class="token comment"># 重置最佳投资方案列表，并为项目i分配投资额</span>
+            best_investments <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> m
+            best_investments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investment_for_i
+
+    <span class="token comment"># 遍历项目i之后的项目，寻找两个项目的组合投资方案</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果两个项目的风险总和在容忍度范围内</span>
+        <span class="token keyword">if</span> risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> risks<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> X<span class="token punctuation">:</span>
+            <span class="token comment"># 根据预期回报率决定投资额分配</span>
+            <span class="token keyword">if</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果项目i的回报率高于项目j，优先投资项目i</span>
+                investment_for_i <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> max_investments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token comment"># 计算项目j的剩余可投资额</span>
+                investment_for_j <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>N <span class="token operator">-</span> investment_for_i<span class="token punctuation">,</span> max_investments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果项目j的回报率高于项目i，优先投资项目j</span>
+                investment_for_j <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> max_investments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token comment"># 计算项目i的剩余可投资额</span>
+                investment_for_i <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>N <span class="token operator">-</span> investment_for_j<span class="token punctuation">,</span> max_investments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token comment"># 计算两个项目组合的当前回报</span>
+            current_return <span class="token operator">=</span> investment_for_i <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> investment_for_j <span class="token operator">*</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span>
+            <span class="token comment"># 如果当前回报大于已知的最大回报</span>
+            <span class="token keyword">if</span> current_return <span class="token operator">&gt;</span> max_return<span class="token punctuation">:</span>
+                <span class="token comment"># 更新最大回报</span>
+                max_return <span class="token operator">=</span> current_return
+                <span class="token comment"># 重置最佳投资方案列表，并为两个项目分配投资额</span>
+                best_investments <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> m
+                best_investments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investment_for_i
+                best_investments<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> investment_for_j
+
+<span class="token comment"># 输出最佳投资方案</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">,</span> best_investments<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_414"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span>  <span class="token comment">// 导入标准输入输出库，用于输入输出</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span> <span class="token comment">// 导入字符串操作库，用于处理字符串</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_PRODUCTS</span> <span class="token expression"><span class="token number">20</span> </span><span class="token comment">// 定义最大产品数量常量</span></span>
+
+<span class="token comment">// 用于读取整数数组的函数</span>
+<span class="token keyword">void</span> <span class="token function">readIntArray</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>arr<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 循环读取输入的整数并存储到数组中</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">min</span><span class="token punctuation">(</span><span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> a <span class="token operator">&lt;</span> b <span class="token operator">?</span> a <span class="token operator">:</span> b<span class="token punctuation">;</span> <span class="token comment">// 返回两个整数中较小的一个</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> m<span class="token punctuation">,</span> N<span class="token punctuation">,</span> X<span class="token punctuation">;</span> <span class="token comment">// 分别代表产品数、总投资额和可接受的总风险</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">,</span> <span class="token operator">&amp;</span>X<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取这三个值</span>
+
+    <span class="token keyword">int</span> returns<span class="token punctuation">[</span>MAX_PRODUCTS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储每个产品的投资回报率</span>
+    <span class="token function">readIntArray</span><span class="token punctuation">(</span>returns<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取投资回报率</span>
+
+    <span class="token keyword">int</span> risks<span class="token punctuation">[</span>MAX_PRODUCTS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储每个产品的风险值</span>
+    <span class="token function">readIntArray</span><span class="token punctuation">(</span>risks<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取风险值</span>
+
+    <span class="token keyword">int</span> maxInvestments<span class="token punctuation">[</span>MAX_PRODUCTS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储每个产品的最大投资额度</span>
+    <span class="token function">readIntArray</span><span class="token punctuation">(</span>maxInvestments<span class="token punctuation">,</span> m<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取最大投资额度</span>
+
+    <span class="token keyword">int</span> maxReturn <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最大回报为0</span>
+    <span class="token keyword">int</span> bestInvestments<span class="token punctuation">[</span>MAX_PRODUCTS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最佳投资方案数组，初始值全为0</span>
+
+    <span class="token comment">// 遍历所有产品，尝试找到最佳的投资组合</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果单个产品的风险在可接受范围内</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> X<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算对产品i的投资额，不超过总投资额N和产品i的最大投资额</span>
+            <span class="token keyword">int</span> investmentForI <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 计算当前投资的回报</span>
+            <span class="token keyword">int</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span> <span class="token comment">// 更新最大回报</span>
+                <span class="token function">memset</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 重置最佳投资方案数组</span>
+                bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span> <span class="token comment">// 为产品i分配投资额</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 遍历产品i之后的产品，寻找两个产品的组合投资方案</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果两个产品的风险总和在可接受范围内</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>risks<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> risks<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> X<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> investmentForI<span class="token punctuation">,</span> investmentForJ<span class="token punctuation">;</span>
+                <span class="token comment">// 根据回报率决定投资额分配</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果产品i的回报率高于产品j，优先投资产品i</span>
+                    investmentForI <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    investmentForJ <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N <span class="token operator">-</span> investmentForI<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果产品j的回报率高于产品i，优先投资产品j</span>
+                    investmentForJ <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    investmentForI <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>N <span class="token operator">-</span> investmentForJ<span class="token punctuation">,</span> maxInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 计算当前两个产品组合的回报</span>
+                <span class="token keyword">int</span> currentReturn <span class="token operator">=</span> investmentForI <span class="token operator">*</span> returns<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> investmentForJ <span class="token operator">*</span> returns<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果当前回报大于已知的最大回报</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>currentReturn <span class="token operator">&gt;</span> maxReturn<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    maxReturn <span class="token operator">=</span> currentReturn<span class="token punctuation">;</span> <span class="token comment">// 更新最大回报</span>
+                    <span class="token function">memset</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>bestInvestments<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 重置最佳投资方案数组</span>
+                    bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForI<span class="token punctuation">;</span> <span class="token comment">// 为产品i分配投资额</span>
+                    bestInvestments<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> investmentForJ<span class="token punctuation">;</span> <span class="token comment">// 为产品j分配投资额</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最佳投资方案</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d "</span><span class="token punctuation">,</span> bestInvestments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印每个产品的投资额</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印换行符</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 程序结束</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_505"></a>完整用例</h2> 
+<h3><a id="1_507"></a>用例1</h3> 
+<pre><code class="prism language-input1">1 1000 10
+10
+5
+1000
+</code></pre> 
+<h3><a id="2_516"></a>用例2</h3> 
+<pre><code class="prism language-input2">2 500 15
+10 20
+7 8
+300 400
+</code></pre> 
+<h3><a id="3_525"></a>用例3</h3> 
+<pre><code class="prism language-input3">3 2000 50
+15 25 35
+10 20 30
+500 1000 1500
+</code></pre> 
+<h3><a id="4_534"></a>用例4</h3> 
+<pre><code class="prism language-input4">4 300 20
+5 10 15 20
+2 4 6 8
+100 100 100 100
+</code></pre> 
+<h3><a id="5_543"></a>用例5</h3> 
+<pre><code class="prism language-input5">5 800 30
+8 16 24 32 40
+3 6 9 12 15
+160 320 480 640 800
+</code></pre> 
+<h3><a id="6_552"></a>用例6</h3> 
+<pre><code class="prism language-input6">6 1500 40
+20 19 18 17 16 15
+10 9 8 7 6 5
+250 300 350 400 450 500
+</code></pre> 
+<h3><a id="7_561"></a>用例7</h3> 
+<pre><code class="prism language-input7">7 10000 100
+1 2 3 4 5 6 7
+10 20 30 40 50 60 70
+1000 2000 3000 4000 5000 6000 7000
+</code></pre> 
+<h3><a id="8_570"></a>用例8</h3> 
+<pre><code class="prism language-input8">8 600 60
+10 20 30 40 50 60 70 80
+5 10 15 20 25 30 35 40
+100 200 300 400 500 600 700 800
+</code></pre> 
+<h3><a id="9_579"></a>用例9</h3> 
+<pre><code class="prism language-input9">9 2000 150
+60 50 40 30 20 10 5 3 1
+90 80 70 60 50 40 30 20 10
+200 400 600 800 1000 1200 1400 1600 1800
+</code></pre> 
+<h3><a id="10_588"></a>用例10</h3> 
+<pre><code class="prism language-input10">10 1000 80
+20 18 16 14 12 10 8 6 4 2
+15 14 13 12 11 10 9 8 7 6
+100 200 300 400 500 600 700 800 900 1000
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_19" rel="nofollow">输入描述</a></li><li><a href="#_35" rel="nofollow">输出描述</a></li><li><a href="#_39" rel="nofollow">用例</a></li><li><a href="#_48" rel="nofollow">解题思路</a></li><li><a href="#C_63" rel="nofollow">C++</a></li><li><a href="#Java_158" rel="nofollow">Java</a></li><li><a href="#javaScript_250" rel="nofollow">javaScript</a></li><li><a href="#Python_344" rel="nofollow">Python</a></li><li><a href="#C_414" rel="nofollow">C语言</a></li><li><a href="#_505" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_507" rel="nofollow">用例1</a></li><li><a href="#2_516" rel="nofollow">用例2</a></li><li><a href="#3_525" rel="nofollow">用例3</a></li><li><a href="#4_534" rel="nofollow">用例4</a></li><li><a href="#5_543" rel="nofollow">用例5</a></li><li><a href="#6_552" rel="nofollow">用例6</a></li><li><a href="#7_561" rel="nofollow">用例7</a></li><li><a href="#8_570" rel="nofollow">用例8</a></li><li><a href="#9_579" rel="nofollow">用例9</a></li><li><a href="#10_588" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/fa558ba51d373f747ed554321ed2f1f8.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

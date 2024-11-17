@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>有 <code>N</code> 块二手市场收集的银饰，每块银饰的重量都是正整数，收集到的银饰会被熔化用于打造新的饰品。 每一回合，从中选出三块 最重的 银饰，然后一起熔掉。假设银饰的重量分别为 <code>x</code> 、<code>y</code> 和 <code>z</code>，且 <code>x &lt;= y &lt;= z</code>。那么熔掉的可能结果如下：</p> 
+<ul><li> <p>如果<code>x == y == z</code>，那么三块银饰都会被完全熔掉；</p> </li><li> <p>如果<code>x == y</code>且<code>y != z</code>，会剩余重量为<code>z - y</code>的银块无法被熔掉；</p> </li><li> <p>如果<code>x != y</code>且<code>y == z</code>，会剩余重量为<code>y - x</code>的银块无法被熔掉；</p> </li><li> <p>如果<code>x != y</code>且<code>y != z</code>，会剩余重量为<code>z - y</code>与<code>y - x</code>差值的银块无法被熔掉。</p> </li></ul> 
+<p>如果剩余两块，返回较大的重量（若两块重量相同，返回任意一块皆可）；如果只剩下一块，返回该块的重量；如果没有剩下，就返回 <code>0</code>。</p> 
+<h2><a id="_15"></a>输入描述</h2> 
+<p>输入数据为两行</p> 
+<p>第一行为银饰数组长度 <code>n</code>，<code>1 ≤ n ≤ 40</code>，</p> 
+<p>第二行为 <code>n</code> 块银饰的重量，重量的取值范围为<code>[1，2000]</code>，重量之间使用空格隔开</p> 
+<h2><a id="_23"></a>输出描述</h2> 
+<p>如果剩余两块，返回较大的重量（若两块重量相同，返回任意一块皆可）；如果只剩下一块，返回该块的重量；如果没有剩下，就返回 <code>0</code>。</p> 
+<h2><a id="_27"></a>示例一</h2> 
+<p><strong>输入</strong></p> 
+<pre><code>3
+1 1 1
+</code></pre> 
+<p><strong>输出</strong></p> 
+<pre><code>0
+</code></pre> 
+<p><strong>说明</strong></p> 
+<p>选出 <code>1 1 1</code>，得到 <code>0</code>，最终数组转换为 <code>[]</code>，最后没有剩下银块，返回 <code>0</code></p> 
+<h2><a id="_46"></a><strong>示例二</strong></h2> 
+<p><strong>输入</strong></p> 
+<pre><code>3
+3 7 10
+</code></pre> 
+<p><strong>输出</strong></p> 
+<pre><code>1
+</code></pre> 
+<p><strong>说明</strong></p> 
+<p>选出 <code>3 7 10</code>，需要计算 <code>(7-3)</code> 和 <code>(10-7)</code> 的差值，即<code>(7-3)-(10-7)=1</code>，所以数组转换为 <code>[1]</code>，剩余一块，返回该块重量，返回 <code>1</code></p> 
+<h2><a id="_67"></a>解题思路</h2> 
+<p>模拟一个银饰熔化的过程。在这个过程中，每次都会选择三块最重的银饰进行熔化，熔化后的结果根据这三块银饰的重量关系有不同的计算方式。这个过程会一直进行，直到剩下的银饰不足三块为止。</p> 
+<p>程序使用了一个优先队列（PriorityQueue）来存储所有的银饰，优先队列的特性是每次取出的都是队列中最大的元素（在这个程序中，最大的元素就是最重的银饰）。这样就可以保证每次都是选择最重的三块银饰进行熔化。</p> 
+<p>下面是一个模拟的例子，初始银饰的重量为 2, 2, 3, 5：</p> 
+<ol><li>首先，将所有银饰的重量添加到优先队列中，队列中的元素为：5, 3, 2, 2。</li><li>队列中有四块银饰，所以可以进行熔化。取出最重的三块银饰，分别是 5, 3, 2。这三块银饰的重量都不同，所以剩余的重量为 |(5 - 3) - (3 - 2)| = 1。将剩余的重量 1 添加到队列中，队列中的元素为：2, 1。</li><li>队列中只剩下两块银饰，所以不能再进行熔化。程序结束，输出剩余银饰的最大重量，即 2。</li></ol> 
+<p>所以，对于输入 4, 2, 2, 3, 5，这个程序的输出应该是 2。</p> 
+<h2><a id="C_81"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span> <span class="token comment">// 用于 sort</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    <span class="token comment">// 读取银饰的数量</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个整型向量存储银饰的重量</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">silverPieces</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 循环读取每个银饰的重量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> silverPieces<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 使用 sort 对 vector 进行降序排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> silverPieces<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> greater<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 当银饰数量大于等于3时，进行处理</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 取出最重的三块银饰</span>
+        <span class="token keyword">int</span> z <span class="token operator">=</span> silverPieces<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 最重的银饰</span>
+        <span class="token keyword">int</span> y <span class="token operator">=</span> silverPieces<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 第二重的银饰</span>
+        <span class="token keyword">int</span> x <span class="token operator">=</span> silverPieces<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 第三重的银饰</span>
+        <span class="token comment">// 从向量中移除这三块银饰</span>
+        silverPieces<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> silverPieces<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果三块银饰重量相同，则继续下一轮循环</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">==</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则计算剩余银饰的重量</span>
+            <span class="token keyword">int</span> remaining<span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果有两块重量相同，且第三块更重，则剩余 z - y</span>
+                remaining <span class="token operator">=</span> z <span class="token operator">-</span> y<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">==</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果有两块重量相同，且第一块更轻，则剩余 y - x</span>
+                remaining <span class="token operator">=</span> y <span class="token operator">-</span> x<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果三块银饰重量都不同，则计算剩余重量</span>
+                remaining <span class="token operator">=</span> <span class="token function">abs</span><span class="token punctuation">(</span><span class="token punctuation">(</span>z <span class="token operator">-</span> y<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>remaining <span class="token operator">!=</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+                        <span class="token comment">// 将剩余银饰的重量加入向量</span>
+                silverPieces<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>remaining<span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token punctuation">}</span>
+
+            <span class="token comment">// 再次对向量进行降序排序</span>
+            <span class="token function">sort</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> silverPieces<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> greater<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果向量为空，表示没有银饰剩余，输出 0</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token number">0</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 否则输出剩余银饰的重量（向量中的最大值）</span>
+        cout <span class="token operator">&lt;&lt;</span> silverPieces<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_151"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">PriorityQueue</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Collections</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取银饰的数量</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建优先队列，使用反向顺序以便队列头是最大元素</span>
+        <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> silverPieces <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">reverseOrder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 循环读取每块银饰的重量并添加到优先队列中</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            silverPieces<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 当队列中至少有三块银饰时执行循环</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 取出三块最重的银饰</span>
+            <span class="token keyword">int</span> z <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 最重的银饰</span>
+            <span class="token keyword">int</span> y <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 第二重的银饰</span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 第三重的银饰</span>
+                        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span> z   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>  y   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>  x <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 根据题目描述的规则处理银饰</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">==</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果三块银饰重量相同，则全部熔化，不剩余</span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> remaining<span class="token punctuation">;</span> <span class="token comment">// 剩余银饰的重量</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">==</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果有两块重量相同，且第三块更重，则剩余 z - y</span>
+                    remaining <span class="token operator">=</span> z <span class="token operator">-</span> y<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">==</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果有两块重量相同，且第一块更轻，则剩余 y - x</span>
+                    remaining <span class="token operator">=</span> y <span class="token operator">-</span> x<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果三块银饰重量都不同，则计算剩余重量</span>
+                    remaining <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span><span class="token punctuation">(</span>z <span class="token operator">-</span> y<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span>remaining <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 将剩余银饰的重量加入队列</span>
+                    silverPieces<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>remaining<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果队列为空，表示没有银饰剩余，输出0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则输出剩余银饰的重量（队列中的最大值）</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span><span class="token function">peek</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="javaScript_217"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建一个数组 lines，用于存储用户输入的每一行</span>
+<span class="token keyword">let</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当用户输入一行并按下回车键时，触发 'line' 事件</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将用户输入的行添加到 lines 数组中</span>
+    lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 当 lines 数组中的行数等于 2 时，开始处理银饰的重量</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>lines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 从 lines 数组的第二行开始，将输入的银饰重量转换为数字，并存储在 silverPieces 数组中</span>
+        <span class="token keyword">let</span> silverPieces <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 对 silverPieces 数组进行降序排序</span>
+        silverPieces<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> b <span class="token operator">-</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 当 silverPieces 数组中至少有三块银饰时，执行循环</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span>length <span class="token operator">&gt;=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 取出三块最重的银饰</span>
+            <span class="token keyword">let</span> z <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">let</span> y <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">let</span> x <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果三块银饰的重量相同，则全部熔化，不剩余</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">===</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">===</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">let</span> remaining<span class="token punctuation">;</span> <span class="token comment">// 剩余银饰的重量</span>
+                <span class="token comment">// 如果有两块重量相同，且第三块更重，则剩余 z - y</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">===</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">&lt;</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    remaining <span class="token operator">=</span> z <span class="token operator">-</span> y<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 如果有两块重量相同，且第一块更轻，则剩余 y - x</span>
+                <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> y <span class="token operator">&amp;&amp;</span> y <span class="token operator">===</span> z<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    remaining <span class="token operator">=</span> y <span class="token operator">-</span> x<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 如果三块银饰重量都不同，则计算剩余重量</span>
+                <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    remaining <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span><span class="token punctuation">(</span>z <span class="token operator">-</span> y<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>remaining <span class="token operator">!==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 将剩余银饰的重量加入数组</span>
+                    silverPieces<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>remaining<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+
+                <span class="token comment">// 重新排序</span>
+                silverPieces<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> b <span class="token operator">-</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果数组为空，表示没有银饰剩余，输出 0</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>silverPieces<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 否则输出剩余银饰的重量（数组中的最大值）</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 关闭 readline 接口</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_291"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 引入 heapq 模块用于维护优先队列</span>
+<span class="token keyword">import</span> heapq
+
+<span class="token comment"># 读取银饰的数量</span>
+n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 存储银饰的重量</span>
+silverPieces <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+ 
+<span class="token comment"># 对 silverPieces 列表进行降序排序</span>
+silverPieces<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 当 silverPieces 列表中至少有三块银饰时，执行循环</span>
+<span class="token keyword">while</span> <span class="token builtin">len</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">)</span> <span class="token operator">&gt;=</span> <span class="token number">3</span><span class="token punctuation">:</span>
+    <span class="token comment"># 取出三块最重的银饰</span>
+    z <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+    y <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+    x <span class="token operator">=</span> silverPieces<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 如果三块银饰的重量相同，则全部熔化，不剩余</span>
+    <span class="token keyword">if</span> x <span class="token operator">==</span> y <span class="token keyword">and</span> y <span class="token operator">==</span> z<span class="token punctuation">:</span>
+        <span class="token keyword">continue</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 剩余银饰的重量</span>
+        remaining <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token comment"># 如果有两块重量相同，且第三块更重，则剩余 z - y</span>
+        <span class="token keyword">if</span> x <span class="token operator">==</span> y <span class="token keyword">and</span> y <span class="token operator">&lt;</span> z<span class="token punctuation">:</span>
+            remaining <span class="token operator">=</span> z <span class="token operator">-</span> y
+        <span class="token comment"># 如果有两块重量相同，且第一块更轻，则剩余 y - x</span>
+        <span class="token keyword">elif</span> x <span class="token operator">&lt;</span> y <span class="token keyword">and</span> y <span class="token operator">==</span> z<span class="token punctuation">:</span>
+            remaining <span class="token operator">=</span> y <span class="token operator">-</span> x
+        <span class="token comment"># 如果三块银饰重量都不同，则计算剩余重量</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            remaining <span class="token operator">=</span> <span class="token builtin">abs</span><span class="token punctuation">(</span><span class="token punctuation">(</span>z <span class="token operator">-</span> y<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> x<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> remaining <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token comment"># 将剩余银饰的重量加入列表</span>
+            silverPieces<span class="token punctuation">.</span>append<span class="token punctuation">(</span>remaining<span class="token punctuation">)</span>
+        <span class="token comment"># 重新排序</span>
+        silverPieces<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>reverse<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 如果列表为空，表示没有银饰剩余，输出 0</span>
+<span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token comment"># 否则输出剩余银饰的重量（列表中的最大值）</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>silverPieces<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_342"></a>C语言</h2> 
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define MAX_NUM 40
+
+// 定义一个比较函数，用于 qsort 函数
+int cmp(const void *a, const void *b) {
+    return *(int *)b - *(int *)a;
+}
+
+int main() {
+    int n;
+    // 读取银饰的数量
+    scanf("%d", &amp;n);
+
+    // 创建一个数组存储银饰的重量
+    int silverPieces[MAX_NUM];
+    // 循环读取每个银饰的重量
+    for (int i = 0; i &lt; n; ++i) {
+        scanf("%d", &amp;silverPieces[i]);
+    }
+
+    // 使用 qsort 对数组进行降序排序
+    qsort(silverPieces, n, sizeof(int), cmp);
+
+    // 当银饰数量大于等于3时，进行处理
+    while (n &gt;= 3) {
+        // 取出最重的三块银饰
+        int z = silverPieces[0]; // 最重的银饰
+        int y = silverPieces[1]; // 第二重的银饰
+        int x = silverPieces[2]; // 第三重的银饰
+        // 从数组中移除这三块银饰
+        for (int i = 0; i &lt; n - 3; ++i) {
+            silverPieces[i] = silverPieces[i + 3];
+        }
+        n -= 3;
+
+        // 如果三块银饰重量相同，则继续下一轮循环
+        if (x == y &amp;&amp; y == z) {
+            continue;
+        } else {
+            // 否则计算剩余银饰的重量
+            int remaining;
+            if (x == y &amp;&amp; y &lt; z) {
+                // 如果有两块重量相同，且第三块更重，则剩余 z - y
+                remaining = z - y;
+            } else if (x &lt; y &amp;&amp; y == z) {
+                // 如果有两块重量相同，且第一块更轻，则剩余 y - x
+                remaining = y - x;
+            } else {
+                // 如果三块银饰重量都不同，则计算剩余重量
+                remaining = abs((z - y) - (y - x));
+            }
+            if(remaining !=0){
+                // 将剩余银饰的重量加入数组
+                silverPieces[n++] = remaining;
+            }
+
+            // 再次对数组进行降序排序
+            qsort(silverPieces, n, sizeof(int), cmp);
+        }
+    }
+
+    // 如果数组为空，表示没有银饰剩余，输出 0
+    if (n == 0) {
+        printf("0\n");
+    } else {
+        // 否则输出剩余银饰的重量（数组中的最大值）
+        printf("%d\n", silverPieces[0]);
+    }
+
+    return 0;
+}
+</code></pre> 
+<h2><a id="_418"></a>完整用例</h2> 
+<h3><a id="1_420"></a>用例1</h3> 
+<pre><code class="prism language-input1">5
+1 1 1 1 1
+</code></pre> 
+<h3><a id="2_427"></a>用例2</h3> 
+<pre><code class="prism language-input2">5
+1 2 3 4 5
+</code></pre> 
+<h3><a id="3_434"></a>用例3</h3> 
+<pre><code class="prism language-input3">5
+5 4 3 2 1
+</code></pre> 
+<h3><a id="4_441"></a>用例4</h3> 
+<pre><code class="prism language-input4">6
+10 15 20 25 30 35
+</code></pre> 
+<h3><a id="5_448"></a>用例5</h3> 
+<pre><code class="prism language-input5">6
+2000 2000 2000 10 5 1
+</code></pre> 
+<h3><a id="6_455"></a>用例6</h3> 
+<pre><code class="prism language-input6">6
+2000 2000 1999 10 5 1
+</code></pre> 
+<h3><a id="7_462"></a>用例7</h3> 
+<pre><code class="prism language-input7">6
+2000 1999 1999 10 5 1
+</code></pre> 
+<h3><a id="8_469"></a>用例8</h3> 
+<pre><code class="prism language-input8">1
+1234
+</code></pre> 
+<h3><a id="9_476"></a>用例9</h3> 
+<pre><code class="prism language-input9">3
+3 7 10
+</code></pre> 
+<h3><a id="10_483"></a>用例10</h3> 
+<pre><code class="prism language-input10">5
+1 1 2000 2000 200
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_15" rel="nofollow">输入描述</a></li><li><a href="#_23" rel="nofollow">输出描述</a></li><li><a href="#_27" rel="nofollow">示例一</a></li><li><a href="#_46" rel="nofollow">**示例二**</a></li><li><a href="#_67" rel="nofollow">解题思路</a></li><li><a href="#C_81" rel="nofollow">C++</a></li><li><a href="#Java_151" rel="nofollow">Java</a></li><li><a href="#javaScript_217" rel="nofollow">javaScript</a></li><li><a href="#Python_291" rel="nofollow">Python</a></li><li><a href="#C_342" rel="nofollow">C语言</a></li><li><a href="#_418" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_420" rel="nofollow">用例1</a></li><li><a href="#2_427" rel="nofollow">用例2</a></li><li><a href="#3_434" rel="nofollow">用例3</a></li><li><a href="#4_441" rel="nofollow">用例4</a></li><li><a href="#5_448" rel="nofollow">用例5</a></li><li><a href="#6_455" rel="nofollow">用例6</a></li><li><a href="#7_462" rel="nofollow">用例7</a></li><li><a href="#8_469" rel="nofollow">用例8</a></li><li><a href="#9_476" rel="nofollow">用例9</a></li><li><a href="#10_483" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/c2d986e16dd2a16a70f1b1570f3a51ab.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

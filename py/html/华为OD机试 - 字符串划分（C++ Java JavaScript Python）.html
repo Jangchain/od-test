@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>给定一个小写字母组成的字符串 s，请找出字符串中两个不同位置的字符作为分割点，使得字符串分成三个连续子串且子串权重相等，注意子串不包含分割点。</p> 
+<p>若能找到满足条件的两个分割点，请输出这两个分割点在字符串中的位置下标，若不能找到满足条件的分割点请返回0,0。</p> 
+<p>子串权重计算方式为:子串所有字符的ASCII码数值之和。</p> 
+<h4><a id="_9"></a>输入描述</h4> 
+<p>输入为一个字符串，字符串由a~z，26个小写字母组成，5 ≤ 字符串长度 ≤ 200。</p> 
+<h4><a id="_13"></a>输出描述</h4> 
+<p>输出为两个分割点在字符串中的位置下标，以逗号分隔</p> 
+<h4><a id="_17"></a>备注</h4> 
+<p>只考虑唯一解，不存在一个输入多种输出解的情况</p> 
+<h4><a id="_21"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>acdbbbca</td></tr><tr><td>输出</td><td>2,5</td></tr><tr><td>说明</td><td>以位置2和5作为分割点，将字符串分割为ac，bb，ca三个子串，每一个的子串权重都为196，输出为：2,5</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>abcabc</td></tr><tr><td>输出</td><td>0,0</td></tr><tr><td>说明</td><td>找不到符合条件的分割点，输出为：0,0</td></tr></tbody></table> 
+<h4><a id="_29"></a>解题思路</h4> 
+<ol><li> <p>读取输入字符串</p> </li><li> <p>计算前缀和数组：为了方便计算子串的权重，我们创建一个前缀和数组，数组的每个元素表示从输入字符串的起始位置到当前位置的字符权重之和。权重可以是字符的 ASCII 码值。这样，我们可以通过前缀和数组快速计算任意子串的权重。</p> </li><li> <p>初始化结果和分割点：我们初始化结果为 “0,0”，表示没有找到满足条件的分割点。同时，我们初始化两个分割点，第一个分割点为 1，第二个分割点为 3。</p> </li><li> <p>遍历分割点：我们使用一个循环来遍历所有可能的分割点组合。在每次循环中，我们计算三个子串的权重，然后根据子串权重来调整分割点。</p> <p>a. 计算三个子串的权重：我们使用前缀和数组来计算三个子串的权重。具体来说，我们分别计算从起始位置到第一个分割点、从第一个分割点到第二个分割点、从第二个分割点到字符串末尾的子串权重。</p> <p>b. 判断是否满足条件：如果三个子串的权重相等，说明我们找到了满足条件的分割点。此时，我们更新结果为当前分割点组合，并跳出循环。</p> <p>c. 调整分割点：如果三个子串的权重不相等，我们需要调整分割点。具体来说，如果第一个子串的权重小于等于第二个子串的权重，我们将第一个分割点向右移动一位；否则，我们将第二个分割点向右移动一位。这样，我们可以保证在尽可能短的时间内找到满足条件的分割点。</p> </li><li> <p>输出结果：最后，我们输出结果，即满足条件的分割点组合。如果没有找到满足条件的分割点，结果将保持为 “0,0”。</p> </li></ol> 
+<h4><a id="C_47"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入字符串</span>
+    std<span class="token operator">::</span>string inputStr<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> inputStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 获取字符串长度</span>
+    <span class="token keyword">int</span> strLength <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建前缀和数组，用于存储子串权重</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">prefixSum</span><span class="token punctuation">(</span>strLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 计算前缀和数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> strLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        prefixSum<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> inputStr<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化结果为 "0,0"</span>
+    std<span class="token operator">::</span>string result <span class="token operator">=</span> <span class="token string">"0,0"</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化两个分割点</span>
+    <span class="token keyword">int</span> firstSplit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> secondSplit <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
+    <span class="token comment">// 当分割点在字符串范围内时，继续循环</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>firstSplit <span class="token operator">&lt;</span> strLength <span class="token operator">&amp;&amp;</span> secondSplit <span class="token operator">&lt;</span> strLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算三个子串的权重</span>
+        <span class="token keyword">int</span> sum1 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>firstSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sum2 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>secondSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>firstSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sum3 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>strLength<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>secondSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果三个子串的权重相等，则找到满足条件的分割点</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum1 <span class="token operator">==</span> sum2 <span class="token operator">&amp;&amp;</span> sum2 <span class="token operator">==</span> sum3<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>firstSplit<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> std<span class="token operator">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>secondSplit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 根据子串权重调整分割点</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum1 <span class="token operator">&lt;=</span> sum2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            firstSplit<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            secondSplit<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="Java_102"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建 Scanner 对象以读取输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取输入字符串</span>
+        <span class="token class-name">String</span> inputStr <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将输入字符串转换为字符数组</span>
+        <span class="token keyword">char</span><span class="token punctuation">[</span><span class="token punctuation">]</span> chars <span class="token operator">=</span> inputStr<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取字符串长度</span>
+        <span class="token keyword">int</span> strLength <span class="token operator">=</span> chars<span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建前缀和数组，用于存储子串权重</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> prefixSum <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>strLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 计算前缀和数组</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> strLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            prefixSum<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> chars<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化结果为 "0,0"</span>
+        <span class="token class-name">String</span> result <span class="token operator">=</span> <span class="token string">"0,0"</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化两个分割点</span>
+        <span class="token keyword">int</span> firstSplit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> secondSplit <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
+        <span class="token comment">// 当分割点在字符串范围内时，继续循环</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>firstSplit <span class="token operator">&lt;</span> strLength <span class="token operator">&amp;&amp;</span> secondSplit <span class="token operator">&lt;</span> strLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算三个子串的权重</span>
+            <span class="token keyword">int</span> sum1 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>firstSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> sum2 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>secondSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>firstSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> sum3 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>strLength<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>secondSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果三个子串的权重相等，则找到满足条件的分割点</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>sum1 <span class="token operator">==</span> sum2 <span class="token operator">&amp;&amp;</span> sum2 <span class="token operator">==</span> sum3<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">=</span> firstSplit <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> secondSplit<span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 根据子串权重调整分割点</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>sum1 <span class="token operator">&lt;=</span> sum2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                firstSplit<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                secondSplit<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="javaScript_158"></a>javaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入字符串</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">inputStr</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 获取字符串长度</span>
+    <span class="token keyword">const</span> strLength <span class="token operator">=</span> inputStr<span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建前缀和数组，用于存储子串权重</span>
+    <span class="token keyword">const</span> prefixSum <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>strLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 计算前缀和数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> strLength<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        prefixSum<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> inputStr<span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化结果为 "0,0"</span>
+    <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token string">"0,0"</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化两个分割点</span>
+    <span class="token keyword">let</span> firstSplit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> secondSplit <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
+    <span class="token comment">// 当分割点在字符串范围内时，继续循环</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>firstSplit <span class="token operator">&lt;</span> strLength <span class="token operator">&amp;&amp;</span> secondSplit <span class="token operator">&lt;</span> strLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 计算三个子串的权重</span>
+        <span class="token keyword">const</span> sum1 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>firstSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> sum2 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>secondSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>firstSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> sum3 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>strLength<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>secondSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果三个子串的权重相等，则找到满足条件的分割点</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum1 <span class="token operator">===</span> sum2 <span class="token operator">&amp;&amp;</span> sum2 <span class="token operator">===</span> sum3<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>firstSplit<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">,</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>secondSplit<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 根据子串权重调整分割点</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sum1 <span class="token operator">&lt;=</span> sum2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            firstSplit<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            secondSplit<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h4><a id="Python_213"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token comment"># 读取输入字符串</span>
+inputStr <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 获取字符串长度</span>
+strLength <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">)</span>
+
+<span class="token comment"># 创建前缀和数组，用于存储子串权重</span>
+prefixSum <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>strLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token comment"># 计算前缀和数组</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> strLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    prefixSum<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token builtin">ord</span><span class="token punctuation">(</span>inputStr<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化结果为 "0,0"</span>
+result <span class="token operator">=</span> <span class="token string">"0,0"</span>
+<span class="token comment"># 初始化两个分割点</span>
+firstSplit<span class="token punctuation">,</span> secondSplit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span>
+<span class="token comment"># 当分割点在字符串范围内时，继续循环</span>
+<span class="token keyword">while</span> firstSplit <span class="token operator">&lt;</span> strLength <span class="token keyword">and</span> secondSplit <span class="token operator">&lt;</span> strLength<span class="token punctuation">:</span>
+    <span class="token comment"># 计算三个子串的权重</span>
+    sum1 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>firstSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    sum2 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>secondSplit<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>firstSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span>
+    sum3 <span class="token operator">=</span> prefixSum<span class="token punctuation">[</span>strLength<span class="token punctuation">]</span> <span class="token operator">-</span> prefixSum<span class="token punctuation">[</span>secondSplit <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 如果三个子串的权重相等，则找到满足条件的分割点</span>
+    <span class="token keyword">if</span> sum1 <span class="token operator">==</span> sum2 <span class="token keyword">and</span> sum2 <span class="token operator">==</span> sum3<span class="token punctuation">:</span>
+        result <span class="token operator">=</span> <span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>firstSplit<span class="token punctuation">}</span></span><span class="token string">,</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>secondSplit<span class="token punctuation">}</span></span><span class="token string">"</span></span>
+        <span class="token keyword">break</span>
+
+    <span class="token comment"># 根据子串权重调整分割点</span>
+    <span class="token keyword">if</span> sum1 <span class="token operator">&lt;=</span> sum2<span class="token punctuation">:</span>
+        firstSplit <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        secondSplit <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 输出结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+
+</code></pre> 
+<h4><a id="_256"></a>完整用例</h4> 
+<h5><a id="1_257"></a>用例1</h5> 
+<pre><code class="prism language-input1">acdbbbca
+</code></pre> 
+<h5><a id="2_263"></a>用例2</h5> 
+<pre><code class="prism language-input2">abcabc
+</code></pre> 
+<h5><a id="3_269"></a>用例3</h5> 
+<pre><code class="prism language-input3">abcde
+</code></pre> 
+<h5><a id="4_275"></a>用例4</h5> 
+<pre><code class="prism language-input4">aaaaaa
+</code></pre> 
+<h5><a id="5_281"></a>用例5</h5> 
+<pre><code class="prism language-input5">abcdef
+</code></pre> 
+<h5><a id="6_287"></a>用例6</h5> 
+<pre><code class="prism language-input6">uvwxyuvwxzuvwx
+</code></pre> 
+<h5><a id="7_293"></a>用例7</h5> 
+<pre><code class="prism language-input7">uvwxyuvwxzuvwxuvwx
+</code></pre> 
+<h5><a id="8_299"></a>用例8</h5> 
+<pre><code class="prism language-input8">abcdcbadabc
+</code></pre> 
+<h5><a id="9_305"></a>用例9</h5> 
+<pre><code class="prism language-input9">xyzxyzxyz
+</code></pre> 
+<h5><a id="10_311"></a>用例10</h5> 
+<pre><code class="prism language-input10">abccbaabccba
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_13" rel="nofollow">输出描述</a></li><li><a href="#_17" rel="nofollow">备注</a></li><li><a href="#_21" rel="nofollow">用例</a></li><li><a href="#_29" rel="nofollow">解题思路</a></li><li><a href="#C_47" rel="nofollow">C++</a></li><li><a href="#Java_102" rel="nofollow">Java</a></li><li><a href="#javaScript_158" rel="nofollow">javaScript</a></li><li><a href="#Python_213" rel="nofollow">Python</a></li><li><a href="#_256" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_257" rel="nofollow">用例1</a></li><li><a href="#2_263" rel="nofollow">用例2</a></li><li><a href="#3_269" rel="nofollow">用例3</a></li><li><a href="#4_275" rel="nofollow">用例4</a></li><li><a href="#5_281" rel="nofollow">用例5</a></li><li><a href="#6_287" rel="nofollow">用例6</a></li><li><a href="#7_293" rel="nofollow">用例7</a></li><li><a href="#8_299" rel="nofollow">用例8</a></li><li><a href="#9_305" rel="nofollow">用例9</a></li><li><a href="#10_311" rel="nofollow">用例10</a></li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

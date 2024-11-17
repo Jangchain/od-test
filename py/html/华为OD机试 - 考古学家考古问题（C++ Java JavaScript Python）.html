@@ -1,0 +1,706 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>有一个考古学家发现一个石碑，但是很可惜，发现时其已经断成多段，原地发现n个断口整齐的石碑碎片。为了破解石碑内容，考古学家希望有程序能帮忙计算复原后的石碑文字组合数，你能帮忙吗？</p> 
+<h2><a id="_6"></a>输入描述</h2> 
+<p>第一行输入n，n表示石碑碎片的个数。</p> 
+<p>第二行依次输入石碑碎片上的文字内容s，共有n组。</p> 
+<h2><a id="_12"></a>输出描述</h2> 
+<p>输出石碑文字的组合（按照升序排列），行末无多余空格。</p> 
+<h2><a id="_16"></a>用例</h2> 
+<table><tbody><tr><td>输入</td><td>3<br>a b c</td></tr><tr><td>输出</td><td>abc<br>acb<br>bac<br>bca<br>cab<br>cba</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>3<br>a b a</td></tr><tr><td>输出</td><td>aab<br>aba<br>baa</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h2><a id="_24"></a>题目解析</h2> 
+<p>全排列问题！！！</p> 
+<p>原题参考：<a href="https://leetcode.cn/problems/permutations-ii/solutions/" rel="nofollow">47. 全排列 II - 力扣（LeetCode）</a></p> 
+<h2><a id="_32"></a>解体思路</h2> 
+<p>解决这个问题的方法是使用深度优先搜索（DFS）遍历所有可能的组合。以下是详细的思路：</p> 
+<ol><li>首先，读取输入的石碑碎片个数<code>n</code>和石碑碎片上的文字内容<code>s</code>。</li><li>将输入的石碑碎片内容存入一个列表<code>charArray</code>，并对其进行排序。排序的目的是为了在遍历过程中方便地跳过重复的组合。</li><li>定义一个深度优先搜索函数<code>dfs</code>，其中包含以下参数： 
+  <ul><li><code>charArray</code>：存储石碑碎片内容的列表。</li><li><code>depth</code>：当前搜索的深度。</li><li><code>path</code>：存储已经使用过的碎片。</li><li><code>used</code>：记录每个碎片是否被使用过。</li><li><code>result</code>：存储所有可能的组合。</li></ul> </li><li>在<code>dfs</code>函数中，首先检查当前搜索的深度是否等于石碑碎片的个数。如果是，则将当前组合加入结果列表<code>result</code>。</li><li>遍历<code>charArray</code>中的每个碎片。对于每个碎片，检查它是否已经被使用过，以及它是否与前一个碎片相同且前一个碎片未被使用。如果满足这些条件，则跳过当前碎片。</li><li>将当前碎片添加到<code>path</code>中，并标记它为已使用。然后递归地搜索下一个碎片。</li><li>在递归返回后，执行回溯操作：将当前碎片从<code>path</code>中移除，并标记它为未使用。</li><li>调用<code>dfs</code>函数，开始搜索所有可能的组合。</li><li>最后，输出所有找到的组合。</li></ol> 
+<p>这种方法可以有效地遍历所有可能的石碑文字组合，并通过跳过重复的组合来减少搜索空间。</p> 
+<h2><a id="C_52"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;deque&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> charArray<span class="token punctuation">,</span> <span class="token keyword">int</span> depth<span class="token punctuation">,</span> deque<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> path<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token operator">&amp;</span> used<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+    cin<span class="token punctuation">.</span><span class="token function">ignore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 忽略第一行剩余的换行符</span>
+    string inputLine<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> inputLine<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> charArray<span class="token punctuation">;</span>
+    string tempStr <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputLine<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>inputLine<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            charArray<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>tempStr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的碎片存入 charArray 中</span>
+            tempStr <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            tempStr <span class="token operator">+=</span> inputLine<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    charArray<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>tempStr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存入最后一个碎片</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;&gt;</span> result<span class="token punctuation">;</span>
+
+    <span class="token comment">// 先对碎片进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>charArray<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> charArray<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token comment">// path 中存储已经使用过的碎片</span>
+    deque<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> path<span class="token punctuation">;</span> 
+    <span class="token comment">// 记录每个碎片是否被使用过</span>
+    vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token function">used</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+    <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span> 
+
+    <span class="token comment">// 输出所有组合</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  
+        string outputStr <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            outputStr <span class="token operator">+=</span> result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        cout <span class="token operator">&lt;&lt;</span> outputStr <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> charArray<span class="token punctuation">,</span> <span class="token keyword">int</span> depth<span class="token punctuation">,</span> deque<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> path<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token operator">&amp;</span> used<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果碎片都已经被使用过，将当前组合加入结果中</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>depth <span class="token operator">==</span> charArray<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        result<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> path<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> charArray<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果碎片已经被使用过，则跳过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>  
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果当前碎片和前一个碎片相同，并且前一个碎片还没有被使用，则跳过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> charArray<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>used<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        path<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将当前碎片存入 path 中</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span> <span class="token comment">// 标记当前碎片已被使用</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> depth <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归搜索下一个碎片</span>
+        path<span class="token punctuation">.</span><span class="token function">pop_back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 回溯，将当前碎片从 path 中移除</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> false<span class="token punctuation">;</span> <span class="token comment">// 标记当前碎片未被使用</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="JavaScript_134"></a>JavaScript</h2> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">charArray<span class="token punctuation">,</span> depth<span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果碎片都已经被使用过，将当前组合加入结果中</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>depth <span class="token operator">===</span> charArray<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        result<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token operator">...</span>path<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> charArray<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果碎片已经被使用过，则跳过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果当前碎片和前一个碎片相同，并且前一个碎片还没有被使用，则跳过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> charArray<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>used<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        path<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将当前碎片存入 path 中</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前碎片已被使用</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> depth <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归搜索下一个碎片</span>
+        path<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 回溯，将当前碎片从 path 中移除</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前碎片未被使用</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> charArray <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 先对碎片进行排序</span>
+        charArray<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// path 中存储已经使用过的碎片</span>
+        <span class="token keyword">let</span> path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 记录每个碎片是否被使用过</span>
+        <span class="token keyword">let</span> used <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出所有组合</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Java_189"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 深度优先搜索函数</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> charArray<span class="token punctuation">,</span> <span class="token keyword">int</span> depth<span class="token punctuation">,</span> <span class="token class-name">StringBuilder</span> path<span class="token punctuation">,</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> used<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果碎片都已经被使用过，将当前组合加入结果中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>depth <span class="token operator">==</span> charArray<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> charArray<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果碎片已经被使用过，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 如果当前碎片和前一个碎片相同，并且前一个碎片还没有被使用，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>used<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            path<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将当前碎片存入 path 中</span>
+            used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前碎片已被使用</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> depth <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归搜索下一个碎片</span>
+            path<span class="token punctuation">.</span><span class="token function">setLength</span><span class="token punctuation">(</span>path<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 回溯，将当前碎片从 path 中移除</span>
+            used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 标记当前碎片未被使用</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 处理输入</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 忽略第一行剩余的换行符</span>
+        <span class="token class-name">String</span> inputLine <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> charArray <span class="token operator">=</span> inputLine<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 先对碎片进行排序</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>charArray<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// path 中存储已经使用过的碎片</span>
+        <span class="token class-name">StringBuilder</span> path <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 记录每个碎片是否被使用过</span>
+        <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> used <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出所有组合</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> s <span class="token operator">:</span> result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_244"></a>Python</h2> 
+<pre><code class="prism language-c">
+import sys
+
+# 深度优先搜索函数
+def <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> depth<span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token operator">:</span>
+    # 如果碎片都已经被使用过，将当前组合加入结果中
+    <span class="token keyword">if</span> depth <span class="token operator">==</span> <span class="token function">len</span><span class="token punctuation">(</span>charArray<span class="token punctuation">)</span><span class="token operator">:</span>
+        result<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token function">list</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+    <span class="token keyword">for</span> i in <span class="token function">range</span><span class="token punctuation">(</span><span class="token function">len</span><span class="token punctuation">(</span>charArray<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">:</span>
+        # 如果碎片已经被使用过，则跳过
+        <span class="token keyword">if</span> used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">:</span>
+            <span class="token keyword">continue</span>
+        # 如果当前碎片和前一个碎片相同，并且前一个碎片还没有被使用，则跳过
+        <span class="token keyword">if</span> i <span class="token operator">&gt;</span> <span class="token number">0</span> and charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> charArray<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> and not used<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token operator">:</span>
+            <span class="token keyword">continue</span>
+        path<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> # 将当前碎片存入 path 中
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> True # 标记当前碎片已被使用
+        <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> depth <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span> # 递归搜索下一个碎片
+        path<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span> # 回溯，将当前碎片从 path 中移除
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> False # 标记当前碎片未被使用
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token operator">:</span>
+    # 处理输入
+    n <span class="token operator">=</span> <span class="token keyword">int</span><span class="token punctuation">(</span><span class="token function">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    inputLine <span class="token operator">=</span> <span class="token function">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    charArray <span class="token operator">=</span> inputLine<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    # 先对碎片进行排序
+    charArray<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token macro property"><span class="token directive-hash">#</span> <span class="token directive keyword">path</span> <span class="token expression">中存储已经使用过的碎片</span></span>
+    path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    # 记录每个碎片是否被使用过
+    used <span class="token operator">=</span> <span class="token punctuation">[</span>False<span class="token punctuation">]</span> <span class="token operator">*</span> n
+    <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">)</span>
+
+    # 输出所有组合
+    <span class="token keyword">for</span> i in <span class="token function">range</span><span class="token punctuation">(</span><span class="token function">len</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">:</span>
+        outputStr <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token function">print</span><span class="token punctuation">(</span>outputStr<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_292"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义石碑碎片的最大个数</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_N</span> <span class="token expression"><span class="token number">100</span></span></span>
+
+<span class="token comment">// 比较函数，用于qsort排序</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token function">strcmp</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">,</span> <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 深度优先搜索函数</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>charArray<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">,</span> <span class="token keyword">int</span> depth<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span>path<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>pathIndex<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>used<span class="token punctuation">,</span> <span class="token keyword">char</span> result<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>resultIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果深度等于n，将当前path存入result</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>depth <span class="token operator">==</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        path<span class="token punctuation">[</span><span class="token operator">*</span>pathIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'\0'</span><span class="token punctuation">;</span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span><span class="token operator">*</span>resultIndex<span class="token punctuation">]</span><span class="token punctuation">,</span> path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">(</span><span class="token operator">*</span>resultIndex<span class="token punctuation">)</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 跳过已使用的碎片</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 跳过重复的碎片</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> charArray<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>used<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 添加当前碎片到path</span>
+        path<span class="token punctuation">[</span><span class="token operator">*</span>pathIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">*</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">(</span><span class="token operator">*</span>pathIndex<span class="token punctuation">)</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记为已使用</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> n<span class="token punctuation">,</span> depth <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> pathIndex<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">,</span> resultIndex<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归</span>
+        <span class="token punctuation">(</span><span class="token operator">*</span>pathIndex<span class="token punctuation">)</span><span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 回溯</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 标记为未使用</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取碎片个数</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>charArray<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> buffer<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取碎片</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>MAX_N <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对碎片排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compare<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 结果数组，path数组，和辅助数组</span>
+    <span class="token keyword">char</span> result<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> path<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> pathIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> used<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> resultIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 执行深度优先搜索</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span>charArray<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> path<span class="token punctuation">,</span> <span class="token operator">&amp;</span>pathIndex<span class="token punctuation">,</span> used<span class="token punctuation">,</span> result<span class="token punctuation">,</span> <span class="token operator">&amp;</span>resultIndex<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出所有组合</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> resultIndex<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 释放内存</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">free</span><span class="token punctuation">(</span>charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_375"></a>以下代码满足用例含有字符串</h2> 
+<p>输入</p> 
+<pre><code>3
+a b ab
+</code></pre> 
+<p>输出</p> 
+<pre><code>aabb
+abab
+abba
+baab
+baba
+</code></pre> 
+<h2><a id="java_389"></a>java字符串</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于从控制台读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取石碑碎片的数量</span>
+        <span class="token keyword">int</span> numFragments <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取每个碎片的文字内容并存储在数组中</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fragments <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建一个TreeSet用于存储所有排列结果，TreeSet会自动进行排序和去重</span>
+        <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> resultSet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个布尔数组用于标记每个碎片是否被使用过</span>
+        <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>numFragments<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 调用深度优先搜索函数开始生成排列组合</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> numFragments<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出所有生成的排列组合</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> combination <span class="token operator">:</span> resultSet<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>combination<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 深度优先搜索函数，用于生成所有可能的字符串排列组合</span>
+    <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> currentLength<span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> fragments<span class="token punctuation">,</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">,</span> <span class="token class-name">StringBuilder</span> currentPath<span class="token punctuation">,</span> <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> resultSet<span class="token punctuation">,</span> <span class="token keyword">int</span> numFragments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前排列的长度等于碎片的数量，说明生成了一个完整的排列</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentLength <span class="token operator">==</span> numFragments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            resultSet<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>currentPath<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 将生成的排列添加到结果集中</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>  <span class="token comment">// 结束当前递归</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 遍历所有碎片</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numFragments<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前碎片没有被使用</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 标记当前碎片为已使用</span>
+                visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+                <span class="token comment">// 将当前碎片的内容添加到当前路径中</span>
+                currentPath<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>fragments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 递归调用函数生成下一个碎片的排列</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>currentLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> currentPath<span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> numFragments<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 回溯操作，撤销当前碎片的使用标记，并从路径中删除当前碎片内容</span>
+                visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+                currentPath<span class="token punctuation">.</span><span class="token function">delete</span><span class="token punctuation">(</span>currentPath<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> fragments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> currentPath<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="python_445"></a>python字符串</h2> 
+<pre><code class="prism language-python">
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>current_length<span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> current_path<span class="token punctuation">,</span> result_set<span class="token punctuation">,</span> num_fragments<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果当前排列的长度等于碎片的数量，说明生成了一个完整的排列</span>
+    <span class="token keyword">if</span> current_length <span class="token operator">==</span> num_fragments<span class="token punctuation">:</span>
+        result_set<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>current_path<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 将生成的排列添加到结果集中</span>
+        <span class="token keyword">return</span>  <span class="token comment"># 结束当前递归</span>
+
+    <span class="token comment"># 遍历所有碎片</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_fragments<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前碎片没有被使用</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token comment"># 标记当前碎片为已使用</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+            <span class="token comment"># 将当前碎片的内容添加到当前路径中</span>
+            current_path<span class="token punctuation">.</span>append<span class="token punctuation">(</span>fragments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+            <span class="token comment"># 递归调用函数生成下一个碎片的排列</span>
+            dfs<span class="token punctuation">(</span>current_length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> current_path<span class="token punctuation">,</span> result_set<span class="token punctuation">,</span> num_fragments<span class="token punctuation">)</span>
+
+            <span class="token comment"># 回溯操作，撤销当前碎片的使用标记，并从路径中删除当前碎片内容</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">False</span>
+            current_path<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ 
+num_fragments <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+fragments <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 使用集合存储所有排列结果，集合会自动去重</span>
+result_set <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 创建一个布尔列表用于标记每个碎片是否被使用过</span>
+visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> num_fragments
+
+<span class="token comment"># 调用深度优先搜索函数开始生成排列组合</span>
+dfs<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> result_set<span class="token punctuation">,</span> num_fragments<span class="token punctuation">)</span>
+
+<span class="token comment"># 输出所有生成的排列组合，并按字典序排序</span>
+<span class="token keyword">for</span> combination <span class="token keyword">in</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>result_set<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>combination<span class="token punctuation">)</span>
+
+</code></pre> 
+<h2><a id="javaScript_486"></a>javaScript字符串</h2> 
+<pre><code class="prism language-js">
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建接口用于从控制台读取输入</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 从控制台读取输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">numFragments</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">fragmentString</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> fragments <span class="token operator">=</span> fragmentString<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> resultSet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token function">Number</span><span class="token punctuation">(</span>numFragments<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 调用深度优先搜索函数开始生成排列组合</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> <span class="token function">Number</span><span class="token punctuation">(</span>numFragments<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出所有生成的排列组合，并按字典序排序</span>
+        Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span>resultSet<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">combination</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>combination<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ 
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">currentLength<span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> currentPath<span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> numFragments</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前排列的长度等于碎片的数量，说明生成了一个完整的排列</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentLength <span class="token operator">===</span> numFragments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        resultSet<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>currentPath<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 将生成的排列添加到结果集中</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>  <span class="token comment">// 结束当前递归</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历所有碎片</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numFragments<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前碎片没有被使用</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 标记当前碎片为已使用</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token comment">// 将当前碎片的内容添加到当前路径中</span>
+            currentPath<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>fragments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 递归调用函数生成下一个碎片的排列</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>currentLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> currentPath<span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> numFragments<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 回溯操作，撤销当前碎片的使用标记，并从路径中删除当前碎片内容</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+            currentPath<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_543"></a>C++字符串</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 深度优先搜索函数声明</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> currentLength<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> fragments<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token operator">&amp;</span> visited<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> currentPath<span class="token punctuation">,</span> set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> resultSet<span class="token punctuation">,</span> <span class="token keyword">int</span> numFragments<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>  <span class="token comment">// 石碑碎片的数量</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> arr<span class="token punctuation">;</span>  <span class="token comment">// 存储石碑碎片的数组</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>  <span class="token comment">// 读取碎片数量</span>
+
+    <span class="token comment">// 读取每个碎片的内容</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string tmp<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> tmp<span class="token punctuation">;</span>
+        arr<span class="token punctuation">.</span><span class="token function">emplace_back</span><span class="token punctuation">(</span>tmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> resultSet<span class="token punctuation">;</span>  <span class="token comment">// 存储结果的集合</span>
+    vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token function">visited</span><span class="token punctuation">(</span>n<span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 标记每个碎片是否被使用过的布尔数组</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> currentPath<span class="token punctuation">;</span>  <span class="token comment">// 当前路径</span>
+
+    <span class="token comment">// 调用深度优先搜索函数开始生成排列组合</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> arr<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> currentPath<span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出所有生成的排列组合，并按字典序排序</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> combination <span class="token operator">:</span> resultSet<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> combination <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> currentLength<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> fragments<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token operator">&amp;</span> visited<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> currentPath<span class="token punctuation">,</span> set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> resultSet<span class="token punctuation">,</span> <span class="token keyword">int</span> numFragments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前排列的长度等于碎片的数量，说明生成了一个完整的排列</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentLength <span class="token operator">==</span> numFragments<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string combination<span class="token punctuation">;</span>  <span class="token comment">// 存储当前组合的字符串</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> fragment <span class="token operator">:</span> currentPath<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            combination <span class="token operator">+=</span> fragment<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        resultSet<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>combination<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 将生成的排列添加到结果集中</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>  <span class="token comment">// 结束当前递归</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历所有碎片</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numFragments<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前碎片没有被使用</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 标记当前碎片为已使用</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+            <span class="token comment">// 将当前碎片的内容添加到当前路径中</span>
+            currentPath<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>fragments<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 递归调用函数生成下一个碎片的排列</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>currentLength <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> fragments<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> currentPath<span class="token punctuation">,</span> resultSet<span class="token punctuation">,</span> numFragments<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 回溯操作，撤销当前碎片的使用标记，并从路径中删除当前碎片内容</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> false<span class="token punctuation">;</span>
+            currentPath<span class="token punctuation">.</span><span class="token function">pop_back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h2><a id="C_616"></a>C语言字符串</h2> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_N</span> <span class="token expression"><span class="token number">100</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_S_LEN</span> <span class="token expression"><span class="token number">10</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_RES_SIZE</span> <span class="token expression"><span class="token number">100000</span></span></span>
+
+<span class="token keyword">int</span> n<span class="token punctuation">;</span>
+<span class="token keyword">char</span> arr<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_S_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">// 存储石碑碎片的数组</span>
+
+<span class="token comment">// 求全排列时，标记已使用的元素</span>
+<span class="token keyword">int</span> used<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 记录题解</span>
+<span class="token keyword">char</span> res<span class="token punctuation">[</span>MAX_RES_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N <span class="token operator">*</span> MAX_S_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> res_size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 排列</span>
+<span class="token keyword">char</span> path<span class="token punctuation">[</span>MAX_N <span class="token operator">*</span> MAX_S_LEN<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token string">'\0'</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于qsort排序</span>
+<span class="token keyword">int</span> <span class="token function">cmp</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token function">strcmp</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 深度优先搜索函数，用于生成所有可能的字符串排列组合</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> path_size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前排列的长度等于碎片的数量，说明生成了一个完整的排列</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>path_size <span class="token operator">==</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>res<span class="token punctuation">[</span>res_size<span class="token operator">++</span><span class="token punctuation">]</span><span class="token punctuation">,</span> path<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 将生成的排列添加到结果集中</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 遍历所有碎片</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前碎片已经被使用，跳过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 去重：如果当前碎片与前一个碎片相同且前一个碎片未被使用，跳过</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> arr<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>used<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 标记当前碎片为已使用</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将当前碎片的内容添加到当前路径中</span>
+        <span class="token function">strcat</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 递归调用函数生成下一个碎片的排列</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>path_size <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 回溯操作，撤销当前碎片的使用标记，并从路径中删除当前碎片内容</span>
+        path<span class="token punctuation">[</span><span class="token function">strlen</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token function">strlen</span><span class="token punctuation">(</span>arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'\0'</span><span class="token punctuation">;</span>
+        used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取碎片数量</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取每个碎片的内容</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 排序是为了让相同元素相邻，方便后面去重</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>arr<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>arr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 调用深度优先搜索函数开始生成排列组合</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 排序结果集合</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>res<span class="token punctuation">,</span> res_size<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>res<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出石碑文字的组合（按照升序排列）</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> res_size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 去重输出</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>res<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> res<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">puts</span><span class="token punctuation">(</span>res<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_704"></a>完整用例</h2> 
+<h3><a id="1_706"></a>用例1</h3> 
+<pre><code class="prism language-input1">3
+a b c
+</code></pre> 
+<h3><a id="2_713"></a>用例2</h3> 
+<pre><code class="prism language-input2">3
+a b a
+</code></pre> 
+<h3><a id="3_720"></a>用例3</h3> 
+<pre><code class="prism language-input3">4
+a a b b
+</code></pre> 
+<h3><a id="4_727"></a>用例4</h3> 
+<pre><code class="prism language-input4">2
+x y
+</code></pre> 
+<h3><a id="5_734"></a>用例5</h3> 
+<pre><code class="prism language-input5">3
+a a a
+</code></pre> 
+<h3><a id="6_741"></a>用例6</h3> 
+<pre><code class="prism language-input6">4
+a b c d
+</code></pre> 
+<h3><a id="7_748"></a>用例7</h3> 
+<pre><code class="prism language-input7">3
+z z y
+</code></pre> 
+<h3><a id="8_755"></a>用例8</h3> 
+<pre><code class="prism language-input8">5
+a a b b c
+</code></pre> 
+<h3><a id="9_762"></a>用例9</h3> 
+<pre><code class="prism language-input9">4
+1 2 2 3
+</code></pre> 
+<h3><a id="10_769"></a>用例10</h3> 
+<pre><code class="prism language-input10">4
+a a a b
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_6" rel="nofollow">输入描述</a></li><li><a href="#_12" rel="nofollow">输出描述</a></li><li><a href="#_16" rel="nofollow">用例</a></li><li><a href="#_24" rel="nofollow">题目解析</a></li><li><a href="#_32" rel="nofollow">解体思路</a></li><li><a href="#C_52" rel="nofollow">C++</a></li><li><a href="#JavaScript_134" rel="nofollow">JavaScript</a></li><li><a href="#Java_189" rel="nofollow">Java</a></li><li><a href="#Python_244" rel="nofollow">Python</a></li><li><a href="#C_292" rel="nofollow">C语言</a></li><li><a href="#_375" rel="nofollow">以下代码满足用例含有字符串</a></li><li><a href="#java_389" rel="nofollow">java字符串</a></li><li><a href="#python_445" rel="nofollow">python字符串</a></li><li><a href="#javaScript_486" rel="nofollow">javaScript字符串</a></li><li><a href="#C_543" rel="nofollow">C++字符串</a></li><li><a href="#C_616" rel="nofollow">C语言字符串</a></li><li><a href="#_704" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_706" rel="nofollow">用例1</a></li><li><a href="#2_713" rel="nofollow">用例2</a></li><li><a href="#3_720" rel="nofollow">用例3</a></li><li><a href="#4_727" rel="nofollow">用例4</a></li><li><a href="#5_734" rel="nofollow">用例5</a></li><li><a href="#6_741" rel="nofollow">用例6</a></li><li><a href="#7_748" rel="nofollow">用例7</a></li><li><a href="#8_755" rel="nofollow">用例8</a></li><li><a href="#9_762" rel="nofollow">用例9</a></li><li><a href="#10_769" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/169f277a87c29b8ff13d65ef9e7eeec7.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

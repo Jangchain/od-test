@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_0"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_4"></a>题目描述</h2> 
+<p>输入一串方波信号，求取最长的完全连续交替方波信号，并将其输出，如果有相同长度的交替方波信号，输出任一即可。方波信号高位用1标识，低位用0标识 。<img src="https://i-blog.csdnimg.cn/direct/1bc955ac18f74be0943bfc6f9f082b71.png" alt="请添加图片描述"></p> 
+<p>说明：</p> 
+<ol><li>一个完整的信号一定以0开始然后以0结尾，即010是一个完整信号，但101，1010，0101不是</li><li>输入的一串方波信号是由一个或多个完整信号组成</li><li>两个相邻信号之间可能有0个或多个低位，如0110010，011000010</li><li>同一个信号中可以有连续的高位，如01110101011110001010，前14位是一个具有连续高位的信号</li><li>完全连续交替方波是指10交替，如01010是完全连续交替方波，0110不是</li></ol> 
+<h2><a id="_17"></a>输入</h2> 
+<p>输入信号字符串（长度 &gt;= 3 且 &lt;= 1024）：</p> 
+<p>例如：0010101010110000101000010</p> 
+<p>注：输入总是合法的，不用考虑异常情况</p> 
+<h2><a id="_25"></a>输出</h2> 
+<p>输出最长的完全连续交替方波信号串</p> 
+<p>例如：01010</p> 
+<p>若不存在完全连续交替方波信号串，输出 -1。</p> 
+<h2><a id="_33"></a>示例一</h2> 
+<p>输入</p> 
+<pre><code class="prism language-shell">00101010101100001010010
+</code></pre> 
+<p>输出</p> 
+<pre><code class="prism language-shell">01010
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>输入信号串中有三个信号：</p> 
+ <p>0 010101010110(第一个信号段)</p> 
+ <p>00 01010(第二个信号段)</p> 
+ <p>010(第三个信号段)</p> 
+ <p>第一个信号虽然有交替的方波信号段，但出现了11部分的连续高位，不算完全连续交替方波，<br> 在剩下的连续方波信号串中01010最长</p> 
+</blockquote> 
+<h2><a id="_62"></a>解题思路</h2> 
+<p>题目要求处理一串由<code>0</code>和<code>1</code>组成的方波信号字符串，从中找出最长的“完全连续交替方波”信号，并输出该信号。如果有多个相同长度的完全连续交替方波信号，则输出任意一个。如果不存在符合要求的信号串，则输出<code>-1</code>。</p> 
+<p><strong>完全连续交替方波的定义</strong>：</p> 
+<ul><li>必须以<code>0</code>开头，以<code>0</code>结尾。</li><li>中间部分必须是<code>1</code>和<code>0</code>严格交替的形式（例如<code>010</code>，<code>01010</code>等）。</li><li>例如：<code>01010</code>是一个完全连续交替方波，而<code>0110</code>和<code>101</code>则不是。</li></ul> 
+<h2><a id="Java_80"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>regex<span class="token punctuation">.</span></span><span class="token class-name">Matcher</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>regex<span class="token punctuation">.</span></span><span class="token class-name">Pattern</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> signal <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入信号字符串</span>
+
+        <span class="token class-name">Pattern</span> pattern <span class="token operator">=</span> <span class="token class-name">Pattern</span><span class="token punctuation">.</span><span class="token function">compile</span><span class="token punctuation">(</span><span class="token string">"^(01)+0$"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 定义正则表达式匹配完全连续交替方波信号</span>
+
+        <span class="token keyword">int</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最长完全连续交替方波信号的长度</span>
+        <span class="token class-name">String</span> result <span class="token operator">=</span> <span class="token string">"-1"</span><span class="token punctuation">;</span> <span class="token comment">// 最长完全连续交替方波信号的字符串</span>
+
+        <span class="token class-name">StringBuilder</span> sb <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储当前处理的信号</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> signal<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'0'</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token char">'0'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当前字符是0，且前一个字符也是0，说明一个完整信号结束</span>
+                <span class="token class-name">Matcher</span> matcher <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token function">matcher</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对当前信号进行匹配</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>matcher<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+                    maxLength <span class="token operator">=</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大长度</span>
+                    result <span class="token operator">=</span> sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的字符串</span>
+                <span class="token punctuation">}</span>
+                sb<span class="token punctuation">.</span><span class="token function">setLength</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 清空当前信号</span>
+            <span class="token punctuation">}</span>
+            sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将当前字符加入当前信号</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">Matcher</span> matcher <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token function">matcher</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对最后一个信号进行匹配</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>matcher<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+            result <span class="token operator">=</span> sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的字符串</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最长的完全连续交替方波信号串</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h2><a id="Python_122"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> re
+
+signal <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token comment"># 输入信号字符串</span>
+
+pattern <span class="token operator">=</span> re<span class="token punctuation">.</span><span class="token builtin">compile</span><span class="token punctuation">(</span><span class="token string">"^(01)+0$"</span><span class="token punctuation">)</span> <span class="token comment"># 定义正则表达式匹配完全连续交替方波信号</span>
+
+maxLength <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment"># 最长完全连续交替方波信号的长度</span>
+result <span class="token operator">=</span> <span class="token string">"-1"</span> <span class="token comment"># 最长完全连续交替方波信号的字符串</span>
+
+sb <span class="token operator">=</span> <span class="token string">""</span> <span class="token comment"># 用于存储当前处理的信号</span>
+<span class="token keyword">for</span> c <span class="token keyword">in</span> signal<span class="token punctuation">:</span>
+    <span class="token keyword">if</span> c <span class="token operator">==</span> <span class="token string">'0'</span> <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token keyword">and</span> sb<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'0'</span><span class="token punctuation">:</span> <span class="token comment"># 当前字符是0，且前一个字符也是0，说明一个完整信号结束</span>
+        matcher <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token keyword">match</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token comment"># 对当前信号进行匹配</span>
+        <span class="token keyword">if</span> matcher <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token operator">&gt;</span> maxLength<span class="token punctuation">:</span> <span class="token comment"># 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+            maxLength <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token comment"># 更新最大长度</span>
+            result <span class="token operator">=</span> sb <span class="token comment"># 更新最大长度对应的字符串</span>
+        sb <span class="token operator">=</span> <span class="token string">""</span> <span class="token comment"># 清空当前信号</span>
+
+    sb <span class="token operator">+=</span> c <span class="token comment"># 将当前字符加入当前信号</span>
+
+matcher <span class="token operator">=</span> pattern<span class="token punctuation">.</span><span class="token keyword">match</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token comment"># 对最后一个信号进行匹配</span>
+<span class="token keyword">if</span> matcher <span class="token keyword">and</span> <span class="token builtin">len</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token operator">&gt;</span> maxLength<span class="token punctuation">:</span> <span class="token comment"># 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+    result <span class="token operator">=</span> sb <span class="token comment"># 更新最大长度对应的字符串</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span> <span class="token comment"># 输出最长的完全连续交替方波信号串</span>
+
+</code></pre> 
+<h2><a id="JavaScript_153"></a>JavaScript</h2> 
+<pre><code class="prism language-js">
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">signal</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> pattern <span class="token operator">=</span> <span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">^(01)+0$</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">;</span> <span class="token comment">// 定义正则表达式匹配完全连续交替方波信号</span>
+
+  <span class="token keyword">let</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最长完全连续交替方波信号的长度</span>
+  <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token string">'-1'</span><span class="token punctuation">;</span> <span class="token comment">// 最长完全连续交替方波信号的字符串</span>
+
+  <span class="token keyword">let</span> sb <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储当前处理的信号</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> signal<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> c <span class="token operator">=</span> signal<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">===</span> <span class="token string">'0'</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">===</span> <span class="token string">'0'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当前字符是0，且前一个字符也是0，说明一个完整信号结束</span>
+      <span class="token keyword">const</span> matcher <span class="token operator">=</span> sb<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span>pattern<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对当前信号进行匹配</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>matcher <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+        maxLength <span class="token operator">=</span> sb<span class="token punctuation">.</span>length<span class="token punctuation">;</span> <span class="token comment">// 更新最大长度</span>
+        result <span class="token operator">=</span> sb<span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的字符串</span>
+      <span class="token punctuation">}</span>
+      sb <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span> <span class="token comment">// 清空当前信号</span>
+    <span class="token punctuation">}</span>
+
+    sb <span class="token operator">+=</span> c<span class="token punctuation">;</span> <span class="token comment">// 将当前字符加入当前信号</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">const</span> matcher <span class="token operator">=</span> sb<span class="token punctuation">.</span><span class="token function">match</span><span class="token punctuation">(</span>pattern<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对最后一个信号进行匹配</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>matcher <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+    result <span class="token operator">=</span> sb<span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的字符串</span>
+  <span class="token punctuation">}</span>
+
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最长的完全连续交替方波信号串</span>
+
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<h2><a id="C_199"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;regex&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string signal<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> signal<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输入信号字符串</span>
+
+    regex <span class="token function">pattern</span><span class="token punctuation">(</span><span class="token string">"^(01)+0$"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 定义正则表达式匹配完全连续交替方波信号</span>
+
+    <span class="token keyword">int</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最长完全连续交替方波信号的长度</span>
+    string result <span class="token operator">=</span> <span class="token string">"-1"</span><span class="token punctuation">;</span> <span class="token comment">// 最长完全连续交替方波信号的字符串</span>
+
+    string sb<span class="token punctuation">;</span> <span class="token comment">// 用于存储当前处理的信号</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> signal<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> signal<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'0'</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">[</span>sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'0'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当前字符是0，且前一个字符也是0，说明一个完整信号结束</span>
+            smatch matcher<span class="token punctuation">;</span> <span class="token comment">// 定义匹配结果</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">regex_match</span><span class="token punctuation">(</span>sb<span class="token punctuation">,</span> matcher<span class="token punctuation">,</span> pattern<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 对当前信号进行匹配，如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+                maxLength <span class="token operator">=</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大长度</span>
+                result <span class="token operator">=</span> sb<span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的字符串</span>
+            <span class="token punctuation">}</span>
+            sb <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span> <span class="token comment">// 清空当前信号</span>
+        <span class="token punctuation">}</span>
+
+        sb <span class="token operator">+=</span> c<span class="token punctuation">;</span> <span class="token comment">// 将当前字符加入当前信号</span>
+    <span class="token punctuation">}</span>
+
+    smatch matcher<span class="token punctuation">;</span> <span class="token comment">// 对最后一个信号进行匹配</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">regex_match</span><span class="token punctuation">(</span>sb<span class="token punctuation">,</span> matcher<span class="token punctuation">,</span> pattern<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果匹配到完全连续交替方波信号，并且长度大于之前的最大长度</span>
+        result <span class="token operator">=</span> sb<span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的字符串</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出最长的完全连续交替方波信号串</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="C_244"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdbool.h&gt;</span></span>
+
+<span class="token comment">// 检查字符串是否匹配"^(01)+0$"的模式</span>
+bool <span class="token function">is_alternating_wave</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>str<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> len <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 如果字符串长度小于3，直接返回false</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>len <span class="token operator">&lt;</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 检查字符串是否以"01"开头，并以"0"结尾，中间部分要严格交替</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token char">'0'</span> <span class="token operator">||</span> str<span class="token punctuation">[</span>len<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token char">'0'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 遍历字符串中间部分，检查是否严格交替 "01"</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> len <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> str<span class="token punctuation">[</span>i<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> signal<span class="token punctuation">[</span><span class="token number">1025</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 输入信号字符串，长度最大为1024</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>signal<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>signal<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从标准输入读取信号字符串</span>
+    
+    <span class="token keyword">int</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最长的完全连续交替方波信号的长度</span>
+    <span class="token keyword">char</span> result<span class="token punctuation">[</span><span class="token number">1025</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"-1"</span><span class="token punctuation">;</span> <span class="token comment">// 最长的完全连续交替方波信号的字符串，默认值为 "-1"</span>
+    
+    <span class="token keyword">char</span> sb<span class="token punctuation">[</span><span class="token number">1025</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储当前处理的信号</span>
+    <span class="token keyword">int</span> sb_len <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前信号的长度</span>
+    
+    <span class="token keyword">int</span> signal_len <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>signal<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 遍历输入的信号字符串</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> signal_len<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> c <span class="token operator">=</span> signal<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果遇到两个连续的"0"，说明一个完整信号段结束</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'0'</span> <span class="token operator">&amp;&amp;</span> sb_len <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> sb<span class="token punctuation">[</span>sb_len <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'0'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">is_alternating_wave</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> sb_len <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果当前信号是完全连续交替方波，并且长度大于之前的最大长度</span>
+                maxLength <span class="token operator">=</span> sb_len<span class="token punctuation">;</span> <span class="token comment">// 更新最大长度</span>
+                <span class="token function">strcpy</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> sb<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的信号串</span>
+            <span class="token punctuation">}</span>
+            sb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> <span class="token comment">// 清空当前信号串</span>
+            sb_len <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 重置当前信号长度</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 将当前字符加入当前信号串</span>
+        sb<span class="token punctuation">[</span>sb_len<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> c<span class="token punctuation">;</span>
+        sb<span class="token punctuation">[</span>sb_len<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 处理最后一个信号段</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">is_alternating_wave</span><span class="token punctuation">(</span>sb<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> sb_len <span class="token operator">&gt;</span> maxLength<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> sb<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最大长度对应的信号串</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最长的完全连续交替方波信号串</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 程序结束</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/173395927a0cbaa36617fad0da16bb64.png" alt="fengmian"></p> 
+<h4><a id="_324"></a>完整用例</h4> 
+<h5><a id="1_325"></a>用例1</h5> 
+<pre><code class="prism language-input1">00101010101100001010010
+</code></pre> 
+<h5><a id="2_331"></a>用例2</h5> 
+<pre><code class="prism language-input2">01101010101011000101000010
+</code></pre> 
+<h5><a id="3_337"></a>用例3</h5> 
+<pre><code class="prism language-input3">0010101010101010101000010
+</code></pre> 
+<h5><a id="4_343"></a>用例4</h5> 
+<pre><code class="prism language-input4">01010101010101010101010010
+</code></pre> 
+<h5><a id="5_349"></a>用例5</h5> 
+<pre><code class="prism language-input5">0010101010101010101000001
+</code></pre> 
+<h5><a id="6_355"></a>用例6</h5> 
+<pre><code class="prism language-input6">0110010101010110000101000010
+</code></pre> 
+<h5><a id="7_361"></a>用例7</h5> 
+<pre><code class="prism language-input7">001010101011000010100001001010101010110000101000010
+</code></pre> 
+<h5><a id="8_367"></a>用例8</h5> 
+<pre><code class="prism language-input8">0110101010101100010100001001010101010110000101000010
+</code></pre> 
+<h5><a id="9_373"></a>用例9</h5> 
+<pre><code class="prism language-input9">0010101010101010101000010010101010101010101010101010100010
+</code></pre> 
+<h5><a id="10_379"></a>用例10</h5> 
+<pre><code class="prism language-input10">0101010101010101010101001001010101010101010101010101010001
+</code></pre>
+                </div>
+</body>
+</html>

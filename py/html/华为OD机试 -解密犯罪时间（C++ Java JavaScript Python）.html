@@ -1,0 +1,647 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>警察在侦破一个案件时，得到了线人给出的可能犯罪时间，形如 “HH:MM” 表示的时刻。</p> 
+<p>根据警察和线人的约定，为了隐蔽，该时间是修改过的，</p> 
+<p>解密规则为：利用当前出现过的数字，构造下一个距离当前时间最近的时刻，则该时间为可能的犯罪时间。</p> 
+<p>每个出现数字都可以被无限次使用。</p> 
+<h2><a id="_13"></a>输入描述</h2> 
+<p>形如HH:SS字符串，表示原始输入。</p> 
+<h2><a id="_17"></a>输出描述</h2> 
+<p>形如HH:SS的字符串，表示推理处理的犯罪时间。</p> 
+<h3><a id="_21"></a>备注</h3> 
+<p>1.可以保证现任给定的字符串一定是合法的。</p> 
+<p>例如，“01:35”和“11:08”是合法的，“1:35”和“11:8”是不合法的。</p> 
+<p>2.最近的时刻可能在第二天。</p> 
+<h2><a id="_31"></a>用例</h2> 
+<table><tbody><tr><td>输入</td><td>输出</td></tr><tr><td>20:12</td><td>20:20</td></tr><tr><td>23:59</td><td>22:22</td></tr><tr><td>12:58</td><td>15:11</td></tr><tr><td>18:52</td><td>18:55</td></tr><tr><td>23:52</td><td>23:53</td></tr><tr><td>09:17</td><td>09:19</td></tr><tr><td>07:08</td><td>08:00</td></tr></tbody></table> 
+<h2><a id="C_36"></a>C++</h2> 
+<pre><code class="prism language-c"># 代码<span class="token number">1</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cstdio&gt;</span></span>
+
+<span class="token comment">// 检查给定的小时和分钟是否有效，基于“available”数组中的可用数字</span>
+bool <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token keyword">int</span> hours<span class="token punctuation">,</span> <span class="token keyword">int</span> minutes<span class="token punctuation">,</span> <span class="token keyword">const</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token operator">&amp;</span> available<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将小时和分钟分解为单个数字</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> digits <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>hours <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">,</span> hours <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> digit <span class="token operator">:</span> digits<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>available<span class="token punctuation">[</span>digit<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> false<span class="token punctuation">;</span> <span class="token comment">// 如果数字不可用，则返回false</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> true<span class="token punctuation">;</span> <span class="token comment">// 所有数字都可用，返回true</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 根据输入的时间找到下一个可用时间</span>
+std<span class="token operator">::</span>string <span class="token function">findNextTime</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>string<span class="token operator">&amp;</span> time<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从字符串中提取小时和分钟</span>
+    <span class="token keyword">int</span> hours <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> minutes <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 初始化一个布尔数组，标记哪些数字是可用的</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token function">available</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> time<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">!=</span> <span class="token string">':'</span><span class="token punctuation">)</span> available<span class="token punctuation">[</span>c <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span> <span class="token comment">// 标记非冒号字符对应的数字为可用</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化下一个可能的小时和分钟数</span>
+    <span class="token keyword">int</span> nextHours <span class="token operator">=</span> hours<span class="token punctuation">,</span> nextMinutes <span class="token operator">=</span> minutes<span class="token punctuation">;</span>
+    <span class="token keyword">do</span> <span class="token punctuation">{<!-- --></span>
+        nextMinutes<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 递增分钟</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nextMinutes <span class="token operator">==</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果分钟数到达60，小时数递增，分钟数归零</span>
+            nextMinutes <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            nextHours<span class="token operator">++</span><span class="token punctuation">;</span>
+            nextHours <span class="token operator">%=</span> <span class="token number">24</span><span class="token punctuation">;</span> <span class="token comment">// 如果小时数到达24，归零</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span> <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isValid</span><span class="token punctuation">(</span>nextHours<span class="token punctuation">,</span> nextMinutes<span class="token punctuation">,</span> available<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 循环直到找到有效的时间</span>
+
+    <span class="token keyword">char</span> buffer<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span> <span class="token string">"%02d:%02d"</span><span class="token punctuation">,</span> nextHours<span class="token punctuation">,</span> nextMinutes<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 格式化字符串</span>
+    <span class="token keyword">return</span> std<span class="token operator">::</span><span class="token function">string</span><span class="token punctuation">(</span>buffer<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 返回下一个可能的时间</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>string input<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> input<span class="token punctuation">;</span> <span class="token comment">// 读取输入</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token function">findNextTime</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span> <span class="token comment">// 打印下一个可能的时间</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+# 代码<span class="token number">2</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>string timeStr<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> timeStr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取一行输入</span>
+    <span class="token comment">// 删除输入字符串中的所有冒号</span>
+    timeStr<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">remove</span><span class="token punctuation">(</span>timeStr<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> timeStr<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> timeStr<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> numArr<span class="token punctuation">;</span> <span class="token comment">// 存储时间数字</span>
+    <span class="token comment">// 将时间字符串转换为数字数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> timeStr<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        numArr<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>c <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算输入时间的总分钟数</span>
+    <span class="token keyword">int</span> inputMins <span class="token operator">=</span> <span class="token punctuation">(</span>numArr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    std<span class="token operator">::</span>map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> numMap<span class="token punctuation">;</span> <span class="token comment">// 用于存储时间数字及其出现次数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> num <span class="token operator">:</span> numArr<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        numMap<span class="token punctuation">[</span>num<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数字映射</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ints<span class="token punctuation">;</span> <span class="token comment">// 存储不重复的时间数字</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span><span class="token operator">&amp;</span> kv <span class="token operator">:</span> numMap<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        ints<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>kv<span class="token punctuation">.</span>first<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 收集不重复的数字</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token operator">::</span>string<span class="token operator">&gt;</span> resultMap<span class="token punctuation">;</span> <span class="token comment">// 存储所有可能的时间及其对应的分钟数</span>
+    <span class="token comment">// 遍历所有可能的时间组合</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> a <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 小时的十位数不能大于2</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> b <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">==</span> <span class="token number">2</span> <span class="token operator">&amp;&amp;</span> b <span class="token operator">&gt;</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 小时的个位数在十位数为2时不能大于3</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> c <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 分钟的十位数不能大于5</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> d <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">int</span> mins <span class="token operator">=</span> <span class="token punctuation">(</span>a <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> b<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> c <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> d<span class="token punctuation">;</span> <span class="token comment">// 计算分钟数</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>mins <span class="token operator">&lt;=</span> inputMins<span class="token punctuation">)</span> mins <span class="token operator">+=</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">60</span><span class="token punctuation">;</span> <span class="token comment">// 如果时间小于等于输入时间，则加上一天的分钟数</span>
+                    <span class="token comment">// 保存结果</span>
+                    resultMap<span class="token punctuation">[</span>mins<span class="token punctuation">]</span> <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span> <span class="token operator">+</span> std<span class="token operator">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">":"</span> <span class="token operator">+</span> std<span class="token operator">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token operator">+</span> std<span class="token operator">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 查找结果映射中最接近输入时间的时间</span>
+    <span class="token keyword">auto</span> minIt <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">min_element</span><span class="token punctuation">(</span>resultMap<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> resultMap<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                  <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token operator">::</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> a<span class="token punctuation">,</span> <span class="token keyword">const</span> std<span class="token operator">::</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token operator">::</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                                      <span class="token keyword">return</span> a<span class="token punctuation">.</span>first <span class="token operator">&lt;</span> b<span class="token punctuation">.</span>first<span class="token punctuation">;</span> <span class="token comment">// 比较函数</span>
+                                  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果找到有效结果，则输出</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>minIt <span class="token operator">!=</span> resultMap<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> minIt<span class="token operator">-&gt;</span>second <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="java_157"></a>java</h2> 
+<pre><code class="prism language-java"># 代码<span class="token number">1</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入作为原始时间</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 打印出经过处理的下一个可能的犯罪时间</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">findNextTime</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">findNextTime</span><span class="token punctuation">(</span><span class="token class-name">String</span> time<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 解析字符串时间为小时和分钟</span>
+        <span class="token keyword">int</span> hours <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> minutes <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个布尔数组，用于标记哪些数字是可用的</span>
+        <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> available <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历时间字符串中的每个字符，如果不是':'，则标记对应的数字为可用</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">char</span> c <span class="token operator">:</span> time<span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">!=</span> <span class="token string">':'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                available<span class="token punctuation">[</span>c <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化下一个可能的小时和分钟数为当前时间</span>
+        <span class="token keyword">int</span> nextHours <span class="token operator">=</span> hours<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> nextMinutes <span class="token operator">=</span> minutes<span class="token punctuation">;</span>
+        <span class="token comment">// 循环直到找到一个符合条件的时间</span>
+        <span class="token keyword">do</span> <span class="token punctuation">{<!-- --></span>
+            nextMinutes<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 尝试下一个分钟数</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>nextMinutes <span class="token operator">==</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果分钟数达到60，归零并小时数加一</span>
+                nextMinutes <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                nextHours<span class="token operator">++</span><span class="token punctuation">;</span>
+                nextHours <span class="token operator">%=</span> <span class="token number">24</span><span class="token punctuation">;</span> <span class="token comment">// 小时数达到24时归零</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isValid</span><span class="token punctuation">(</span>nextHours<span class="token punctuation">,</span> nextMinutes<span class="token punctuation">,</span> available<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 检查当前尝试的时间是否有效</span>
+
+        <span class="token comment">// 返回格式化后的时间字符串</span>
+        <span class="token keyword">return</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"%02d:%02d"</span><span class="token punctuation">,</span> nextHours<span class="token punctuation">,</span> nextMinutes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token keyword">int</span> hours<span class="token punctuation">,</span> <span class="token keyword">int</span> minutes<span class="token punctuation">,</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> available<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将小时和分钟数分解为单独的数字</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> digits <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>hours <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">,</span> hours <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历每个数字，检查是否都是可用的</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> digit <span class="token operator">:</span> digits<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>available<span class="token punctuation">[</span>digit<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 如果有任何一个数字不可用，返回false</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 所有数字都可用，返回true</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+# 代码<span class="token number">2</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建Scanner对象用于读取控制台输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> timeStr <span class="token operator">=</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+        <span class="token comment">// 判断是否还有输入的下一行</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">hasNextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 读取输入的时间字符串</span>
+            timeStr <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 关闭scanner对象</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 使用StringBuilder删除时间中的冒号，方便处理</span>
+        <span class="token class-name">StringBuilder</span> builder <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span>timeStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        builder<span class="token punctuation">.</span><span class="token function">deleteCharAt</span><span class="token punctuation">(</span>builder<span class="token punctuation">.</span><span class="token function">indexOf</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将处理后的字符串转换为字符数组</span>
+        <span class="token keyword">char</span><span class="token punctuation">[</span><span class="token punctuation">]</span> charArray <span class="token operator">=</span> builder<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toCharArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将字符数组转换为数字数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> numArr <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>charArray<span class="token punctuation">.</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> charArray<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            numArr<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> charArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 计算输入时间的总分钟数</span>
+        <span class="token keyword">int</span> inputMins <span class="token operator">=</span> <span class="token punctuation">(</span>numArr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 使用Map去重并存储每个数字</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> numMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> c <span class="token operator">:</span> numArr<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            numMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>c<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 将Map中的键（即数字）转换为数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> ints <span class="token operator">=</span> numMap<span class="token punctuation">.</span><span class="token function">keySet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">intValue</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个Map来存储可能的时间和它们对应的分钟数</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> resultMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 通过四层循环遍历所有可能的时间组合</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> anInt <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果小时的十位数大于2，则跳过</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>anInt <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果小时的十位数为2且个位数大于3，则跳过（24小时制）</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>anInt <span class="token operator">==</span> <span class="token number">2</span> <span class="token operator">&amp;&amp;</span> i <span class="token operator">&gt;</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果分钟的十位数大于5，则跳过</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> k <span class="token operator">:</span> ints<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token comment">// 计算当前遍历到的时间的总分钟数</span>
+                        <span class="token keyword">int</span> mins <span class="token operator">=</span> <span class="token punctuation">(</span>anInt <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> i<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> j <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> k<span class="token punctuation">;</span>
+                        <span class="token comment">// 如果计算出的时间小于等于输入时间，则认为是第二天的时间，加上一天的总分钟数</span>
+                        <span class="token keyword">if</span> <span class="token punctuation">(</span>mins <span class="token operator">&lt;=</span> inputMins<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                            mins <span class="token operator">+=</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">60</span><span class="token punctuation">;</span>
+                        <span class="token punctuation">}</span>
+                        <span class="token comment">// 将当前时间格式化为字符串并存入结果Map中</span>
+                        <span class="token class-name">String</span> str <span class="token operator">=</span> anInt <span class="token operator">+</span> <span class="token string">""</span> <span class="token operator">+</span> i <span class="token operator">+</span> <span class="token string">":"</span> <span class="token operator">+</span> j <span class="token operator">+</span> k<span class="token punctuation">;</span>
+                        resultMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>mins<span class="token punctuation">,</span> str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 从结果Map中找出最小的分钟数，即最接近输入时间的下一个时间</span>
+        <span class="token class-name">Integer</span> min <span class="token operator">=</span> resultMap<span class="token punctuation">.</span><span class="token function">keySet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">compareTo</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 打印出对应的时间字符串</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>resultMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>min<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_291"></a>javaScript</h2> 
+<pre><code class="prism language-javascript"># 代码<span class="token number">1</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取一行输入作为原始时间，并处理</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">findNextTime</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印处理后的时间</span>
+    readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">findNextTime</span><span class="token punctuation">(</span><span class="token parameter">time</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 解析字符串时间为小时和分钟</span>
+    <span class="token keyword">let</span> hours <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> minutes <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span><span class="token function">substring</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 创建一个布尔数组，用于标记哪些数字是可用的</span>
+    <span class="token keyword">let</span> available <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历时间字符串中的每个字符，如果不是':'，则标记对应的数字为可用</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> c <span class="token keyword">of</span> time<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">!==</span> <span class="token string">':'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            available<span class="token punctuation">[</span>c <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化下一个可能的小时和分钟数为当前时间</span>
+    <span class="token keyword">let</span> nextHours <span class="token operator">=</span> hours<span class="token punctuation">;</span>
+    <span class="token keyword">let</span> nextMinutes <span class="token operator">=</span> minutes<span class="token punctuation">;</span>
+    <span class="token comment">// 循环直到找到一个符合条件的时间</span>
+    <span class="token keyword">do</span> <span class="token punctuation">{<!-- --></span>
+        nextMinutes<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 尝试下一个分钟数</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nextMinutes <span class="token operator">===</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果分钟数达到60，归零并小时数加一</span>
+            nextMinutes <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            nextHours<span class="token operator">++</span><span class="token punctuation">;</span>
+            nextHours <span class="token operator">%=</span> <span class="token number">24</span><span class="token punctuation">;</span> <span class="token comment">// 小时数达到24时归零</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span> <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isValid</span><span class="token punctuation">(</span>nextHours<span class="token punctuation">,</span> nextMinutes<span class="token punctuation">,</span> available<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 检查当前尝试的时间是否有效</span>
+
+    <span class="token comment">// 返回格式化后的时间字符串</span>
+    <span class="token keyword">return</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>nextHours<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">padStart</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>nextMinutes<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">padStart</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token parameter">hours<span class="token punctuation">,</span> minutes<span class="token punctuation">,</span> available</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将小时和分钟数分解为单独的数字</span>
+    <span class="token keyword">let</span> digits <span class="token operator">=</span> <span class="token punctuation">[</span>Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>hours <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">,</span> hours <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">,</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>minutes <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">,</span> minutes <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历每个数字，检查是否都是可用的</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> digit <span class="token keyword">of</span> digits<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>available<span class="token punctuation">[</span>digit<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 如果有任何一个数字不可用，返回false</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 所有数字都可用，返回true</span>
+<span class="token punctuation">}</span>
+
+# 代码<span class="token number">2</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入的时间字符串，并处理</span>
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">timeStr</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">findNextClosestTime</span><span class="token punctuation">(</span>timeStr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到并打印最接近的下一个可能时间</span>
+    readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">findNextClosestTime</span><span class="token punctuation">(</span><span class="token parameter">timeStr</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 删除时间中的冒号，方便处理</span>
+    timeStr <span class="token operator">=</span> timeStr<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 将时间字符串转换为数字数组</span>
+    <span class="token keyword">let</span> numArr <span class="token operator">=</span> timeStr<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">c</span> <span class="token operator">=&gt;</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算输入时间的总分钟数</span>
+    <span class="token keyword">let</span> inputMins <span class="token operator">=</span> <span class="token punctuation">(</span>numArr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用Set去重并存储每个数字</span>
+    <span class="token keyword">let</span> uniqueNums <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span>numArr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个Map来存储可能的时间和它们对应的分钟数</span>
+    <span class="token keyword">let</span> resultMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> a <span class="token keyword">of</span> uniqueNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> b <span class="token keyword">of</span> uniqueNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">==</span> <span class="token number">2</span> <span class="token operator">&amp;&amp;</span> b <span class="token operator">&gt;</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> c <span class="token keyword">of</span> uniqueNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> d <span class="token keyword">of</span> uniqueNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">let</span> mins <span class="token operator">=</span> <span class="token punctuation">(</span>a <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> b<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> c <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> d<span class="token punctuation">;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>mins <span class="token operator">&lt;=</span> inputMins<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        mins <span class="token operator">+=</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">60</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                    resultMap<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>mins<span class="token punctuation">,</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 从结果Map中找出最小的分钟数，即最接近输入时间的下一个时间</span>
+    <span class="token keyword">let</span> min <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span><span class="token operator">...</span>resultMap<span class="token punctuation">.</span><span class="token function">keys</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>resultMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>min<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="python_401"></a>python</h2> 
+<pre><code class="prism language-python"><span class="token comment">#代码1</span>
+<span class="token keyword">def</span> <span class="token function">find_next_time</span><span class="token punctuation">(</span>time<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    根据输入的时间找到下一个可能的时间，使用可用数字组合。
+    """</span>
+    <span class="token comment"># 解析小时和分钟</span>
+    hours<span class="token punctuation">,</span> minutes <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>time<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>time<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">:</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token comment"># 创建一个布尔列表，用于标记哪些数字是可用的</span>
+    available <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> time<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> c <span class="token operator">!=</span> <span class="token string">':'</span><span class="token punctuation">:</span>
+            available<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+
+    <span class="token comment"># 初始化下一个可能的小时和分钟</span>
+    next_hours<span class="token punctuation">,</span> next_minutes <span class="token operator">=</span> hours<span class="token punctuation">,</span> minutes
+    <span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+        next_minutes <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token keyword">if</span> next_minutes <span class="token operator">==</span> <span class="token number">60</span><span class="token punctuation">:</span>
+            next_minutes <span class="token operator">=</span> <span class="token number">0</span>
+            next_hours <span class="token operator">+=</span> <span class="token number">1</span>
+            next_hours <span class="token operator">%=</span> <span class="token number">24</span>
+
+        <span class="token keyword">if</span> is_valid<span class="token punctuation">(</span>next_hours<span class="token punctuation">,</span> next_minutes<span class="token punctuation">,</span> available<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+
+    <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>next_hours<span class="token punctuation">:</span><span class="token format-spec">02d</span><span class="token punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>next_minutes<span class="token punctuation">:</span><span class="token format-spec">02d</span><span class="token punctuation">}</span></span><span class="token string">'</span></span>
+
+<span class="token keyword">def</span> <span class="token function">is_valid</span><span class="token punctuation">(</span>hours<span class="token punctuation">,</span> minutes<span class="token punctuation">,</span> available<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    检查给定的小时和分钟是否使用了可用的数字。
+    """</span>
+    <span class="token keyword">for</span> digit <span class="token keyword">in</span> <span class="token punctuation">[</span>hours <span class="token operator">//</span> <span class="token number">10</span><span class="token punctuation">,</span> hours <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">//</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> available<span class="token punctuation">[</span>digit<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">False</span>
+    <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+<span class="token comment"># 主程序</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    input_time <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># 读取输入</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>find_next_time<span class="token punctuation">(</span>input_time<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 打印下一个可能的时间</span>
+    
+    
+    
+<span class="token comment"># 代码2</span>
+    
+<span class="token keyword">def</span> <span class="token function">find_next_closest_time</span><span class="token punctuation">(</span>time_str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    根据输入的时间字符串，找到并打印最接近的下一个可能时间。
+    """</span>
+    <span class="token comment"># 删除时间字符串中的冒号</span>
+    time_str <span class="token operator">=</span> time_str<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span>
+    <span class="token comment"># 将时间字符串转换为数字数组</span>
+    num_arr <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token keyword">for</span> c <span class="token keyword">in</span> time_str<span class="token punctuation">]</span>
+
+    <span class="token comment"># 计算输入时间的总分钟数</span>
+    input_mins <span class="token operator">=</span> <span class="token punctuation">(</span>num_arr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> num_arr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> num_arr<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> num_arr<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 使用集合去重并存储每个数字</span>
+    unique_nums <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>num_arr<span class="token punctuation">)</span>
+
+    <span class="token comment"># 创建一个字典来存储可能的时间和它们对应的分钟数</span>
+    result_map <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+    <span class="token keyword">for</span> a <span class="token keyword">in</span> unique_nums<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> a <span class="token operator">&gt;</span> <span class="token number">2</span><span class="token punctuation">:</span> <span class="token keyword">continue</span>
+        <span class="token keyword">for</span> b <span class="token keyword">in</span> unique_nums<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> a <span class="token operator">==</span> <span class="token number">2</span> <span class="token keyword">and</span> b <span class="token operator">&gt;</span> <span class="token number">3</span><span class="token punctuation">:</span> <span class="token keyword">continue</span>
+            <span class="token keyword">for</span> c <span class="token keyword">in</span> unique_nums<span class="token punctuation">:</span>
+                <span class="token keyword">if</span> c <span class="token operator">&gt;</span> <span class="token number">5</span><span class="token punctuation">:</span> <span class="token keyword">continue</span>
+                <span class="token keyword">for</span> d <span class="token keyword">in</span> unique_nums<span class="token punctuation">:</span>
+                    mins <span class="token operator">=</span> <span class="token punctuation">(</span>a <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> b<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> c <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> d
+                    <span class="token keyword">if</span> mins <span class="token operator">&lt;=</span> input_mins<span class="token punctuation">:</span>
+                        mins <span class="token operator">+=</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">60</span>
+                    result_map<span class="token punctuation">[</span>mins<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string-interpolation"><span class="token string">f'</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>a<span class="token punctuation">}</span></span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>b<span class="token punctuation">}</span></span><span class="token string">:</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>c<span class="token punctuation">}</span></span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>d<span class="token punctuation">}</span></span><span class="token string">'</span></span>
+
+    <span class="token comment"># 找到最小的分钟数，即最接近输入时间的下一个时间</span>
+    next_time <span class="token operator">=</span> result_map<span class="token punctuation">[</span><span class="token builtin">min</span><span class="token punctuation">(</span>result_map<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>next_time<span class="token punctuation">)</span>
+
+<span class="token comment"># 主程序</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    time_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># 读取输入的时间字符串</span>
+    find_next_closest_time<span class="token punctuation">(</span>time_str<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_488"></a>C语言</h2> 
+<pre><code class="prism language-c"># 代码<span class="token number">1</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdbool.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+ 
+
+<span class="token comment">// 检查时间是否有效的函数实现</span>
+bool <span class="token function">isValid</span><span class="token punctuation">(</span><span class="token keyword">int</span> hours<span class="token punctuation">,</span> <span class="token keyword">int</span> minutes<span class="token punctuation">,</span> bool available<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> digits<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>hours <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">,</span> hours <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">/</span> <span class="token number">10</span><span class="token punctuation">,</span> minutes <span class="token operator">%</span> <span class="token number">10</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>available<span class="token punctuation">[</span>digits<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 查找并返回下一个可能的时间的函数</span>
+<span class="token keyword">char</span><span class="token operator">*</span> <span class="token function">findNextTime</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span> time<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">static</span> <span class="token keyword">char</span> result<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储结果时间的字符串</span>
+    <span class="token keyword">int</span> hours<span class="token punctuation">,</span> minutes<span class="token punctuation">;</span>
+    <span class="token function">sscanf</span><span class="token punctuation">(</span>time<span class="token punctuation">,</span> <span class="token string">"%2d:%2d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>hours<span class="token punctuation">,</span> <span class="token operator">&amp;</span>minutes<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析小时和分钟</span>
+
+    bool available<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>false<span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 标记可用数字</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>time<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>time<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token string">':'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            available<span class="token punctuation">[</span>time<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 寻找下一个可能的时间</span>
+    <span class="token keyword">do</span> <span class="token punctuation">{<!-- --></span>
+        minutes<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>minutes <span class="token operator">==</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            minutes <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            hours<span class="token operator">++</span><span class="token punctuation">;</span>
+            hours <span class="token operator">%=</span> <span class="token number">24</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span> <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isValid</span><span class="token punctuation">(</span>hours<span class="token punctuation">,</span> minutes<span class="token punctuation">,</span> available<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 格式化结果字符串</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>result<span class="token punctuation">,</span> <span class="token string">"%02d:%02d"</span><span class="token punctuation">,</span> hours<span class="token punctuation">,</span> minutes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 主函数</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储输入的时间字符串</span>
+ 
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取时间</span>
+
+    <span class="token comment">// 调用函数处理并打印下一个可能的时间</span>
+    <span class="token keyword">char</span> nextTime<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>nextTime<span class="token punctuation">,</span> <span class="token function">findNextTime</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s\n"</span><span class="token punctuation">,</span> nextTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+
+# 代码<span class="token number">2</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义一个结构体，用于存储时间和对应的分钟数</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> mins<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> timeStr<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> TimeMap<span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于排序</span>
+<span class="token keyword">int</span> <span class="token function">compareTimeMap</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    TimeMap <span class="token operator">*</span>timeMapA <span class="token operator">=</span> <span class="token punctuation">(</span>TimeMap <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    TimeMap <span class="token operator">*</span>timeMapB <span class="token operator">=</span> <span class="token punctuation">(</span>TimeMap <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> timeMapA<span class="token operator">-&gt;</span>mins <span class="token operator">-</span> timeMapB<span class="token operator">-&gt;</span>mins<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> timeStr<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储输入的时间字符串</span>
+  
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%5s"</span><span class="token punctuation">,</span> timeStr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取输入的时间字符串</span>
+
+    <span class="token comment">// 删除冒号，方便处理</span>
+    <span class="token keyword">char</span> timeNoColon<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">5</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>timeStr<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token string">':'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            timeNoColon<span class="token punctuation">[</span>j<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> timeStr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    timeNoColon<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'\0'</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 转换为数字数组</span>
+    <span class="token keyword">int</span> numArr<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        numArr<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> timeNoColon<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算输入时间的总分钟数</span>
+    <span class="token keyword">int</span> inputMins <span class="token operator">=</span> <span class="token punctuation">(</span>numArr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> numArr<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 数字去重</span>
+    <span class="token keyword">int</span> uniqueNums<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> uniqueCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>uniqueNums<span class="token punctuation">[</span>numArr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            uniqueNums<span class="token punctuation">[</span>numArr<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            uniqueCount<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 存储所有可能的时间和对应分钟数</span>
+    TimeMap timeMaps<span class="token punctuation">[</span><span class="token number">256</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> timeMapCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有可能的时间组合</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> a <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> a <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> a<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>uniqueNums<span class="token punctuation">[</span>a<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> b <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> b <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> b<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>uniqueNums<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> c <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> c <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> c<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>uniqueNums<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> d <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> d <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> d<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>uniqueNums<span class="token punctuation">[</span>d<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 计算小时和分钟</span>
+                    <span class="token keyword">int</span> hour <span class="token operator">=</span> a <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> b<span class="token punctuation">;</span>
+                    <span class="token keyword">int</span> minute <span class="token operator">=</span> c <span class="token operator">*</span> <span class="token number">10</span> <span class="token operator">+</span> d<span class="token punctuation">;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>hour <span class="token operator">&lt;</span> <span class="token number">24</span> <span class="token operator">&amp;&amp;</span> minute <span class="token operator">&lt;</span> <span class="token number">60</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token keyword">int</span> totalMins <span class="token operator">=</span> hour <span class="token operator">*</span> <span class="token number">60</span> <span class="token operator">+</span> minute<span class="token punctuation">;</span>
+                        <span class="token keyword">if</span> <span class="token punctuation">(</span>totalMins <span class="token operator">&lt;=</span> inputMins<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                            totalMins <span class="token operator">+=</span> <span class="token number">24</span> <span class="token operator">*</span> <span class="token number">60</span><span class="token punctuation">;</span>
+                        <span class="token punctuation">}</span>
+                        timeMaps<span class="token punctuation">[</span>timeMapCount<span class="token punctuation">]</span><span class="token punctuation">.</span>mins <span class="token operator">=</span> totalMins<span class="token punctuation">;</span>
+                        <span class="token function">sprintf</span><span class="token punctuation">(</span>timeMaps<span class="token punctuation">[</span>timeMapCount<span class="token punctuation">]</span><span class="token punctuation">.</span>timeStr<span class="token punctuation">,</span> <span class="token string">"%02d:%02d"</span><span class="token punctuation">,</span> hour<span class="token punctuation">,</span> minute<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        timeMapCount<span class="token operator">++</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对时间进行排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>timeMaps<span class="token punctuation">,</span> timeMapCount<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>TimeMap<span class="token punctuation">)</span><span class="token punctuation">,</span> compareTimeMap<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 找到最接近的时间</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> timeMaps<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>timeStr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_649"></a>完整用例</h2> 
+<h3><a id="1_650"></a>用例1</h3> 
+<pre><code class="prism language-input1">00:00
+</code></pre> 
+<h3><a id="2_656"></a>用例2</h3> 
+<pre><code class="prism language-input2">22:49
+</code></pre> 
+<h3><a id="3_662"></a>用例3</h3> 
+<pre><code class="prism language-input3">23:49
+</code></pre> 
+<h3><a id="4_668"></a>用例4</h3> 
+<pre><code class="prism language-input4">18:55
+</code></pre> 
+<h3><a id="5_674"></a>用例5</h3> 
+<pre><code class="prism language-input5">09:13
+</code></pre> 
+<h3><a id="6_680"></a>用例6</h3> 
+<pre><code class="prism language-input6">18:50
+</code></pre> 
+<h3><a id="7_686"></a>用例7</h3> 
+<pre><code class="prism language-input7">23:52
+</code></pre> 
+<h3><a id="8_692"></a>用例8</h3> 
+<pre><code class="prism language-input8">07:06
+</code></pre> 
+<h3><a id="9_698"></a>用例9</h3> 
+<pre><code class="prism language-input9">09:15
+</code></pre> 
+<h3><a id="10_704"></a>用例10</h3> 
+<pre><code class="prism language-input10">09:55
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/cdd9ff2d0a58ebf801a5e4651eb58442.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

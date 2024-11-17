@@ -1,0 +1,451 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>有一个总空间为100字节的堆，现要从中新申请一块内存，内存分配原则为：优先紧接着前一块已使用内存，分配空间足够且最接近申请大小的空闲内存。</p> 
+<h2><a id="_8"></a>输入描述</h2> 
+<p>第1行是1个整数，表示期望申请的内存字节数</p> 
+<p>第2到第N行是用空格分割的两个整数，表示当前已分配的内存的情况，每一行表示一块已分配的连续内存空间，每行的第1和第2个整数分别表示偏移地址和内存块大小，如：</p> 
+<p>0 1<br> 3 2</p> 
+<p>表示 0 偏移地址开始的 1 个字节和 3 偏移地址开始的 2 个字节已被分配，其余内存空闲。</p> 
+<h2><a id="_20"></a>输出描述</h2> 
+<p>若申请成功，输出申请到内存的偏移；</p> 
+<p>若申请失败，输出 -1</p> 
+<p>备注：</p> 
+<ol><li>若输入信息不合法或无效，则申请失败</li><li>若没有足够的空间供分配，则申请失败</li><li>堆内存信息有区域重叠或有非法值等都是无效输入</li></ol> 
+<h2><a id="_32"></a>用例</h2> 
+<table><thead><tr><th>输入</th><th>1 <br>0 1 <br>3 2</th></tr></thead><tbody><tr><td>输出</td><td>1</td></tr><tr><td>说明</td><td>堆中已使用的两块内存是偏移从0开始的1字节和偏移从3开始的2字节，空闲的两块内存是偏移从1开始2个字节和偏移从5开始95字节，根据分配原</td></tr></tbody></table> 
+<h2><a id="_41"></a>解题思路</h2> 
+<ol><li> <p><strong>内存块排序</strong>:</p> 
+  <ul><li>将<code>usedMemory</code>列表中的内存块按起始地址进行排序。这样可以更容易地找到连续的空闲内存区域。</li></ul> </li><li> <p><strong>寻找最佳匹配内存块</strong>:</p> 
+  <ul><li>程序初始化一个变量<code>start</code>（起始地址）为0，<code>bestFitStart</code>（最佳匹配起始地址）为-1，以及<code>minSizeDiff</code>（最小大小差异）为最大整数值。</li><li>然后，它遍历已排序的内存块列表。对于每个内存块，程序执行以下操作： 
+    <ul><li>检查内存块的合法性（起始地址是否有效，大小是否合理）。</li><li>计算当前可用的空闲空间（<code>freeSpace</code>）。</li><li>如果这个空闲空间足够大并且比之前找到的空间更接近申请大小，则更新<code>bestFitStart</code>和<code>minSizeDiff</code>。</li></ul> </li></ul> </li><li> <p><strong>检查最后的空闲空间</strong>:</p> 
+  <ul><li>程序还需要检查列表中最后一个内存块后面的空间。如果那里有足够的空间，且这个空间的大小比之前找到的任何空间更接近申请大小，则更新<code>bestFitStart</code>。</li></ul> </li></ol> 
+<h2><a id="C_62"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> mallocSize<span class="token punctuation">;</span> <span class="token comment">// 需要分配的内存大小</span>
+    cin <span class="token operator">&gt;&gt;</span> mallocSize<span class="token punctuation">;</span> <span class="token comment">// 从标准输入读取内存大小</span>
+
+    <span class="token comment">// 用于存储已被使用的内存块的向量，每个内存块由一对整数表示（起始地址，大小）</span>
+    vector<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&gt;</span> usedMemory<span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> start<span class="token punctuation">,</span> size<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>cin <span class="token operator">&gt;&gt;</span> start <span class="token operator">&gt;&gt;</span> size<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 循环读取已使用内存块的起始地址和大小</span>
+        usedMemory<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">make_pair</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将读取的内存块添加到向量中</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果分配的内存大小不合理，则输出-1并结束程序</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> mallocSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对已使用的内存块按起始地址进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>usedMemory<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> usedMemory<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    start <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化用于搜索空闲内存的起始地址</span>
+    <span class="token keyword">int</span> bestFitStart <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 存储最佳匹配的内存块起始地址</span>
+    <span class="token keyword">int</span> minSizeDiff <span class="token operator">=</span> numeric_limits<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">::</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 最小大小差异，初始化为int的最大值</span>
+
+    <span class="token comment">// 遍历所有已使用的内存块</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> usedMemory<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> blockStart <span class="token operator">=</span> usedMemory<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>first<span class="token punctuation">;</span> <span class="token comment">// 内存块的起始地址</span>
+        <span class="token keyword">int</span> blockSize <span class="token operator">=</span> usedMemory<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>second<span class="token punctuation">;</span> <span class="token comment">// 内存块的大小</span>
+
+        <span class="token comment">// 检查内存块是否有效</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>blockStart <span class="token operator">&lt;</span> start <span class="token operator">||</span> blockSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> blockStart <span class="token operator">+</span> blockSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 计算当前内存块和上一个内存块之间的空闲空间</span>
+        <span class="token keyword">int</span> freeSpace <span class="token operator">=</span> blockStart <span class="token operator">-</span> start<span class="token punctuation">;</span>
+        <span class="token comment">// 如果找到足够的空闲空间且空间差异比之前找到的更小，则更新最佳匹配的起始地址和最小大小差异</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> freeSpace <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+            minSizeDiff <span class="token operator">=</span> freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 更新搜索的起始地址为当前内存块的结束地址</span>
+        start <span class="token operator">=</span> blockStart <span class="token operator">+</span> blockSize<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检查最后一个内存块后是否有足够的空闲空间</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">&gt;=</span> mallocSize <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最佳匹配的起始地址</span>
+    cout <span class="token operator">&lt;&lt;</span> bestFitStart <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_132"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个扫描器来读取用户输入</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取第一行输入，这是我们要分配的内存大小</span>
+        <span class="token keyword">int</span> mallocSize <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 创建一个列表来存储已使用的内存块</span>
+        <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> usedMemory <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 循环读取后续的输入行，每行代表一个已使用的内存块</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">hasNextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> line <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果读取到空行，结束输入</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 将输入行分割成字符串数组，然后转换成整数数组</span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> memoryBlock <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                                      <span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span>
+                                      <span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 将这个内存块添加到已使用的内存列表中</span>
+            usedMemory<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>memoryBlock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果要分配的内存大小不在合法范围内，输出-1并结束程序</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> mallocSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 按照内存块的起始地址对已使用的内存列表进行排序</span>
+        usedMemory<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> b<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 初始化起始地址为0</span>
+        <span class="token keyword">int</span> start <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化最佳适配的起始地址为-1</span>
+        <span class="token keyword">int</span> bestFitStart <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化最小大小差为最大整数</span>
+        <span class="token keyword">int</span> minSizeDiff <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历已使用的内存列表</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> block <span class="token operator">:</span> usedMemory<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 获取内存块的起始地址和大小</span>
+            <span class="token keyword">int</span> blockStart <span class="token operator">=</span> block<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> blockSize <span class="token operator">=</span> block<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果内存块的起始地址小于当前的起始地址，或者内存块的大小小于等于0，或者内存块的结束地址大于100，输出-1并结束程序</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>blockStart <span class="token operator">&lt;</span> start <span class="token operator">||</span> blockSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> blockStart <span class="token operator">+</span> blockSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 计算当前的起始地址和内存块的起始地址之间的空闲空间</span>
+            <span class="token keyword">int</span> freeSpace <span class="token operator">=</span> blockStart <span class="token operator">-</span> start<span class="token punctuation">;</span>
+            <span class="token comment">// 如果空闲空间大于等于要分配的内存大小，并且空闲空间和要分配的内存大小的差小于当前的最小大小差，更新最佳适配的起始地址和最小大小差</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> freeSpace <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+                minSizeDiff <span class="token operator">=</span> freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 更新当前的起始地址为内存块的结束地址</span>
+            start <span class="token operator">=</span> blockStart <span class="token operator">+</span> blockSize<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 检查最后一个内存块之后的空闲空间，如果空闲空间大于等于要分配的内存大小，并且空闲空间和要分配的内存大小的差小于当前的最小大小差，更新最佳适配的起始地址</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">&gt;=</span> mallocSize <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最佳适配的起始地址</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>bestFitStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_216"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块以从标准输入读取数据</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>  <span class="token comment">// 将标准输入流作为输入源</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 将标准输出流作为输出源</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> mallocSize<span class="token punctuation">;</span> <span class="token comment">// 需要分配的内存大小</span>
+<span class="token keyword">let</span> usedMemory <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用于存储已使用内存块的数组</span>
+
+<span class="token comment">// 当新的行被接收到时触发</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>mallocSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果还未读取到mallocSize</span>
+    mallocSize <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析并设置需要分配的内存大小</span>
+    <span class="token comment">// 如果内存大小不合理，则输出-1并结束程序</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> mallocSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已读取到mallocSize，则读取内存块</span>
+    <span class="token keyword">const</span> memoryBlock <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将行分割并转换为数字数组</span>
+    usedMemory<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>memoryBlock<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将内存块添加到usedMemory数组中</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当输入流被关闭时触发</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 对已使用的内存块按起始地址进行排序</span>
+  usedMemory<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> b<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> start <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化用于搜索空闲内存的起始地址</span>
+  <span class="token keyword">let</span> bestFitStart <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 存储最佳匹配的内存块起始地址</span>
+  <span class="token keyword">let</span> minSizeDiff <span class="token operator">=</span> Number<span class="token punctuation">.</span><span class="token constant">MAX_SAFE_INTEGER</span><span class="token punctuation">;</span> <span class="token comment">// 最小大小差异，初始化为最大安全整数值</span>
+
+  <span class="token comment">// 遍历所有已使用的内存块</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> block <span class="token keyword">of</span> usedMemory<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> blockStart <span class="token operator">=</span> block<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 内存块的起始地址</span>
+    <span class="token keyword">let</span> blockSize <span class="token operator">=</span> block<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 内存块的大小</span>
+
+    <span class="token comment">// 检查内存块是否有效</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>blockStart <span class="token operator">&lt;</span> start <span class="token operator">||</span> blockSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> blockStart <span class="token operator">+</span> blockSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算当前内存块和上一个内存块之间的空闲空间</span>
+    <span class="token keyword">let</span> freeSpace <span class="token operator">=</span> blockStart <span class="token operator">-</span> start<span class="token punctuation">;</span>
+    <span class="token comment">// 如果找到足够的空闲空间且空间差异比之前找到的更小，则更新最佳匹配的起始地址和最小大小差异</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> freeSpace <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+      minSizeDiff <span class="token operator">=</span> freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 更新搜索的起始地址为当前内存块的结束地址</span>
+    start <span class="token operator">=</span> blockStart <span class="token operator">+</span> blockSize<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 检查最后一个内存块后是否有足够的空闲空间</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">&gt;=</span> mallocSize <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 输出最佳匹配的起始地址</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>bestFitStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_290"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取第一行输入，这是我们要分配的内存大小</span>
+mallocSize <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 创建一个列表来存储已使用的内存块</span>
+usedMemory <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 循环读取后续的输入行，每行代表一个已使用的内存块</span>
+<span class="token keyword">for</span> line <span class="token keyword">in</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">:</span>
+    <span class="token comment"># 将输入行分割成字符串数组，然后转换成整数数组</span>
+    memoryBlock <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> line<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 将这个内存块添加到已使用的内存列表中</span>
+    usedMemory<span class="token punctuation">.</span>append<span class="token punctuation">(</span>memoryBlock<span class="token punctuation">)</span>
+
+<span class="token comment"># 如果要分配的内存大小不在合法范围内，输出-1并结束程序</span>
+<span class="token keyword">if</span> mallocSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token keyword">or</span> mallocSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 按照内存块的起始地址对已使用的内存列表进行排序</span>
+usedMemory<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化起始地址为0</span>
+start <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token comment"># 初始化最佳适配的起始地址为-1</span>
+bestFitStart <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+<span class="token comment"># 初始化最小大小差为最大整数</span>
+minSizeDiff <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历已使用的内存列表</span>
+<span class="token keyword">for</span> block <span class="token keyword">in</span> usedMemory<span class="token punctuation">:</span>
+    <span class="token comment"># 获取内存块的起始地址和大小</span>
+    blockStart<span class="token punctuation">,</span> blockSize <span class="token operator">=</span> block
+
+    <span class="token comment"># 如果内存块的起始地址小于当前的起始地址，或者内存块的大小小于等于0，或者内存块的结束地址大于100，输出-1并结束程序</span>
+    <span class="token keyword">if</span> blockStart <span class="token operator">&lt;</span> start <span class="token keyword">or</span> blockSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token keyword">or</span> blockStart <span class="token operator">+</span> blockSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+        sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 计算当前的起始地址和内存块的起始地址之间的空闲空间</span>
+    freeSpace <span class="token operator">=</span> blockStart <span class="token operator">-</span> start
+    <span class="token comment"># 如果空闲空间大于等于要分配的内存大小，并且空闲空间和要分配的内存大小的差小于当前的最小大小差，更新最佳适配的起始地址和最小大小差</span>
+    <span class="token keyword">if</span> mallocSize <span class="token operator">&lt;=</span> freeSpace <span class="token keyword">and</span> <span class="token punctuation">(</span>freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">:</span>
+        bestFitStart <span class="token operator">=</span> start
+        minSizeDiff <span class="token operator">=</span> freeSpace <span class="token operator">-</span> mallocSize
+
+    <span class="token comment"># 更新当前的起始地址为内存块的结束地址</span>
+    start <span class="token operator">=</span> blockStart <span class="token operator">+</span> blockSize
+
+<span class="token comment"># 检查最后一个内存块之后的空闲空间，如果空闲空间大于等于要分配的内存大小，并且空闲空间和要分配的内存大小的差小于当前的最小大小差，更新最佳适配的起始地址</span>
+<span class="token keyword">if</span> <span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">&gt;=</span> mallocSize <span class="token keyword">and</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">:</span>
+    bestFitStart <span class="token operator">=</span> start
+
+<span class="token comment"># 输出最佳适配的起始地址</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>bestFitStart<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_352"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 定义一个结构体，用于表示内存块</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> start<span class="token punctuation">;</span> <span class="token comment">// 内存块的起始地址</span>
+    <span class="token keyword">int</span> size<span class="token punctuation">;</span>  <span class="token comment">// 内存块的大小</span>
+<span class="token punctuation">}</span> MemoryBlock<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">compareMemoryBlocks</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 用于qsort的比较函数，按内存块的起始地址排序</span>
+    MemoryBlock <span class="token operator">*</span>blockA <span class="token operator">=</span> <span class="token punctuation">(</span>MemoryBlock <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    MemoryBlock <span class="token operator">*</span>blockB <span class="token operator">=</span> <span class="token punctuation">(</span>MemoryBlock <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> blockA<span class="token operator">-&gt;</span>start <span class="token operator">-</span> blockB<span class="token operator">-&gt;</span>start<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> mallocSize<span class="token punctuation">;</span> <span class="token comment">// 需要分配的内存大小</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>mallocSize<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从标准输入读取内存大小</span>
+
+    MemoryBlock usedMemory<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储已分配内存块的数组</span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 已分配内存块的数量</span>
+
+    <span class="token keyword">int</span> start<span class="token punctuation">,</span> size<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>start<span class="token punctuation">,</span> <span class="token operator">&amp;</span>size<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 循环读取已分配内存块的起始地址和大小</span>
+        usedMemory<span class="token punctuation">[</span>count<span class="token punctuation">]</span><span class="token punctuation">.</span>start <span class="token operator">=</span> start<span class="token punctuation">;</span>
+        usedMemory<span class="token punctuation">[</span>count<span class="token punctuation">]</span><span class="token punctuation">.</span>size <span class="token operator">=</span> size<span class="token punctuation">;</span>
+        count<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果分配的内存大小不合理，则输出-1并结束程序</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> mallocSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对已使用的内存块按起始地址进行排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>usedMemory<span class="token punctuation">,</span> count<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>MemoryBlock<span class="token punctuation">)</span><span class="token punctuation">,</span> compareMemoryBlocks<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> bestFitStart <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 存储最佳匹配的内存块起始地址</span>
+    <span class="token keyword">int</span> minSizeDiff <span class="token operator">=</span> <span class="token number">101</span><span class="token punctuation">;</span> <span class="token comment">// 最小大小差异，初始化为一个大于最大内存的值</span>
+
+    start <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化用于搜索空闲内存的起始地址</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> count<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 遍历所有已使用的内存块</span>
+        <span class="token keyword">int</span> blockStart <span class="token operator">=</span> usedMemory<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>start<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> blockSize <span class="token operator">=</span> usedMemory<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>size<span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查内存块是否有效</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>blockStart <span class="token operator">&lt;</span> start <span class="token operator">||</span> blockSize <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> blockStart <span class="token operator">+</span> blockSize <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 计算当前内存块和上一个内存块之间的空闲空间</span>
+        <span class="token keyword">int</span> freeSpace <span class="token operator">=</span> blockStart <span class="token operator">-</span> start<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mallocSize <span class="token operator">&lt;=</span> freeSpace <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果找到足够的空闲空间且空间差异比之前找到的更小</span>
+            bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+            minSizeDiff <span class="token operator">=</span> freeSpace <span class="token operator">-</span> mallocSize<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 更新搜索的起始地址为当前内存块的结束地址</span>
+        start <span class="token operator">=</span> blockStart <span class="token operator">+</span> blockSize<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检查最后一个内存块后是否有足够的空闲空间</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">&gt;=</span> mallocSize <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">-</span> start <span class="token operator">-</span> mallocSize<span class="token punctuation">)</span> <span class="token operator">&lt;</span> minSizeDiff<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        bestFitStart <span class="token operator">=</span> start<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最佳匹配的起始地址</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> bestFitStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_434"></a>完整用例</h2> 
+<h3><a id="1_436"></a>用例1</h3> 
+<pre><code class="prism language-input1">10
+0 1
+3 2
+</code></pre> 
+<h3><a id="2_444"></a>用例2</h3> 
+<pre><code class="prism language-input2">20
+0 5
+10 5
+</code></pre> 
+<h3><a id="3_452"></a>用例3</h3> 
+<pre><code class="prism language-input3">10
+0 90
+</code></pre> 
+<h3><a id="4_459"></a>用例4</h3> 
+<pre><code class="prism language-input4">15
+0 5
+10 10
+</code></pre> 
+<h3><a id="5_467"></a>用例5</h3> 
+<pre><code class="prism language-input5">101
+0 1
+</code></pre> 
+<h3><a id="6_474"></a>用例6</h3> 
+<pre><code class="prism language-input6">10
+0 1
+1 2
+</code></pre> 
+<h3><a id="7_482"></a>用例7</h3> 
+<pre><code class="prism language-input7">10
+0 1
+3 98
+</code></pre> 
+<h3><a id="8_490"></a>用例8</h3> 
+<pre><code class="prism language-input8">10
+0 1
+3 2
+6 2
+</code></pre> 
+<h3><a id="9_499"></a>用例9</h3> 
+<pre><code class="prism language-input9">10
+0 1
+3 2
+6 2
+9 2
+</code></pre> 
+<h3><a id="10_509"></a>用例10</h3> 
+<pre><code class="prism language-input10">10
+0 1
+3 2
+6 2
+9 2
+12 2
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_8" rel="nofollow">输入描述</a></li><li><a href="#_20" rel="nofollow">输出描述</a></li><li><a href="#_32" rel="nofollow">用例</a></li><li><a href="#_41" rel="nofollow">解题思路</a></li><li><a href="#C_62" rel="nofollow">C++</a></li><li><a href="#Java_132" rel="nofollow">Java</a></li><li><a href="#javaScript_216" rel="nofollow">javaScript</a></li><li><a href="#Python_290" rel="nofollow">Python</a></li><li><a href="#C_352" rel="nofollow">C语言</a></li><li><a href="#_434" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_436" rel="nofollow">用例1</a></li><li><a href="#2_444" rel="nofollow">用例2</a></li><li><a href="#3_452" rel="nofollow">用例3</a></li><li><a href="#4_459" rel="nofollow">用例4</a></li><li><a href="#5_467" rel="nofollow">用例5</a></li><li><a href="#6_474" rel="nofollow">用例6</a></li><li><a href="#7_482" rel="nofollow">用例7</a></li><li><a href="#8_490" rel="nofollow">用例8</a></li><li><a href="#9_499" rel="nofollow">用例9</a></li><li><a href="#10_509" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/34e2f842b50966b8ae2c30f48dcc4d83.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_0"></a>题目描述</h4> 
+<p>Excel工作表中对选定区域的数值进行统计的功能非常实用。</p> 
+<p>仿照Excel的这个功能，请对给定表格中选中区域中的单元格进行求和统计，并输出统计结果。</p> 
+<p>为简化计算，假设当前输入中每个单元格内容仅为数字或公式两种。</p> 
+<p>如果为数字，则是一个非负整数，形如3、77</p> 
+<p>如果为公式，则固定以=开头，且仅包含下面三种情况：</p> 
+<ul><li>等于某单元格的值，例如=B12</li><li>两个单元格的双目运算（仅为+或-），形如=C1-C2、C3+B2</li><li>单元格和数字的双目运算（仅为+或-），形如=B1+1、100-B2</li></ul> 
+<p>注意：</p> 
+<ol><li>公式内容都是合法的，例如不存在，=C+1、=C1-C2+B3,=5、=3+5</li><li>不存在循环引用，例如A1=B1+C1、C1=A1+B2</li><li>内容中不存在空格、括号</li></ol> 
+<h4><a id="_22"></a>输入描述</h4> 
+<p>第一行两个整数rows cols，表示给定表格区域的行数和列数，1&lt;=rows&lt;=20，1&lt;=cols&lt;=26。<br> 接下来rows行，每行cols个以空格分隔的字符串，表示给定表格values的单元格内容。<br> 最后一行输入的字符串，表示给定的选中区域，形如A1:C2。</p> 
+<h4><a id="_28"></a>输出描述</h4> 
+<p>一个整数，表示给定选中区域各单元格中数字的累加总和，范围-2,147,483,648 ~ 2,147,483,647</p> 
+<h4><a id="_32"></a>备注</h4> 
+<p>表格的行号1<sub>20，列号A</sub>Z，例如单元格B3对应values[2][1]。</p> 
+<h4><a id="_36"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>1 3<br>1 =A1+C1 3<br>A1:C1</td></tr><tr><td>输出</td><td>8</td></tr><tr></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>5 3<br>10 12 =C5<br>15 5 6<br>7 8 =3+C2<br>6 =B2-A1 =C2<br>7 5 3<br>B2:C4</td></tr><tr><td>输出</td><td>29</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h4><a id="_42"></a>题目解析</h4> 
+<p>首先，我们需要搞清楚Excel表格坐标和输入矩阵的索引之间的对应关系。例如，在上面的用例中，输入矩阵为：[[“1”, “=A1+C1”, “3”]]。其中，值为“1”的元素对应矩阵matrix[0][0]，而对应的Excel表格坐标是A1，其中A表示列号，1表示行号。</p> 
+<p>因此，我们可以得到Excel表格坐标和输入矩阵的索引之间的对应关系：</p> 
+<ul><li>行对应关系：String(‘A’).charCodeAt() - 65 = 0（PS：“A”的ASCII码值为65）</li><li>列对应关系：1 - 1 = 0</li></ul> 
+<p>接下来，我们需要解析Excel表格坐标中的列号和行号。只有解析出来，才能方便地对应到输入矩阵的索引。</p> 
+<p>在这里，我们使用正则表达式的捕获组来解析Excel表格坐标。正则表达式为：/^(A-Z)(\d+)$/。</p> 
+<p>接下来，我们就可以实现根据Excel表格坐标获取输入矩阵元素的逻辑了。我们定义一个方法getCell，其入参为Excel表格坐标。然后，通过上面的正则表达式解析出对应的列号和行号，再根据Excel表格列号和行号转化为对应的输入矩阵行索引和列索引，从而得到对应索引位置的值。</p> 
+<p>此时，我们可以得到两种类型的值：</p> 
+<ol><li>非公式的值，例如1</li><li>公式，以等号（=）开头</li></ol> 
+<p>对于非公式的值，我们直接将其转换为数值后返回；对于公式，我们需要分为三种情况：</p> 
+<ul><li>=A1+B1，即两个Excel表格坐标之间的运算</li><li>=A1-2，即一个Excel表格坐标和一个数值之间的运算</li><li>=A1，即一个Excel表格坐标</li></ul> 
+<p>我们可以通过getCell方法获取到Excel表格坐标对应的值，然后进行相应的运算。</p> 
+<h4><a id="C_70"></a>C++</h4> 
+<pre><code class="prism language-c++">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;regex&gt;
+
+using namespace std;
+
+// 将字符串按空格分割成整数数组
+vector&lt;int&gt; splitToInt(string params_str) {
+    vector&lt;int&gt; p;
+    while (params_str.find(" ") != string::npos) {
+        int found = params_str.find(" ");
+        p.push_back(stoi(params_str.substr(0, found)));
+        params_str = params_str.substr(found + 1);
+    }
+    p.push_back(stoi(params_str));
+    return p;
+}
+
+// 将字符串按指定分隔符分割成字符串数组
+vector&lt;string&gt; splitToStr(string params_str, string op) {
+    vector&lt;string&gt; p;
+    while (params_str.find(op) != string::npos) {
+        int found = params_str.find(op);
+        p.push_back(params_str.substr(0, found));
+        params_str = params_str.substr(found + 1);
+    }
+    p.push_back(params_str);
+    return p;
+}
+
+int main() {
+    string param_str;
+    getline(cin, param_str);
+    vector&lt;int&gt; params = splitToInt(param_str);
+    int rows = params[0];
+    int cols = params[1];
+
+    vector&lt;vector&lt;string&gt;&gt; matrix;
+    for (int i = 0; i &lt; rows; i++) {
+        string op_str;
+        getline(cin, op_str);
+        matrix.push_back(splitToStr(op_str, " "));
+    }
+
+    // 先将表达式都转为数字字符串
+    for (int i = 0; i &lt; rows; i++) {
+        for (int j = 0; j &lt; cols; j++) {
+            string&amp; element = matrix[i][j];
+            if (element[0] == '=') {
+                if (element.find("+") != string::npos) {
+                    int found = element.find("+");
+                    string op1 = element.substr(1, found - 1);
+                    string op2 = element.substr(found + 1);
+                    int num1, num2;
+                    // 假如是纯数字,就直接用
+                    if (regex_match(op1, regex("-?\\d+(\\.\\d+)?"))) {
+                        num1 = stoi(op1);
+                    } else {
+                        // 到matrix中找到对应的数字
+                        num1 = stoi(matrix[stoi(op1.substr(1)) - 1][op1[0] - 'A']);
+                    }
+
+                    if (regex_match(op2, regex("-?\\d+(\\.\\d+)?"))) {
+                        num2 = stoi(op2);
+                    } else {
+                        num2 = stoi(matrix[stoi(op2.substr(1)) - 1][op2[0] - 'A']);
+                    }
+                    element = to_string(num1 + num2);
+                } else if (element.find("-") != string::npos) {
+                    int found = element.find("-");
+                    string op1 = element.substr(1, found - 1);
+                    string op2 = element.substr(found + 1);
+
+                    int num1, num2;
+                    // 假如是纯数字,就直接用
+                    if (regex_match(op1, regex("-?\\d+(\\.\\d+)?"))) {
+                        num1 = stoi(op1);
+                    } else {
+                        // 到matrix中找到对应的数字
+                        num1 = stoi(matrix[stoi(op1.substr(1)) - 1][op1[0] - 'A']);
+                    }
+
+                    if (regex_match(op2, regex("-?\\d+(\\.\\d+)?"))) {
+                        num2 = stoi(op2);
+                    } else {
+                        num2 = stoi(matrix[stoi(op2.substr(1)) - 1][op2[0] - 'A']);
+                    }
+                    element = to_string(num1 - num2);
+                } else {
+                    element = matrix[stoi(element.substr(2)) - 1][element[1] - 'A'];
+                }
+            }
+        }
+    }
+
+    // 输出表达式解析
+    string op_str1;
+    getline(cin, op_str1);
+    vector&lt;string&gt; output = splitToStr(op_str1, ":");
+
+    int res = 0;
+    for (int i = stoi(output[0].substr(1)) - 1; i &lt; stoi(output[1].substr(1)); i++) {
+        for (int j = output[0][0] - 'A'; j &lt;= output[1][0] - 'A'; j++) {
+            res += stoi(matrix[i][j]);
+        }
+    }
+
+    cout &lt;&lt; res;
+    return 0;
+}
+
+</code></pre> 
+<h4><a id="JavaScript_189"></a>JavaScript</h4> 
+<pre><code class="prism language-javaScript">const readline = require("readline");
+
+const interface = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const lines = [];
+let rows, cols;
+
+interface.on("line", (line) =&gt; {
+  lines.push(line);
+
+  // 第一行为表格的行数和列数
+  if (lines.length === 1) {
+    [rows, cols] = lines[0].split(" ").map(Number);
+  }
+
+  // 读取完整个表格后，计算选中区域的和
+  if (rows &amp;&amp; lines.length === rows + 2) {
+    lines.shift();
+    const [start, end] = lines.pop().split(":");
+    const matrix = lines.map((line) =&gt; line.split(" "));
+    console.log(getSelectedSum(matrix, rows, cols, start, end));
+    lines.length = 0;
+  }
+});
+
+/**
+ * 计算选中区域所有数的和
+ * @param {*} matrix 给定表格区域
+ * @param {*} rows 给定表格区域的行数
+ * @param {*} cols 给定表格区域的列数
+ * @param {*} start 选中区域的左上角位置
+ * @param {*} end 选中区域的右下角位置
+ */
+function getSelectedSum(matrix, rows, cols, start, end) {
+  // 正则表达式用于解析Excel单元格位置坐标
+  const regExp = /^([A-Z])(\d+)$/;
+
+  // 获取指定坐标pos的单元格内的值，pos形式如A1，B2，C3
+  function getCellValue(pos) {
+    let [_, col, row] = regExp.exec(pos);
+    col = String(col).charCodeAt() - 65; // 列号A对应的码值为65，A列等价于matrix矩阵的第0列
+    row -= 1; // 行号从1开始，等价于matrix矩阵的第0行
+
+    // 如果单元格内容以=开头，则为公式
+    if (String(matrix[row][col]).startsWith("=")) {
+      // 公式有三种情况
+      // 等于某单元格的值，例如=B12
+      // 两个单元格的双目运算（仅为+或-），形如=C1-C2、C3+B2
+      // 单元格和数字的双目运算（仅为+或-），形如=B1+1、100-B2
+      let [_, cell1, cell2] = matrix[row][col].split(/[\=\+\-]/);
+      if (!cell2) cell2 = 0; // 对于 =A1 这种情况，cell2结构出来是undefined，我们需要考虑这种情况将其置为0
+
+      // 如果cell解析出来是值，则直接使用
+      if (/^\d+$/.test(cell1)) {
+        cell1 -= 0;
+      }
+      // 如果cell解析出来不是值，那就是Excel坐标
+      else {
+        cell1 = getCellValue(cell1);
+      }
+
+      // 同上
+      if (/^\d+$/.test(cell2)) {
+        cell2 -= 0;
+      } else {
+        cell2 = getCellValue(cell2);
+      }
+
+      // 如果cell1和cell2是相加
+      if (matrix[row][col].includes("+")) {
+        matrix[row][col] = cell1 + cell2;
+      }
+      // 如果cell1和cell2是相减
+      else if (matrix[row][col].includes("-")) {
+        matrix[row][col] = cell1 - cell2;
+      }
+      // 如果没有运算，那就只可能是单值，直接使用
+      else {
+        matrix[row][col] = cell1;
+      }
+    }
+    // 如果单元格内容不以=开头，则为可以直接使用的数值
+    else {
+      matrix[row][col] -= 0;
+    }
+
+    return matrix[row][col];
+  }
+
+  // 解析选中区域的左上角坐标
+  let [_1, col_start, row_start] = regExp.exec(start);
+  // 解析选中区域的右下角坐标
+  let [_2, col_end, row_end] = regExp.exec(end);
+
+  // 列坐标处理
+  col_start = String(col_start).charCodeAt();
+  col_end = String(col_end).charCodeAt();
+  // 行坐标处理
+  row_start -= 0;
+  row_end -= 0;
+
+  let sum = 0;
+  for (let j = col_start; j &lt;= col_end; j++) {
+    for (let i = row_start; i &lt;= row_end; i++) {
+      sum += getCellValue(`${String.fromCharCode(j)}${i}`);
+    }
+  }
+
+  return sum;
+}
+
+</code></pre> 
+<h4><a id="Java_308"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> sheet<span class="token punctuation">;</span>
+
+    <span class="token comment">// 给每一行增加注释</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输入行数和列数</span>
+        <span class="token keyword">int</span> row <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> col <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取表格数据</span>
+        sheet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">String</span><span class="token punctuation">[</span>row<span class="token punctuation">]</span><span class="token punctuation">[</span>col<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> row<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sheet<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取计算区域</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> nums <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">":"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> start <span class="token operator">=</span> <span class="token function">toCoordinate</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> end <span class="token operator">=</span> <span class="token function">toCoordinate</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算表达式的值</span>
+        <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> start<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> end<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> start<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> end<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">String</span> temp <span class="token operator">=</span> sheet<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>temp<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    sum <span class="token operator">+=</span> <span class="token function">evaluate</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    sum <span class="token operator">+=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算表达式的值</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">evaluate</span><span class="token punctuation">(</span><span class="token class-name">String</span> s<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        s <span class="token operator">=</span> s<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">boolean</span> isAddition <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 是否为加法运算</span>
+        <span class="token keyword">boolean</span> isDigit <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token comment">// 是否为纯数字</span>
+        <span class="token keyword">int</span> num1 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> num2 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> temp <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">char</span> c <span class="token operator">=</span> s<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token string">'-'</span> <span class="token operator">||</span> c <span class="token operator">==</span> <span class="token string">'+'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token string">'-'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    isAddition <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>isDigit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 纯数字</span>
+                    num1 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> coordinate <span class="token operator">=</span> <span class="token function">toCoordinate</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 先求出其坐标位置</span>
+                    <span class="token class-name">String</span> str <span class="token operator">=</span> sheet<span class="token punctuation">[</span>coordinate<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">[</span>coordinate<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果此坐标位置还是一个算式需要继续求值</span>
+                        num1 <span class="token operator">=</span> <span class="token function">evaluate</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                        num1 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                temp <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+                isDigit <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Character</span><span class="token punctuation">.</span><span class="token function">isLetter</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    isDigit <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 包含字母则非纯数字</span>
+                <span class="token punctuation">}</span>
+                temp <span class="token operator">+=</span> c<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>isDigit<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 纯数字</span>
+                    num2 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> coordinate <span class="token operator">=</span> <span class="token function">toCoordinate</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 先求出其坐标位置</span>
+                    <span class="token class-name">String</span> str <span class="token operator">=</span> sheet<span class="token punctuation">[</span>coordinate<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">[</span>coordinate<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>str<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果此坐标位置还是一个算式需要继续求值</span>
+                        num2 <span class="token operator">=</span> <span class="token function">evaluate</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                        num2 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> isAddition <span class="token operator">?</span> num1 <span class="token operator">+</span> num2 <span class="token operator">:</span> num1 <span class="token operator">-</span> num2<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 将坐标字符串转换为坐标数组</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">toCoordinate</span><span class="token punctuation">(</span><span class="token class-name">String</span> s<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> y <span class="token operator">=</span> s<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token string">'A'</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> num <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            num <span class="token operator">+=</span> s<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span><span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">valueOf</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_414"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> re
+input_params <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+num_rows <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>input_params<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+num_cols <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>input_params<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化矩阵</span>
+matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> num_cols <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_rows<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 读入矩阵元素</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_rows<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 遍历矩阵元素，对于以'='开头的元素进行计算</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_rows<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_cols<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'='</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token string">'+'</span> <span class="token keyword">in</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果是加法表达式，则将表达式拆分为两个操作数</span>
+                operands <span class="token operator">=</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'+'</span><span class="token punctuation">)</span>
+                operand1 <span class="token operator">=</span> operands<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                operand2 <span class="token operator">=</span> operands<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+                <span class="token comment"># 对操作数进行解析，如果是数字，则直接使用；如果是单元格，则从矩阵中获取值</span>
+                <span class="token keyword">if</span> re<span class="token punctuation">.</span>match<span class="token punctuation">(</span><span class="token string">r'^-?\d+(\.\d+)?$'</span><span class="token punctuation">,</span> operand1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    num1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>operand1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token keyword">else</span><span class="token punctuation">:</span>
+                    num1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>operand1<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token builtin">ord</span><span class="token punctuation">(</span>operand1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+                <span class="token keyword">if</span> re<span class="token punctuation">.</span>match<span class="token punctuation">(</span><span class="token string">r'^-?\d+(\.\d+)?$'</span><span class="token punctuation">,</span> operand2<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    num2 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>operand2<span class="token punctuation">)</span>
+                <span class="token keyword">else</span><span class="token punctuation">:</span>
+                    num2 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>operand2<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token builtin">ord</span><span class="token punctuation">(</span>operand2<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+                <span class="token comment"># 将计算结果写入矩阵</span>
+                matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>num1 <span class="token operator">+</span> num2<span class="token punctuation">)</span>
+            <span class="token keyword">elif</span> <span class="token string">'-'</span> <span class="token keyword">in</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果是减法表达式，同样拆分为两个操作数，解析后进行计算</span>
+                operands <span class="token operator">=</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'-'</span><span class="token punctuation">)</span>
+                operand1 <span class="token operator">=</span> operands<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                operand2 <span class="token operator">=</span> operands<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+                <span class="token keyword">if</span> re<span class="token punctuation">.</span>match<span class="token punctuation">(</span><span class="token string">r'^-?\d+(\.\d+)?$'</span><span class="token punctuation">,</span> operand1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    num1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>operand1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token keyword">else</span><span class="token punctuation">:</span>
+                    num1 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>operand1<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token builtin">ord</span><span class="token punctuation">(</span>operand1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+                <span class="token keyword">if</span> re<span class="token punctuation">.</span>match<span class="token punctuation">(</span><span class="token string">r'^-?\d+(\.\d+)?$'</span><span class="token punctuation">,</span> operand2<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    num2 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>operand2<span class="token punctuation">)</span>
+                <span class="token keyword">else</span><span class="token punctuation">:</span>
+                    num2 <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>operand2<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token builtin">ord</span><span class="token punctuation">(</span>operand2<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+                matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>num1 <span class="token operator">-</span> num2<span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment"># 如果是单元格引用，直接从矩阵中获取值</span>
+                matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token builtin">ord</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读入输出参数，格式为"A1:B2"</span>
+    output_params <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">':'</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 遍历指定范围内的单元格，将值累加</span>
+    result <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>output_params<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>output_params<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">ord</span><span class="token punctuation">(</span>output_params<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">65</span><span class="token punctuation">,</span> <span class="token builtin">ord</span><span class="token punctuation">(</span>output_params<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">64</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            result <span class="token operator">+=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 输出结果</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_0" rel="nofollow">题目描述</a></li><li><a href="#_22" rel="nofollow">输入描述</a></li><li><a href="#_28" rel="nofollow">输出描述</a></li><li><a href="#_32" rel="nofollow">备注</a></li><li><a href="#_36" rel="nofollow">用例</a></li><li><a href="#_42" rel="nofollow">题目解析</a></li><li><a href="#C_70" rel="nofollow">C++</a></li><li><a href="#JavaScript_189" rel="nofollow">JavaScript</a></li><li><a href="#Java_308" rel="nofollow">Java</a></li><li><a href="#Python_414" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

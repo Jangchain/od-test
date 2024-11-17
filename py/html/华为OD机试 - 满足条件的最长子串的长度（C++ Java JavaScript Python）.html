@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>给定一个字符串s，找出这样一个子串：</p> 
+<ol><li>该子串中任意一个字符最多出现2次</li><li>该子串不包含指定某个字符</li></ol> 
+<p>请你找出满足该条件的最长子串的长度</p> 
+<h4><a id="_10"></a>输入描述</h4> 
+<p>第一行为：要求不包含的指定字符，为单个字符，取值范围[0-9a-zA-Z]</p> 
+<p>第二行为：字符串s，每个字符范围[0-9a-zA-Z]，长度范围[1, 10000]</p> 
+<h4><a id="_16"></a>输出描述</h4> 
+<p>一个整数，满足条件的最长子串的长度；</p> 
+<p>如果不存在满足条件的子串，则返回0</p> 
+<h4><a id="_22"></a>用例</h4> 
+<table><thead><tr><th>输入</th><th>D ABC123</th></tr></thead><tbody><tr><td>输出</td><td>6</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<table><thead><tr><th>输入</th><th>D ABACA123D</th></tr></thead><tbody><tr><td>输出</td><td>7</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h4><a id="_36"></a>代码思路</h4> 
+<ol><li>读入要排除的字符和字符串s。</li><li>定义左右指针和最长子串长度maxLength，初始化为0。</li><li>遍历字符串s，对于每个字符： 
+  <ul><li>如果当前字符是要排除的字符，更新最长子串长度为当前左右指针之差，将左右指针都移动到下一个位置。</li><li>如果当前字符不是要排除的字符，将当前字符的下标加入一个unordered_map中，记录每个字符出现的下标。如果当前字符的出现次数已经超过2次，更新最长子串长度为当前左右指针之差，将左指针移动到当前字符上一次出现的位置的下一个位置，删除当前字符在map中的第一个下标。右指针向后移动。</li></ul> </li><li>检查最后一个子串是否符合条件，更新最长子串长度。</li><li>输出最长子串长度。</li></ol> 
+<h4><a id="C_48"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 输入exclude和s</span>
+    string exclude<span class="token punctuation">,</span> s<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> exclude <span class="token operator">&gt;&gt;</span> s<span class="token punctuation">;</span>
+    <span class="token comment">// 获取要排除的字符</span>
+    <span class="token keyword">char</span> excludeChar <span class="token operator">=</span> exclude<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 存储每个字符出现的下标</span>
+    unordered_map<span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> charIndexMap<span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义左右指针</span>
+    <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> right <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义最长子串长度</span>
+    <span class="token keyword">int</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历字符串</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">&lt;</span> s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> currentChar <span class="token operator">=</span> s<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果当前字符是要排除的字符</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>excludeChar <span class="token operator">==</span> currentChar<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果左右指针不在同一位置，说明存在符合条件的子串</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>right <span class="token operator">&gt;</span> left<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                maxLength <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 将左右指针都移动到下一个位置</span>
+            right<span class="token operator">++</span><span class="token punctuation">;</span>
+            left <span class="token operator">=</span> right<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前字符不是要排除的字符</span>
+            <span class="token comment">// 先将当前字符在map中初始化</span>
+            charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> charIndexes <span class="token operator">=</span> charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 如果当前字符的出现次数已经超过2次</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>charIndexes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 更新最长子串长度</span>
+                maxLength <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 将左指针移动到当前字符上一次出现的位置的下一个位置</span>
+                left <span class="token operator">=</span> charIndexes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token comment">// 删除当前字符在map中的第一个下标</span>
+                charIndexes<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>charIndexes<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 将当前字符的下标加入map中</span>
+            charIndexes<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>right<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 右指针向后移动</span>
+            right<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检查最后一个子串是否符合条件</span>
+    maxLength <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出最长子串长度</span>
+    cout <span class="token operator">&lt;&lt;</span> maxLength <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="JavaScript_119"></a>JavaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> exclude <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> s <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>exclude<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    exclude <span class="token operator">=</span> input<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+    s <span class="token operator">=</span> input<span class="token punctuation">;</span>
+
+    <span class="token comment">// 获取要排除的字符</span>
+    <span class="token keyword">const</span> excludeChar <span class="token operator">=</span> exclude<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 存储每个字符出现的下标</span>
+    <span class="token keyword">const</span> charIndexMap <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义左右指针</span>
+    <span class="token keyword">let</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> right <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 定义最长子串长度</span>
+    <span class="token keyword">let</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历字符串</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">&lt;</span> s<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">const</span> currentChar <span class="token operator">=</span> s<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 如果当前字符是要排除的字符</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>excludeChar <span class="token operator">===</span> currentChar<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果左右指针不在同一位置，说明存在符合条件的子串</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>right <span class="token operator">&gt;</span> left<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          maxLength <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 将左右指针都移动到下一个位置</span>
+        right<span class="token operator">++</span><span class="token punctuation">;</span>
+        left <span class="token operator">=</span> right<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前字符不是要排除的字符</span>
+        <span class="token comment">// 先将当前字符在map中初始化</span>
+        charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span> <span class="token operator">=</span> charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> charIndexes <span class="token operator">=</span> charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果当前字符的出现次数已经超过2次</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>charIndexes<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 更新最长子串长度</span>
+          maxLength <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token comment">// 将左指针移动到当前字符上一次出现的位置的下一个位置</span>
+          left <span class="token operator">=</span> charIndexes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+          <span class="token comment">// 删除当前字符在map中的第一个下标</span>
+          charIndexes<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 将当前字符的下标加入map中</span>
+        charIndexes<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>right<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 右指针向后移动</span>
+        right<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检查最后一个子串是否符合条件</span>
+    maxLength <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出最长子串长度</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="Java_196"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输入exclude和s</span>
+        <span class="token class-name">String</span> exclude <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> s <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 获取要排除的字符</span>
+        <span class="token keyword">char</span> excludeChar <span class="token operator">=</span> exclude<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 存储每个字符出现的下标</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Character</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> charIndexMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 定义左右指针</span>
+        <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> right <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 定义最长子串长度</span>
+        <span class="token keyword">int</span> maxLength <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历字符串</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>right <span class="token operator">&lt;</span> s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">char</span> currentChar <span class="token operator">=</span> s<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>right<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果当前字符是要排除的字符</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>excludeChar <span class="token operator">==</span> currentChar<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果左右指针不在同一位置，说明存在符合条件的子串</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>right <span class="token operator">&gt;</span> left<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    maxLength <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 将左右指针都移动到下一个位置</span>
+                right<span class="token operator">++</span><span class="token punctuation">;</span>
+                left <span class="token operator">=</span> right<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果当前字符不是要排除的字符</span>
+                <span class="token comment">// 先将当前字符在map中初始化</span>
+                charIndexMap<span class="token punctuation">.</span><span class="token function">computeIfAbsent</span><span class="token punctuation">(</span>currentChar<span class="token punctuation">,</span> k <span class="token operator">-&gt;</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> charIndexes <span class="token operator">=</span> charIndexMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>currentChar<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果当前字符的出现次数已经超过2次</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>charIndexes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 更新最长子串长度</span>
+                    maxLength <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 将左指针移动到当前字符上一次出现的位置的下一个位置</span>
+                    left <span class="token operator">=</span> charIndexes<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 删除当前字符在map中的第一个下标</span>
+                    charIndexes<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 将当前字符的下标加入map中</span>
+                charIndexes<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>right<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 右指针向后移动</span>
+                right<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 检查最后一个子串是否符合条件</span>
+        maxLength <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出最长子串长度</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_264"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">from</span> collections <span class="token keyword">import</span> defaultdict
+
+<span class="token comment"># 输入exclude和s</span>
+exclude <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+s <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 获取要排除的字符</span>
+excludeChar <span class="token operator">=</span> exclude<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 存储每个字符出现的下标</span>
+charIndexMap <span class="token operator">=</span> defaultdict<span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 定义左右指针</span>
+left <span class="token operator">=</span> <span class="token number">0</span>
+right <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 定义最长子串长度</span>
+maxLength <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 遍历字符串</span>
+<span class="token keyword">while</span> right <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    currentChar <span class="token operator">=</span> s<span class="token punctuation">[</span>right<span class="token punctuation">]</span>
+
+    <span class="token comment"># 如果当前字符是要排除的字符</span>
+    <span class="token keyword">if</span> excludeChar <span class="token operator">==</span> currentChar<span class="token punctuation">:</span>
+        <span class="token comment"># 如果左右指针不在同一位置，说明存在符合条件的子串</span>
+        <span class="token keyword">if</span> right <span class="token operator">&gt;</span> left<span class="token punctuation">:</span>
+            maxLength <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span>
+        <span class="token comment"># 将左右指针都移动到下一个位置</span>
+        right <span class="token operator">+=</span> <span class="token number">1</span>
+        left <span class="token operator">=</span> right
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前字符不是要排除的字符</span>
+        <span class="token comment"># 先将当前字符在map中初始化</span>
+        charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span>
+        charIndexes <span class="token operator">=</span> charIndexMap<span class="token punctuation">[</span>currentChar<span class="token punctuation">]</span>
+        <span class="token comment"># 如果当前字符的出现次数已经超过2次</span>
+        <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>charIndexes<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">:</span>
+            <span class="token comment"># 更新最长子串长度</span>
+            maxLength <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span>
+            <span class="token comment"># 将左指针移动到当前字符上一次出现的位置的下一个位置</span>
+            left <span class="token operator">=</span> charIndexes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span>
+            <span class="token comment"># 删除当前字符在map中的第一个下标</span>
+            charIndexes<span class="token punctuation">.</span>pop<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token comment"># 将当前字符的下标加入map中</span>
+        charIndexes<span class="token punctuation">.</span>append<span class="token punctuation">(</span>right<span class="token punctuation">)</span>
+        <span class="token comment"># 右指针向后移动</span>
+        right <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token comment"># 检查最后一个子串是否符合条件</span>
+maxLength <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">,</span> right <span class="token operator">-</span> left<span class="token punctuation">)</span>
+
+<span class="token comment"># 输出最长子串长度</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>maxLength<span class="token punctuation">)</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_10" rel="nofollow">输入描述</a></li><li><a href="#_16" rel="nofollow">输出描述</a></li><li><a href="#_22" rel="nofollow">用例</a></li><li><a href="#_36" rel="nofollow">代码思路</a></li><li><a href="#C_48" rel="nofollow">C++</a></li><li><a href="#JavaScript_119" rel="nofollow">JavaScript</a></li><li><a href="#Java_196" rel="nofollow">Java</a></li><li><a href="#Python_264" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e9413fcd109f2f3d7297192eab0c0b2a.gif" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

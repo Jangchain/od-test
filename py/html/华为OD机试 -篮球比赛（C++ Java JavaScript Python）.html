@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<blockquote> 
+ <p>篮球(5V5)比赛中，每个球员拥有一个战斗力，每个队伍的所有球员战斗力之和为该队伍的总体战斗力。</p> 
+ <p>现有10个球员准备分为两队进行训练赛，教练希望2个队伍的战斗力差值能够尽可能的小，以达到最佳训练效果。</p> 
+ <p>给出10个球员的战斗力，如果你是教练，你该如何分队，才能达到最佳训练效果?请说出该分队方案下的<strong>最小战斗力差值。</strong></p> 
+</blockquote> 
+<h4><a id="_9"></a>输入描述</h4> 
+<blockquote> 
+ <p>10个篮球队员的战斗力(整数，范围[1,10000]),战斗力之间用空格分隔，如:10 9 8 7 6 5 4 3 2 1</p> 
+ <p>不需要考虑异常输入的场景。</p> 
+</blockquote> 
+<h4><a id="_15"></a>输出描述</h4> 
+<blockquote> 
+ <p>最小的战斗力差值，如:1</p> 
+</blockquote> 
+<h5><a id="ACM_18"></a>ACM输入输出模式</h5> 
+<p>如果你经常使用<strong>Leetcode</strong>,会知道<strong>letcode</strong>是不需要编写输入输出函数的。但是华为OD机考使用的是 <strong>ACM 模式</strong>，需要手动编写输入和输出。</p> 
+<p>所以最好在牛-客上提前熟悉这种模式。例如C++使用<code>cin/cout</code>,python使用<code>input()/print()</code>。JavaScript使用node的<code>readline()</code>和<code>console.log()</code>。Java 使用<code>sacnner/system.out.print()</code></p> 
+<h4><a id="_24"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td><code>10 9 8 7 6 5 4 3 2 1</code></td></tr><tr><td>输出</td><td><code>1</code></td></tr><tr><td>说明</td><td>1 2 5 9 10分为一队，3 4 6 7 8分为一队，两队战斗力之差最小，输出差值1。备注：球员分队方案不唯一，但最小战斗力差值固定是1</td></tr></tbody></table> 
+<h4><a id="_28"></a>机考代码查重</h4> 
+<p>华为OD机考完成之后，官方会进行代码查重。<strong>华为 od 机考确实有很大的概率抽到原题</strong>。如果碰到了题库中的原题，一定不要直接使用题解中的代码，尤其是变量名，一定要修改，可以改成毫无意义的单词。除了变量名之外，代码的组织结构和逻辑一定要进行改变，这就要求在日常的刷题中，提前编写好属于自己的代码。</p> 
+<h4><a id="_32"></a>代码思路</h4> 
+<p>对输入的球员战斗力进行排序。然后，定义一个数组res来存储所有可能的5人小队的战斗力之和。接着，调用dfs方法，该方法用来求解去重的组合。在dfs方法中，首先判断当前层级是否达到5人小队的要求，如果达到则将当前组合的战斗力之和添加到res中。然后，使用循环遍历剩余的球员，进行递归调用dfs方法，递归的参数包括当前球员的索引、当前层级、当前组合的战斗力之和。在递归调用之前，需要进行树层去重，即判断当前球员是否和前一个球员的战斗力相同，如果相同则跳过该球员。最后，计算所有可能的分队方案的战斗力差值，选择最小的差值作为结果输出。</p> 
+<p>总结来说， 通过使用dfs算法求解10选5的去重组合，然后计算两队实力差值的最小值，从而得到最佳分队方案下的最小战斗力差值。</p> 
+<h4><a id="C_37"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;climits&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cmath&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;numeric&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> power<span class="token punctuation">;</span>
+vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> visited<span class="token punctuation">;</span>
+<span class="token keyword">int</span> min_diff <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> index<span class="token punctuation">,</span> <span class="token keyword">int</span> level<span class="token punctuation">,</span> <span class="token keyword">int</span> _sum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>level <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> diff <span class="token operator">=</span> <span class="token function">abs</span><span class="token punctuation">(</span>_sum <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token function">accumulate</span><span class="token punctuation">(</span>power<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> power<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">-</span> _sum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        min_diff <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">,</span> diff<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> index<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> index <span class="token operator">&amp;&amp;</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        <span class="token function">dfs</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> level <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> _sum <span class="token operator">+</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    power<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    visited<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">sort</span><span class="token punctuation">(</span>power<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> power<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    cout <span class="token operator">&lt;&lt;</span> min_diff <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="JavaScript_90"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> power<span class="token punctuation">;</span>
+<span class="token keyword">let</span> visited<span class="token punctuation">;</span>
+<span class="token keyword">let</span> min_diff <span class="token operator">=</span> <span class="token number">Infinity</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">index<span class="token punctuation">,</span> level<span class="token punctuation">,</span> sum</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>level <span class="token operator">===</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> diff <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>sum <span class="token operator">-</span> <span class="token punctuation">(</span>power<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">acc<span class="token punctuation">,</span> cur</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> acc <span class="token operator">+</span> cur<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">-</span> sum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    min_diff <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">,</span> diff<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> index<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> index <span class="token operator">&amp;&amp;</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+    visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token function">dfs</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> level <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> sum <span class="token operator">+</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> input <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  power <span class="token operator">=</span> input<span class="token punctuation">;</span>
+  visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  power<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">-</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="Java_133"></a>Java</h4> 
+<pre><code class="prism language-java">
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> power<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> visited<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> min_diff <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span>MAX_VALUE<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> index<span class="token punctuation">,</span> <span class="token keyword">int</span> level<span class="token punctuation">,</span> <span class="token keyword">int</span> sum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>level <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 分队完成，更新最小战斗力差值</span>
+            <span class="token keyword">int</span> diff <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">abs</span><span class="token punctuation">(</span>sum <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>power<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sum</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> sum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            min_diff <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">,</span> diff<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> index<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 枚举每个球员</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> index <span class="token operator">&amp;&amp;</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>visited<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span> <span class="token comment">// 去重</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> level <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> sum <span class="token operator">+</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归搜索下一个球员</span>
+            visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        power <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">10</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            power<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>power<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对球员战斗力进行排序</span>
+
+        <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归搜索所有分队方案</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出最小战斗力差值</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_176"></a>Python</h4> 
+<pre><code class="prism language-python">
+power <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+min_diff <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span> level<span class="token punctuation">,</span> _sum<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> min_diff
+    <span class="token keyword">if</span> level <span class="token operator">==</span> <span class="token number">5</span><span class="token punctuation">:</span>
+        diff <span class="token operator">=</span> <span class="token builtin">abs</span><span class="token punctuation">(</span>_sum <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token builtin">sum</span><span class="token punctuation">(</span>power<span class="token punctuation">)</span> <span class="token operator">-</span> _sum<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        min_diff <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">,</span> diff<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> i <span class="token operator">&gt;</span> index <span class="token keyword">and</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> power<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token keyword">and</span> <span class="token keyword">not</span> visited<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">continue</span>
+        visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+        dfs<span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> level <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> _sum <span class="token operator">+</span> power<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        visited<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">False</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    power <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token keyword">for</span> x <span class="token keyword">in</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    visited <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token number">10</span>
+    power<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    dfs<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>min_diff<span class="token punctuation">)</span>
+</code></pre> 
+<blockquote> 
+ <p></p> 
+ <div class="toc"> 
+  <h4>文章目录</h4> 
+  <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_15" rel="nofollow">输出描述</a></li><li><ul><li><a href="#ACM_18" rel="nofollow">ACM输入输出模式</a></li></ul> 
+     </li><li><a href="#_24" rel="nofollow">用例</a></li><li><a href="#_28" rel="nofollow">机考代码查重</a></li><li><a href="#_32" rel="nofollow">代码思路</a></li><li><a href="#C_37" rel="nofollow">C++</a></li><li><a href="#JavaScript_90" rel="nofollow">JavaScript</a></li><li><a href="#Java_133" rel="nofollow">Java</a></li><li><a href="#Python_176" rel="nofollow">Python</a></li><li><a href="#_215" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_216" rel="nofollow">用例1</a></li><li><a href="#2_222" rel="nofollow">用例2</a></li><li><a href="#3_228" rel="nofollow">用例3</a></li><li><a href="#4_234" rel="nofollow">用例4</a></li><li><a href="#5_240" rel="nofollow">用例5</a></li><li><a href="#6_246" rel="nofollow">用例6</a></li><li><a href="#7_252" rel="nofollow">用例7</a></li><li><a href="#8_258" rel="nofollow">用例8</a></li><li><a href="#9_264" rel="nofollow">用例9</a></li><li><a href="#10_270" rel="nofollow">用例10</a></li></ul> 
+    </li></ul> 
+   </li></ul> 
+  </li></ul> 
+ </div> 
+ <p></p> 
+</blockquote> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/61303ac847694818888899c1e3d90907.png" alt="fengmian"></p> 
+<h4><a id="_215"></a>完整用例</h4> 
+<h5><a id="1_216"></a>用例1</h5> 
+<pre><code class="prism language-input1">10 9 8 7 6 5 4 3 2 1
+</code></pre> 
+<h5><a id="2_222"></a>用例2</h5> 
+<pre><code class="prism language-input2">10000 9999 9998 9997 9996 9995 9994 9993 9992 9991
+</code></pre> 
+<h5><a id="3_228"></a>用例3</h5> 
+<pre><code class="prism language-input3">1 1 1 1 1 1 1 1 1 1
+</code></pre> 
+<h5><a id="4_234"></a>用例4</h5> 
+<pre><code class="prism language-input4">1000 2000 3000 4000 5000 6000 7000 8000 9000 10000
+</code></pre> 
+<h5><a id="5_240"></a>用例5</h5> 
+<pre><code class="prism language-input5">999 888 777 666 555 444 333 222 111 1
+</code></pre> 
+<h5><a id="6_246"></a>用例6</h5> 
+<pre><code class="prism language-input6">10000 9999 9998 9997 9996 9995 9994 9993 9992 1
+</code></pre> 
+<h5><a id="7_252"></a>用例7</h5> 
+<pre><code class="prism language-input7">10000 9999 9998 9997 9996 1 2 3 4 5
+</code></pre> 
+<h5><a id="8_258"></a>用例8</h5> 
+<pre><code class="prism language-input8">10000 9999 9998 9997 9996 9995 9994 9993 9992 9991
+</code></pre> 
+<h5><a id="9_264"></a>用例9</h5> 
+<pre><code class="prism language-input9">1 2 3 4 5 6 7 8 9 10
+</code></pre> 
+<h5><a id="10_270"></a>用例10</h5> 
+<pre><code class="prism language-input10">10000 8000 6000 4000 2000 1000 9000 7000 5000 3000
+</code></pre>
+                </div>
+</body>
+</html>

@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="OD_1"></a>最新华为OD机试</h2> 
+<p><font color="RED">真题目录：<a href="https://blog.csdn.net/banxia_frontend/article/details/129640773">点击查看目录</a> </font><br> <font color="RED"> 华为OD面试真题精选：<a href="https://blog.csdn.net/banxia_frontend/category_12436481.html">点击立即查看</a></font></p> 
+<h2><a id="_5"></a>题目描述</h2> 
+<p>高铁城市圈对人们的出行、经济的拉动效果明显。每年都会规划新的高铁城市圈建设。</p> 
+<p>在给定城市数量、可建设高铁的两城市间的修建成本列表、以及结合城市商业价值会固定建设的两城市建高铁。</p> 
+<p>请你设计算法，达到修建城市高铁的最低成本。注意，需要满足城市圈内城市间两两互联可达(通过其他城市中转可达也属于满足条件）。</p> 
+<h2><a id="_13"></a>输入描述</h2> 
+<p>输入信息包括：</p> 
+<ol><li>第一行，包含此城市圈中城市的数量、可建设高铁的两城市间修建成本列表数量、必建高铁的城市列表。三个数字用空格间隔。</li><li>可建设高铁的两城市间的修建成本列表，为多行输入数据，格式为3个数字，用空格分隔，长度不超过1000。</li><li>固定要修建的高铁城市列表，是上面参数2的子集，可能为多行，每行输入为2个数字，以空格分隔。</li></ol> 
+<p>城市id从1开始编号，建设成本的取值为正整数，取值范围均不会超过1000</p> 
+<h2><a id="_24"></a>输出描述</h2> 
+<p>修建城市圈高铁的最低成本，正整数。如果城市圈内存在两城市之间无法互联，则返回-1。</p> 
+<h2><a id="1_28"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>3 3 0
+1 2 10
+1 3 100
+2 3 50
+</code></pre> 
+<p>输出</p> 
+<pre><code>60
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>3 3 0城市圈数量为3，表示城市id分别为1,2,3<br> 1 2 10城市1，2间的高铁修建成本为10<br> 1 3 100城市1，3间的高铁修建成本为100<br> 2 3 50城市2，3间的高铁修建成本为50<br> 满足修建成本最低，只需要建设城市1，2间，城市2，3间的高铁即可，城市1，3之间可通过城市2中转来互联。这样最低修建成本就是60。</p> 
+</blockquote> 
+<h2><a id="2_53"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>3 3 1
+1 2 10
+1 3 100
+2 3 50
+1 3
+</code></pre> 
+<p>输出</p> 
+<pre><code>110
+</code></pre> 
+<blockquote> 
+ <p>3 3 1 城市圈数量为3，表示城市id分别为1，2，3</p> 
+ <p>1 2 10 城市1，2间的高铁修建成本为10</p> 
+ <p>1 3 100 城市1，3间的高铁修建成本为100</p> 
+ <p>2 3 50 城市2，3间的高铁修建成本为50</p> 
+ <p>1 3 城市1，3间的高铁必须修建</p> 
+ <p>因为城市1，3间的高铁必须修建，在满足互联的条件下，再增加修建城市1，2间的高铁即可，最低成本为110</p> 
+</blockquote> 
+<h2><a id="_85"></a>解题思路</h2> 
+<h4><a id="_88"></a>题目分析</h4> 
+<p>该题要求设计一种算法来计算修建高铁，使所有城市互联的最低成本，并满足必建的高铁连接。满足条件的关键是保证城市间的连通性，即城市间可以通过直接或间接路径互相到达。</p> 
+<p>具体来看，这个问题可以抽象成一个带权无向图的<strong>最小生成树问题</strong>，即：</p> 
+<ol><li><strong>城市</strong>作为图中的<strong>节点</strong>。</li><li><strong>高铁建设成本</strong>作为节点之间的<strong>边的权重</strong>。</li><li><strong>必建的高铁</strong>则是<strong>必须包含的边</strong>。</li></ol> 
+<h4><a id="_97"></a>解题思路</h4> 
+<ol><li> <p><strong>构造最小生成树</strong>：</p> 
+  <ul><li><strong>Kruskal算法</strong> 是一种适合边集存储的最小生成树算法。主要步骤是将所有边按权重排序，并依次将边加入生成树中，避免形成环，直到所有节点互联。</li><li>在使用Kruskal时，可以提前将必建的高铁边加入生成树，并减少初始的连通分量（城市群）的数量。</li><li>继续将最小的边加入树中，直到所有城市连通，记录总的构造成本。</li></ul> </li><li> <p><strong>连通性判断</strong>：</p> 
+  <ul><li>若最终无法使所有城市连通，则返回 -1 表示无法构建一个连通的城市圈。</li><li>否则，返回最小修建成本。</li></ul> </li></ol> 
+<h4><a id="_108"></a>算法步骤</h4> 
+<ol><li><strong>并查集</strong>：使用并查集（Union-Find）管理城市连通性，用于在算法过程中判断两城市是否已经连通。</li><li><strong>初始化必建边</strong>：先处理必建的边，将这些边加入并查集。</li><li><strong>排序边权</strong>：对剩余的边按修建成本排序。</li><li><strong>Kruskal算法构建最小生成树</strong>：按边权递增的顺序将边加入生成树，直到所有节点连通。</li><li><strong>结果输出</strong>：若最终所有城市连通，则输出构建成本；否则输出-1。</li></ol> 
+<h2><a id="Java_120"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> in <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取第一行输入：分别为城市数量、可建设高铁的城市对数量和必建高铁的城市对数量</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> firstLine <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> cityCount <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>firstLine<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 城市总数量</span>
+        <span class="token keyword">int</span> pairCount1 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>firstLine<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 可建设高铁的城市对数量</span>
+        <span class="token keyword">int</span> pairCount2 <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>firstLine<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 必建高铁的城市对数量</span>
+
+        <span class="token comment">// 读取可建设高铁的城市对及其代价</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityPairs1 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>pairCount1<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount1<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityData <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>cityData<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 城市1</span>
+            cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>cityData<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 城市2</span>
+            cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>cityData<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 建设代价</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取必建高铁的城市对（不需要代价，因为这些高铁是必须建设的）</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityPairs2 <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>pairCount2<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount2<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityData <span class="token operator">=</span> in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>cityData<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 城市1</span>
+            cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>cityData<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 城市2</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化并查集，用于判断连通性</span>
+        <span class="token class-name">UF</span> uf <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">UF</span><span class="token punctuation">(</span>cityCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 创建 HashMap 用于存储可建设高铁的城市对及其代价，以便快速查找</span>
+        <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> cityMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityPair <span class="token operator">:</span> cityPairs1<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> city1 <span class="token operator">=</span> cityPair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> city2 <span class="token operator">=</span> cityPair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            cityMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span><span class="token function">getKey</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">,</span> cityPair<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 使用城市对作为键，代价作为值</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录总代价</span>
+
+        <span class="token comment">// 处理必建高铁的城市对，直接将它们连通，并累加代价</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityPair <span class="token operator">:</span> cityPairs2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> city1 <span class="token operator">=</span> cityPair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> city2 <span class="token operator">=</span> cityPair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            result <span class="token operator">+=</span> cityMap<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span><span class="token function">getKey</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 累加已存在的代价</span>
+            uf<span class="token punctuation">.</span><span class="token function">union</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 合并两个城市到同一集合</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果所有城市已连通，则输出结果并结束</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 按代价升序排列可建设高铁的城市对，方便后续的最小生成树计算</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>cityPairs1<span class="token punctuation">,</span> <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span>a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> b<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历可建设的高铁城市对，构建最小生成树</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cityPair <span class="token operator">:</span> cityPairs1<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> city1 <span class="token operator">=</span> cityPair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> city2 <span class="token operator">=</span> cityPair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span><span class="token function">union</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 若城市对未连通，则进行合并</span>
+                result <span class="token operator">+=</span> cityPair<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 累加代价</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 当所有城市连通后，停止循环</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出结果，如果城市无法全部连通则返回 -1</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取唯一键，用于表示两个城市间的关系</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">getKey</span><span class="token punctuation">(</span><span class="token keyword">int</span> city1<span class="token punctuation">,</span> <span class="token keyword">int</span> city2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> city1 <span class="token operator">&lt;</span> city2 <span class="token operator">?</span> city1 <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> city2 <span class="token operator">:</span> city2 <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> city1<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 并查集（Union-Find）类，用于管理城市的连通性</span>
+<span class="token keyword">class</span> UF <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parent<span class="token punctuation">;</span> <span class="token comment">// 存储每个城市的父节点</span>
+    <span class="token keyword">int</span> count<span class="token punctuation">;</span> <span class="token comment">// 连通分量的数量</span>
+
+    <span class="token comment">// 初始化并查集，每个城市的父节点指向自己，且初始分量为城市数量</span>
+    <span class="token keyword">public</span> <span class="token function">UF</span><span class="token punctuation">(</span><span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        count <span class="token operator">=</span> n<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 查找操作，使用路径压缩优化</span>
+    <span class="token keyword">public</span> <span class="token keyword">int</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">!=</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 路径压缩</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 合并操作，将两个城市的集合合并</span>
+    <span class="token keyword">public</span> <span class="token keyword">boolean</span> <span class="token function">union</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!=</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>rootY<span class="token punctuation">]</span> <span class="token operator">=</span> rootX<span class="token punctuation">;</span> <span class="token comment">// 合并两个集合</span>
+            count<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 减少连通分量数量</span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 已经连通，无需合并</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_239"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入必要的库</span>
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">class</span> <span class="token class-name">UF</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 初始化并查集，每个城市的父节点指向自己</span>
+        self<span class="token punctuation">.</span>parent <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>count <span class="token operator">=</span> n  <span class="token comment"># 记录连通分量数量</span>
+    
+    <span class="token keyword">def</span> <span class="token function">find</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 查找操作，带路径压缩优化</span>
+        <span class="token keyword">if</span> x <span class="token operator">!=</span> self<span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>find<span class="token punctuation">(</span>self<span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 路径压缩</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span>
+    
+    <span class="token keyword">def</span> <span class="token function">union</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 合并操作，将两个城市的集合合并</span>
+        rootX <span class="token operator">=</span> self<span class="token punctuation">.</span>find<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        rootY <span class="token operator">=</span> self<span class="token punctuation">.</span>find<span class="token punctuation">(</span>y<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> rootX <span class="token operator">!=</span> rootY<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>parent<span class="token punctuation">[</span>rootY<span class="token punctuation">]</span> <span class="token operator">=</span> rootX  <span class="token comment"># 合并集合</span>
+            self<span class="token punctuation">.</span>count <span class="token operator">-=</span> <span class="token number">1</span>  <span class="token comment"># 连通分量减少</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token keyword">def</span> <span class="token function">get_key</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 获取唯一键，用于表示两个城市间的关系</span>
+    <span class="token keyword">return</span> <span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span><span class="token builtin">min</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">-</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span><span class="token builtin">max</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span>
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取输入</span>
+    cityCount<span class="token punctuation">,</span> pairCount1<span class="token punctuation">,</span> pairCount2 <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># 读取可建设高铁的城市对及其代价</span>
+    cityPairs1 <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>pairCount1<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    
+    <span class="token comment"># 读取必建高铁的城市对</span>
+    cityPairs2 <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>pairCount2<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    
+    <span class="token comment"># 初始化并查集和记录代价的字典</span>
+    uf <span class="token operator">=</span> UF<span class="token punctuation">(</span>cityCount<span class="token punctuation">)</span>
+    cityMap <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+    
+    <span class="token comment"># 将可建设高铁的城市对存入字典，便于查找</span>
+    <span class="token keyword">for</span> city1<span class="token punctuation">,</span> city2<span class="token punctuation">,</span> cost <span class="token keyword">in</span> cityPairs1<span class="token punctuation">:</span>
+        cityMap<span class="token punctuation">[</span>get_key<span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> cost
+
+    result <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 记录总代价</span>
+
+    <span class="token comment"># 处理必建的高铁城市对，直接连通并累加代价</span>
+    <span class="token keyword">for</span> city1<span class="token punctuation">,</span> city2 <span class="token keyword">in</span> cityPairs2<span class="token punctuation">:</span>
+        result <span class="token operator">+=</span> cityMap<span class="token punctuation">.</span>get<span class="token punctuation">(</span>get_key<span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        uf<span class="token punctuation">.</span>union<span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span>
+
+    <span class="token comment"># 如果所有城市已连通，输出结果</span>
+    <span class="token keyword">if</span> uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+        <span class="token keyword">return</span>
+
+    <span class="token comment"># 按代价升序排列可建设高铁的城市对</span>
+    cityPairs1<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 遍历可建设高铁的城市对，构建最小生成树</span>
+    <span class="token keyword">for</span> city1<span class="token punctuation">,</span> city2<span class="token punctuation">,</span> cost <span class="token keyword">in</span> cityPairs1<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> uf<span class="token punctuation">.</span>union<span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment"># 如果未连通则合并</span>
+            result <span class="token operator">+=</span> cost  <span class="token comment"># 累加代价</span>
+        <span class="token keyword">if</span> uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>  <span class="token comment"># 所有城市连通后退出循环</span>
+            <span class="token keyword">break</span>
+
+    <span class="token comment"># 输出结果，若不能完全连通则返回 -1</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>result <span class="token keyword">if</span> uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="JavaScript_317"></a>JavaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 定义并查集类</span>
+<span class="token keyword">class</span> <span class="token class-name">UF</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">constructor</span><span class="token punctuation">(</span><span class="token parameter">n</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>parent <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> length<span class="token operator">:</span> n <span class="token operator">+</span> <span class="token number">1</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">_<span class="token punctuation">,</span> i</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化父节点数组</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>count <span class="token operator">=</span> n<span class="token punctuation">;</span> <span class="token comment">// 初始连通分量数量</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">find</span><span class="token punctuation">(</span><span class="token parameter">x</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 查找操作，带路径压缩优化</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">!==</span> <span class="token keyword">this</span><span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">.</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">union</span><span class="token punctuation">(</span><span class="token parameter">x<span class="token punctuation">,</span> y</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 合并操作，将两个城市的集合合并</span>
+        <span class="token keyword">const</span> rootX <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> rootY <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!==</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>parent<span class="token punctuation">[</span>rootY<span class="token punctuation">]</span> <span class="token operator">=</span> rootX<span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>count<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 连通分量减少</span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 获取唯一键，用于表示两个城市间的关系</span>
+<span class="token keyword">function</span> <span class="token function">getKey</span><span class="token punctuation">(</span><span class="token parameter">city1<span class="token punctuation">,</span> city2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">-</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 主程序</span>
+<span class="token keyword">function</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> fs <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'fs'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> input <span class="token operator">=</span> fs<span class="token punctuation">.</span><span class="token function">readFileSync</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">trim</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>cityCount<span class="token punctuation">,</span> pairCount1<span class="token punctuation">,</span> pairCount2<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> cityPairs1 <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> pairCount1 <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">line</span> <span class="token operator">=&gt;</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> cityPairs2 <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span>pairCount1 <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">line</span> <span class="token operator">=&gt;</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">const</span> uf <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">UF</span><span class="token punctuation">(</span>cityCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> cityMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    cityPairs1<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">[</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">,</span> cost<span class="token punctuation">]</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        cityMap<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span><span class="token function">getKey</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">,</span> cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    cityPairs2<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter"><span class="token punctuation">[</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">]</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        result <span class="token operator">+=</span> cityMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token function">getKey</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        uf<span class="token punctuation">.</span><span class="token function">union</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    cityPairs1<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">-</span> b<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token punctuation">[</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">,</span> cost<span class="token punctuation">]</span> <span class="token keyword">of</span> cityPairs1<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span><span class="token function">union</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result <span class="token operator">+=</span> cost<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="C_399"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 并查集类</span>
+class UF <span class="token punctuation">{<!-- --></span>
+public<span class="token operator">:</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> parent<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> count<span class="token punctuation">;</span>
+
+    <span class="token function">UF</span><span class="token punctuation">(</span><span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">parent</span><span class="token punctuation">(</span>n <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">count</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">!=</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    bool <span class="token function">union_sets</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!=</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            parent<span class="token punctuation">[</span>rootY<span class="token punctuation">]</span> <span class="token operator">=</span> rootX<span class="token punctuation">;</span>
+            count<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 获取键表示两个城市间关系</span>
+string <span class="token function">getKey</span><span class="token punctuation">(</span><span class="token keyword">int</span> city1<span class="token punctuation">,</span> <span class="token keyword">int</span> city2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> city1 <span class="token operator">&lt;</span> city2 <span class="token operator">?</span> <span class="token function">to_string</span><span class="token punctuation">(</span>city1<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>city2<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">to_string</span><span class="token punctuation">(</span>city2<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>city1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> cityCount<span class="token punctuation">,</span> pairCount1<span class="token punctuation">,</span> pairCount2<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> cityCount <span class="token operator">&gt;&gt;</span> pairCount1 <span class="token operator">&gt;&gt;</span> pairCount2<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">cityPairs1</span><span class="token punctuation">(</span>pairCount1<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount1<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">&gt;&gt;</span> cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;&gt;</span> cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">cityPairs2</span><span class="token punctuation">(</span>pairCount2<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount2<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">&gt;&gt;</span> cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    UF <span class="token function">uf</span><span class="token punctuation">(</span>cityCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    unordered_map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> cityMap<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> <span class="token operator">&amp;</span>pair <span class="token operator">:</span> cityPairs1<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cityMap<span class="token punctuation">[</span><span class="token function">getKey</span><span class="token punctuation">(</span>pair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> pair<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> <span class="token operator">&amp;</span>pair <span class="token operator">:</span> cityPairs2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        result <span class="token operator">+=</span> cityMap<span class="token punctuation">[</span><span class="token function">getKey</span><span class="token punctuation">(</span>pair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        uf<span class="token punctuation">.</span><span class="token function">union_sets</span><span class="token punctuation">(</span>pair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> result <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">sort</span><span class="token punctuation">(</span>cityPairs1<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cityPairs1<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">&lt;</span> b<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> <span class="token operator">&amp;</span>pair <span class="token operator">:</span> cityPairs1<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span><span class="token function">union_sets</span><span class="token punctuation">(</span>pair<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pair<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result <span class="token operator">+=</span> pair<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>uf<span class="token punctuation">.</span>count <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> result<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="C_494"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX</span> <span class="token expression"><span class="token number">10001</span></span></span>
+
+<span class="token keyword">int</span> parent<span class="token punctuation">[</span>MAX<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> count<span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token function">initUF</span><span class="token punctuation">(</span><span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    count <span class="token operator">=</span> n<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">find</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">!=</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> parent<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">unionSets</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> rootX <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> rootY <span class="token operator">=</span> <span class="token function">find</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>rootX <span class="token operator">!=</span> rootY<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        parent<span class="token punctuation">[</span>rootY<span class="token punctuation">]</span> <span class="token operator">=</span> rootX<span class="token punctuation">;</span>
+        count<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> city1<span class="token punctuation">,</span> city2<span class="token punctuation">,</span> cost<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> CityPair<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">cmp</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>CityPair <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">)</span><span class="token operator">-&gt;</span>cost <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>CityPair <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">)</span><span class="token operator">-&gt;</span>cost<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> cityCount<span class="token punctuation">,</span> pairCount1<span class="token punctuation">,</span> pairCount2<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>cityCount<span class="token punctuation">,</span> <span class="token operator">&amp;</span>pairCount1<span class="token punctuation">,</span> <span class="token operator">&amp;</span>pairCount2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    CityPair cityPairs1<span class="token punctuation">[</span>pairCount1<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cityPairs2<span class="token punctuation">[</span>pairCount2<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount1<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>city1<span class="token punctuation">,</span> <span class="token operator">&amp;</span>cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>city2<span class="token punctuation">,</span> <span class="token operator">&amp;</span>cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>cost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount2<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">initUF</span><span class="token punctuation">(</span>cityCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount2<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> city1 <span class="token operator">=</span> cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> city2 <span class="token operator">=</span> cityPairs2<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> pairCount1<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>cityPairs1<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>city1 <span class="token operator">==</span> city1 <span class="token operator">&amp;&amp;</span> cityPairs1<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>city2 <span class="token operator">==</span> city2<span class="token punctuation">)</span> <span class="token operator">||</span> 
+                <span class="token punctuation">(</span>cityPairs1<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>city1 <span class="token operator">==</span> city2 <span class="token operator">&amp;&amp;</span> cityPairs1<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>city2 <span class="token operator">==</span> city1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">+=</span> cityPairs1<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>cost<span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">unionSets</span><span class="token punctuation">(</span>city1<span class="token punctuation">,</span> city2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">qsort</span><span class="token punctuation">(</span>cityPairs1<span class="token punctuation">,</span> pairCount1<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>CityPair<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> pairCount1<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">unionSets</span><span class="token punctuation">(</span>cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>city1<span class="token punctuation">,</span> cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>city2<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result <span class="token operator">+=</span> cityPairs1<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>cost<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>count <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> count <span class="token operator">&gt;</span> <span class="token number">1</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/adce6b09be0f07152e158ead71674422.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

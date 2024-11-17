@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>给定一个 m x n 的矩阵，由若干字符 ‘X’ 和 ‘O’构成，’X’表示该处已被占据，’O’表示该处空闲，请找到最大的单入口空闲区域。</p> 
+<p>解释：</p> 
+<p>空闲区域是由连通的’O’组成的区域，位于边界的’O’可以构成入口，</p> 
+<p>单入口空闲区域即有且只有一个位于边界的’O’作为入口的由连通的’O’组成的区域。<br> 如果两个元素在水平或垂直方向相邻，则称它们是“连通”的。</p> 
+<h4><a id="_12"></a>输入描述</h4> 
+<p>第一行输入为两个数字，第一个数字为行数m，第二个数字为列数n，两个数字以空格分隔，1&lt;=m,n&lt;=200。</p> 
+<p>剩余各行为矩阵各行元素，元素为‘X’或‘O’，各元素间以空格分隔。</p> 
+<h4><a id="_18"></a>输出描述</h4> 
+<p>若有唯一符合要求的最大单入口空闲区域，输出三个数字</p> 
+<ul><li>第一个数字为入口行坐标（0~m-1）</li><li>第二个数字为入口列坐标（0~n-1）</li><li>第三个数字为区域大小</li></ul> 
+<p>三个数字以空格分隔；</p> 
+<p>若有多个符合要求，则输出区域大小最大的，若多个符合要求的单入口区域的区域大小相同，则此时只需要输出区域大小，不需要输出入口坐标。</p> 
+<p>若没有，输出NULL。</p> 
+<h4><a id="_32"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>4 4<br>X X X X<br>X O O X<br>X O O X<br>X O X X</td></tr><tr><td>输出</td><td>3 1 5</td></tr><tr><td>说明</td><td>存在最大单入口区域，入口坐标(3,1)，区域大小5</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>4 5<br>X X X X X<br>O O O O X<br>X O O O X<br>X O X X O</td></tr><tr><td>输出</td><td>3 4 1</td></tr><tr><td>说明</td><td>存在最大单入口区域，入口坐标（3,4），区域大小1</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>5 4<br>X X X X<br>X O O O<br>X O O O<br>X O O X<br>X X X X</td></tr><tr><td>输出</td><td>NULL</td></tr><tr><td>说明</td><td>不存在最大单入口区域</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>5 4<br>X X X X<br>X O O O<br>X X X X<br>X O O O<br>X X X X</td></tr><tr><td>输出</td><td>3</td></tr><tr><td>说明</td><td>存在两个大小为3的最大单入口区域，两个入口坐标分别为(1,3)、(3,3)</td></tr></tbody></table> 
+<h4><a id="_42"></a>题目解析</h4> 
+<p>本题可以使用<a href="https://so.csdn.net/so/search?q=%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2&amp;spm=1001.2101.3001.7020">深度优先搜索</a>来解题。</p> 
+<p>首先，我们可以遍历矩阵元素，当遍历到“O”时，已该“O”的坐标位置开始向其上、下、左、右方向开始深度优先搜索，每搜索到一个“O”，则该空闲区域数量+1，如果搜索到的“O”的坐标位置处于矩阵第一列，或最后一列，或者第一行，或者最后一行，那么该“O”位置就是空闲区域的入口位置，我们将其缓存到out数组中。</p> 
+<p>当所有深度优先搜索的分支都搜索完了，则判断out统计的入口数量，</p> 
+<ol><li>如果只有1个，则该空闲区域是符合题意得单入口空闲区域，输出入口坐标位置，以及空闲区域数量。</li><li>如果有多个，则该区域不符合要求</li></ol> 
+<h4><a id="_55"></a>代码思路</h4> 
+<p>这道题目可以使用DFS进行求解。首先，对于每个未访问过的空闲位置进行DFS搜索，找到该位置所在的连通块，并将该连通块的入口加入入口集合。在DFS搜索过程中，需要判断当前位置是否合法、是否已经访问过、是否是占据的位置，并将已经访问过的位置加入已访问集合中。如果该位置在边界上，则将其加入入口集合中。在DFS搜索结束后，如果入口集合只有一个元素，则将该连通块的入口和大小加入答案集合中。</p> 
+<p>最后，对于答案集合中的连通块，按照连通块大小从大到小排序，如果只有一个符合条件的连通块或者最大的连通块大小比次大的连通块大小大，则输出最大连通块的入口和大小，否则只输出最大连通块的大小。如果没有符合条件的连通块，则输出NULL。</p> 
+<h4><a id="C_61"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_set&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> rows<span class="token punctuation">,</span> cols<span class="token punctuation">;</span> <span class="token comment">// 矩阵的行数和列数</span>
+string matrix<span class="token punctuation">[</span><span class="token number">200</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">200</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储矩阵</span>
+<span class="token keyword">int</span> offset<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 上下左右四个方向的偏移量</span>
+unordered_set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> checked<span class="token punctuation">;</span> <span class="token comment">// 存储已经访问过的位置</span>
+
+<span class="token comment">// DFS搜索连通块</span>
+<span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token punctuation">,</span> <span class="token keyword">int</span> j<span class="token punctuation">,</span> <span class="token keyword">int</span> count<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token operator">&amp;</span>enter<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string pos <span class="token operator">=</span> <span class="token function">to_string</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将位置转化为字符串</span>
+
+    <span class="token comment">// 如果位置不合法或者已经访问过或者是占据的位置，则退出搜索</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> i <span class="token operator">&gt;=</span> rows <span class="token operator">||</span> j <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> j <span class="token operator">&gt;=</span> cols <span class="token operator">||</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"X"</span> <span class="token operator">||</span> checked<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    checked<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将该位置标记为已访问</span>
+
+    <span class="token comment">// 如果该位置在边界上，则将其加入入口集合</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> i <span class="token operator">==</span> rows <span class="token operator">-</span> <span class="token number">1</span> <span class="token operator">||</span> j <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> j <span class="token operator">==</span> cols <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> enter<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>i<span class="token punctuation">,</span> j<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    count<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 连通块大小加1</span>
+
+    <span class="token comment">// 在上下左右四个方向上继续搜索</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> k <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> k<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> offsetX <span class="token operator">=</span> offset<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> offsetY <span class="token operator">=</span> offset<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> newI <span class="token operator">=</span> i <span class="token operator">+</span> offsetX<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> newJ <span class="token operator">=</span> j <span class="token operator">+</span> offsetY<span class="token punctuation">;</span>
+        count <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>newI<span class="token punctuation">,</span> newJ<span class="token punctuation">,</span> count<span class="token punctuation">,</span> enter<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    cin <span class="token operator">&gt;&gt;</span> rows <span class="token operator">&gt;&gt;</span> cols<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读入矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> cols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cin <span class="token operator">&gt;&gt;</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> ans<span class="token punctuation">;</span> <span class="token comment">// 存储符合条件的连通块的入口和大小</span>
+
+    <span class="token comment">// 对每个未访问过的空闲位置进行DFS搜索</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> cols<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"O"</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>checked<span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"-"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> enter<span class="token punctuation">;</span>
+                <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> enter<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>enter<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果入口只有一个，则将其加入答案集合</span>
+                    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> pos <span class="token operator">=</span> enter<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    ans<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>pos<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> pos<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> count<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果没有符合条件的连通块，则输出NULL</span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token string">"NULL"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 按照连通块大小从大到小排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ans<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> a<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> a<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> b<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>ans<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">||</span> ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> ans<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果只有一个符合条件的连通块或者最大的连通块大小比次大的连通块大小大，则输出最大连通块的入口和大小</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        cout <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 否则只输出最大连通块的大小</span>
+        cout <span class="token operator">&lt;&lt;</span> ans<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_12" rel="nofollow">输入描述</a></li><li><a href="#_18" rel="nofollow">输出描述</a></li><li><a href="#_32" rel="nofollow">用例</a></li><li><a href="#_42" rel="nofollow">题目解析</a></li><li><a href="#_55" rel="nofollow">代码思路</a></li><li><a href="#C_61" rel="nofollow">C++</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e9413fcd109f2f3d7297192eab0c0b2a.gif" alt="doutub_gif"></p>
+                </div>
+</body>
+</html>

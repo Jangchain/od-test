@@ -1,0 +1,507 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>在做物理实验时，为了计算物体移动的速率，通过相机等工具周期性的采样物体移动距离。<br> 由于工具故障，采样数据存在误差甚至相误的情况。<br> 需要通过一个算法过滤掉不正确的采样值，不同工具的故意模式存在差异，算法的各关门限会根据工具类型做相应的调整。</p> 
+<p>请实现一个算法，计算出给定一组采样值中正常值的最长连续周期。</p> 
+<hr> 
+<p>判断第1个周期的采样数据S0是否正确的规则如下(假定物体移动速率不超过10个单元前一个采样周期S[i-1]):</p> 
+<p><code>S[i]&lt;=0，即为错误值</code><br> <code>S[i]&lt;S[i-1]，即为错误值</code><br> <code>S[i]-S[i-1]&gt;=10，即为错误值。</code></p> 
+<p><code>其它情况为正常值</code></p> 
+<hr> 
+<p>判断工具是否故障的规则如下：</p> 
+<p>在<strong>M</strong>个周期内，采样数据为错误值的次数为<strong>T</strong>(次数可以不连续)，则工具故障。</p> 
+<hr> 
+<p>判断故障恢复的条件如下：</p> 
+<p>产生故障后的<strong>P</strong>个周期内，采样数据一直为正常值，则故障恢复</p> 
+<hr> 
+<p>错误采样数据的处理方式：</p> 
+<p>检测到故障后，丢弃从故障开始到故障恢复的采样数据<br> 在检测到工具故障之前，错误的采样数据，则由最近一个正常值代替;如果前面没有正常的采样值，则丢弃此采样数据</p> 
+<hr> 
+<p>给定一段周期的采样数据列表<strong>S</strong>，计算正常值的最长连续周期。</p> 
+<h4><a id="_42"></a>输入描述</h4> 
+<p>故障确认周期数和故障次数门限分别为M和T，故障恢复周期数为P。</p> 
+<p>第i个周期，检测点的状态为S[i]。</p> 
+<p>输入为两行，格式如下:</p> 
+<p><code>M T P</code><br> <code>s1 s2 s3 ...</code><br> <code>M、t 和 e的取值范围为[1，100000]</code><br> <code>s1取值范围为[0，100000]，从0开始编号</code></p> 
+<h4><a id="_55"></a>输出描述</h4> 
+<p>一行，输出正常值的最长连续周期。</p> 
+<h4><a id="_59"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>10 6 3<br>-1 1 2 3 100 10 13 9 10</td></tr><tr><td>输出</td><td>8</td></tr><tr><td>说明</td><td>无</td></tr></tbody></table> 
+<h4><a id="_63"></a>题目解析</h4> 
+<ol><li>异常的情况</li></ol> 
+<p>数据异常的三个条件：</p> 
+<p><code>S[i]&lt;=0，即为错误值</code><br> <code>S[i]&lt;S[i-1]，即为错误值</code><br> <code>S[i]-S[i-1]&gt;=10，即为错误值。</code></p> 
+<p>工具故障： 数据异常错误T次</p> 
+<p>故障恢复：故障后，然后数据开始正常，故障恢复。</p> 
+<p>2：错误数据有两种处理方式：</p> 
+<p>丢弃故障开始到故障恢复的采样数据</p> 
+<p>故障开启之前的数据如果故障数据它之前有正常值，则替代，若无正常值，则丢弃。</p> 
+<h4><a id="C_85"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token comment">// Online C++ compiler to run C++ program online</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;exception&gt;</span> </span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;cmath&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;climits&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;ctype.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stack&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;list&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+ 
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 处理输入</span>
+    string param_input_str<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> param_input_str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">//空格分割</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> v<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>param_input_str<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span> <span class="token operator">!=</span> string<span class="token operator">::</span>npos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> found <span class="token operator">=</span> param_input_str<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        v<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>param_input_str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> found<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        param_input_str <span class="token operator">=</span> param_input_str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>found <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>    
+    v<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>param_input_str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">int</span> m <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>v<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> t <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>v<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> p <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>v<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// data</span>
+    string data_input_str<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> data_input_str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> sample_data<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>data_input_str<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span> <span class="token operator">!=</span> string<span class="token operator">::</span>npos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> found <span class="token operator">=</span> data_input_str<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        sample_data<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">stoi</span><span class="token punctuation">(</span>data_input_str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> found<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        data_input_str <span class="token operator">=</span> data_input_str<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>found <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>    
+    sample_data<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token function">stoi</span><span class="token punctuation">(</span>data_input_str<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 判断数据异常</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">items</span><span class="token punctuation">(</span>sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>sample_data<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>sample_data<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> sample_data<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> <span class="token number">10</span><span class="token punctuation">)</span> <span class="token operator">||</span> sample_data<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> sample_data<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">//</span>
+    <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">//可以用之前数据替代的情况</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> items<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            sample_data<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> sample_data<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span> error_num<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> corrent <span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> j <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        
+        <span class="token comment">//求得采样错误总数量</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>m <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> j <span class="token operator">&lt;</span> sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>items<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                error_num <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>error_num <span class="token operator">&gt;=</span> t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        corrent <span class="token operator">=</span> j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                        corrent <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            j <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token comment">// 大于故障次数门限 T</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>error_num <span class="token operator">&gt;=</span> t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            bool pos<span class="token operator">=</span> false<span class="token punctuation">;</span>
+            <span class="token keyword">int</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>k <span class="token operator">&lt;</span> i <span class="token operator">&amp;&amp;</span> items<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                k <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            pos <span class="token operator">=</span> true<span class="token punctuation">;</span>
+            
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> t <span class="token operator">==</span> sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                k <span class="token operator">=</span> i<span class="token punctuation">;</span>
+                <span class="token keyword">while</span> <span class="token punctuation">(</span>k <span class="token operator">&lt;</span> corrent <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    sample_data<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> sample_data<span class="token punctuation">[</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    items<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    k <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> m <span class="token operator">&lt;=</span> sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> l <span class="token operator">=</span> i<span class="token punctuation">;</span>l<span class="token operator">&lt;</span>sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> l<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>l <span class="token operator">&lt;</span> corrent <span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                            sample_data<span class="token punctuation">[</span>l<span class="token punctuation">]</span> <span class="token operator">=</span> sample_data<span class="token punctuation">[</span>i<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                            sample_data<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                        <span class="token punctuation">}</span>
+                        items<span class="token punctuation">[</span>l<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                        items<span class="token punctuation">[</span>l<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> q <span class="token operator">=</span> i<span class="token punctuation">;</span> q <span class="token operator">&lt;</span> i<span class="token operator">+</span>m<span class="token punctuation">;</span>q<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>q <span class="token operator">&lt;</span> corrent <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        sample_data<span class="token punctuation">[</span>q<span class="token punctuation">]</span> <span class="token operator">=</span> sample_data<span class="token punctuation">[</span>i <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+                        items<span class="token punctuation">[</span>q<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                        items<span class="token punctuation">[</span>q<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> m <span class="token operator">+</span> p <span class="token operator">&gt;=</span> sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> k <span class="token operator">=</span> i<span class="token punctuation">;</span>k<span class="token operator">&lt;</span>sample_data<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> k<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        items<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span> 
+                    items<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+                    i <span class="token operator">=</span> k <span class="token operator">+</span>p<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            i <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">int</span> res <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> location <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> item <span class="token operator">:</span> items<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>item <span class="token operator">!=</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>location <span class="token operator">&gt;</span> res<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                res <span class="token operator">=</span> location<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            location <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            location <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">max</span><span class="token punctuation">(</span>res<span class="token punctuation">,</span> location<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span>endl<span class="token punctuation">;</span>
+ 
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="JavaScript_247"></a>JavaScript</h4> 
+<pre><code class="prism language-js"><span class="token comment">/* JavaScript Node ACM模式 控制台输入获取 */</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"readline"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+<span class="token keyword">const</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p<span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>lines<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token punctuation">[</span>m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> s <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">getResult</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    lines<span class="token punctuation">.</span>length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+<span class="token comment">/**
+ *
+ * @param {*} s 数组，元素是每个周期的采样数据
+ * @param {*} m 故障确认周期数
+ * @param {*} t 故障次数门限值
+ * @param {*} p 故障恢复周期数
+ */</span>
+<span class="token keyword">function</span> <span class="token function">getResult</span><span class="token punctuation">(</span><span class="token parameter">s<span class="token punctuation">,</span> m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 连续正常周期的起始位置</span>
+  <span class="token keyword">let</span> fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// m个周期内错误数据的个数</span>
+  <span class="token keyword">let</span> cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 处于m个周期内第几个周期</span>
+  <span class="token keyword">let</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最终结果，即最长连续正常周期长度</span>
+ 
+  <span class="token keyword">function</span> <span class="token function">isFault</span><span class="token punctuation">(</span><span class="token parameter">j</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">||</span> s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+ 
+  <span class="token comment">// 如果采样数据一开始就是错误的，则直接丢弃</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// i指针后移，表示前面区间不属于连续正常周期范围</span>
+    i<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token comment">// 虽然错误数据被丢弃，但是仍然属于m周期内的出现的错误数据，因此需要计数</span>
+    fault<span class="token operator">++</span><span class="token punctuation">;</span>
+    cycle<span class="token operator">++</span><span class="token punctuation">;</span>
+ 
+    <span class="token comment">// 如果在m周期范围内，错误数据数量达到门限t，则工具故障，并进入故障恢复检测阶段</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">&lt;=</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">===</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>fault <span class="token operator">===</span> t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> p1 <span class="token operator">=</span> p<span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> s<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> p1 <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 故障恢复条件是，p个周期内一直都是正常数据，并要求连续，如果不连续，则重新计数</span>
+          <span class="token function">isFault</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token punctuation">(</span>p1 <span class="token operator">=</span> p<span class="token punctuation">)</span> <span class="token operator">:</span> p1<span class="token operator">--</span><span class="token punctuation">;</span>
+          i<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+ 
+  cycle<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 这个cycle计数对应第i周期的</span>
+  <span class="token keyword">let</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+ 
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> s<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    cycle<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 这个cycle计数对应第j周期的</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isFault</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      fault<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+ 
+    j<span class="token operator">++</span><span class="token punctuation">;</span>
+ 
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">&lt;=</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">===</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>fault <span class="token operator">===</span> t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        ans <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> j <span class="token operator">-</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 注意此时的j必然是故障开始的j，因此不计入正常连续周期中，因此求长度时不需要+1</span>
+        <span class="token comment">// 发现故障，故障开始，进行故障恢复判断</span>
+        <span class="token keyword">let</span> p1 <span class="token operator">=</span> p<span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> s<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> p1 <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token function">isFault</span><span class="token punctuation">(</span>j<span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token punctuation">(</span>p1 <span class="token operator">=</span> p<span class="token punctuation">)</span> <span class="token operator">:</span> p1<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 故障恢复条件是，p个周期内一直都是正常数据，要求连续</span>
+          j<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        i <span class="token operator">=</span> j<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+ 
+  ans <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> j <span class="token operator">-</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 注意这里的j必然是越界的j，因此求长度时不需要+1</span>
+ 
+  <span class="token keyword">return</span> ans<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Java_354"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+ 
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+    <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> mtp <span class="token operator">=</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">::</span><span class="token keyword">new</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> s <span class="token operator">=</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">::</span><span class="token keyword">new</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+    <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">getResult</span><span class="token punctuation">(</span>mtp<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> mtp<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> mtp<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> s<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+ 
+  <span class="token comment">/**
+   * @param m 故障确认周期数
+   * @param t 故障次数门限值
+   * @param p 故障恢复周期数
+   * @param s 数组，元素是每个周期的采样数据
+   * @return 最长连续周期的长度
+   */</span>
+  <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">getResult</span><span class="token punctuation">(</span><span class="token class-name">Integer</span> m<span class="token punctuation">,</span> <span class="token class-name">Integer</span> t<span class="token punctuation">,</span> <span class="token class-name">Integer</span> p<span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> s<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 连续正常周期的起始位置</span>
+    <span class="token keyword">int</span> fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// m个周期内错误数据的个数</span>
+    <span class="token keyword">int</span> cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 处于m个周期内第几个周期</span>
+    <span class="token keyword">int</span> ans <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 最终结果，即最长连续正常周期长度</span>
+ 
+    <span class="token comment">// 如果采样数据一开始就是错误的，则直接丢弃</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// i指针后移，表示前面区间不属于连续正常周期范围</span>
+      i<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token comment">// 虽然错误数据被丢弃，但是仍然属于m周期内的出现的错误数据，因此需要计数</span>
+      fault<span class="token operator">++</span><span class="token punctuation">;</span>
+      cycle<span class="token operator">++</span><span class="token punctuation">;</span>
+ 
+      <span class="token comment">// 如果在m周期范围内，错误数据数量达到门限t，则工具故障，并进入故障恢复检测阶段</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">&lt;=</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">==</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+ 
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fault <span class="token operator">==</span> t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          <span class="token keyword">int</span> p1 <span class="token operator">=</span> p<span class="token punctuation">;</span>
+          <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token generics"><span class="token punctuation">&lt;</span> s<span class="token punctuation">.</span>length <span class="token operator">&amp;</span><span class="token operator">&amp;</span> p1 <span class="token punctuation">&gt;</span></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 故障恢复条件是，p个周期内一直都是正常数据，并要求连续，如果不连续，则重新计数</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isFault</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+              p1 <span class="token operator">=</span> p<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+              p1<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            i<span class="token operator">++</span><span class="token punctuation">;</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+ 
+    <span class="token comment">// 这个cycle计数对应第i周期的</span>
+    cycle<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+ 
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> s<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      cycle<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 这个cycle计数对应第j周期的</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isFault</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        fault<span class="token operator">++</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+ 
+      j<span class="token operator">++</span><span class="token punctuation">;</span>
+ 
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">&lt;=</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cycle <span class="token operator">==</span> m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+ 
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fault <span class="token operator">==</span> t<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          cycle <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          ans <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> j <span class="token operator">-</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 注意此时的j必然是故障开始的j，因此不计入正常连续周期中，因此求长度时不需要+1</span>
+          <span class="token comment">// 发现故障，故障开始，进行故障恢复判断</span>
+          <span class="token keyword">int</span> p1 <span class="token operator">=</span> p<span class="token punctuation">;</span>
+          <span class="token keyword">while</span> <span class="token punctuation">(</span>j <span class="token generics"><span class="token punctuation">&lt;</span> s<span class="token punctuation">.</span>length <span class="token operator">&amp;</span><span class="token operator">&amp;</span> p1 <span class="token punctuation">&gt;</span></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 故障恢复条件是，p个周期内一直都是正常数据，要求连续</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isFault</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+              p1 <span class="token operator">=</span> p<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+              p1<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            i <span class="token operator">=</span> j<span class="token punctuation">;</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+ 
+    ans <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> j <span class="token operator">-</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 注意这里的j必然是越界的j，因此求长度时不需要+1</span>
+    <span class="token keyword">return</span> ans<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+ 
+  <span class="token comment">// 该方法用于判断数据是否错误</span>
+  <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">isFault</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token punctuation">[</span><span class="token punctuation">]</span> s<span class="token punctuation">,</span> <span class="token keyword">int</span> j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">||</span> s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="Python_466"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token comment"># 输入获取</span>
+m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+s <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+ 
+<span class="token comment"># 算法入口</span>
+<span class="token keyword">def</span> <span class="token function">getResult</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p<span class="token punctuation">,</span> s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    :param m: 故障确认周期数
+    :param t: 故障次数门限值
+    :param p: 故障恢复周期数
+    :param s: 列表，元素是每个周期的采样数据
+    :return: 最长连续周期的长度
+    """</span>
+    i <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment"># 连续正常周期的起始位置</span>
+    fault <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment"># m个周期内错误数据的个数</span>
+    cycle <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment"># 处于m个周期内第几个周期</span>
+    ans <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment"># 最终结果，即最长连续正常周期长度</span>
+ 
+    <span class="token comment">#  如果采样数据一开始就是错误的，则直接丢弃</span>
+    <span class="token keyword">while</span> s<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        i <span class="token operator">+=</span> <span class="token number">1</span> <span class="token comment"># i指针后移，表示前面区间不属于连续正常周期范围</span>
+        fault <span class="token operator">+=</span> <span class="token number">1</span> <span class="token comment"># 虽然错误数据被丢弃，但是仍然属于m周期内的出现的错误数据，因此需要计数</span>
+        cycle <span class="token operator">+=</span> <span class="token number">1</span>
+ 
+        <span class="token comment"># 如果在m周期范围内，错误数据数量达到门限t，则工具故障，并进入故障恢复检测阶段</span>
+        <span class="token keyword">if</span> cycle <span class="token operator">&lt;=</span> m<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> cycle <span class="token operator">==</span> m<span class="token punctuation">:</span>
+                cycle <span class="token operator">=</span> <span class="token number">0</span>
+                fault <span class="token operator">=</span> <span class="token number">0</span>
+ 
+            <span class="token keyword">if</span> fault <span class="token operator">==</span> t<span class="token punctuation">:</span>
+                cycle <span class="token operator">=</span> <span class="token number">0</span>
+                fault <span class="token operator">=</span> <span class="token number">0</span>
+                p1 <span class="token operator">=</span> p
+                <span class="token keyword">while</span> i <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token keyword">and</span> p1 <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                    <span class="token comment"># 故障恢复条件是，p个周期内一直都是正常数据，并要求连续，如果不连续，则重新计数</span>
+                    <span class="token keyword">if</span> isFault<span class="token punctuation">(</span>s<span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                        p1 <span class="token operator">=</span> p
+                    <span class="token keyword">else</span><span class="token punctuation">:</span>
+                        p1 <span class="token operator">-=</span> <span class="token number">1</span>
+                    i <span class="token operator">+=</span> <span class="token number">1</span>
+ 
+    <span class="token comment"># 这个cycle计数对应第i周期的</span>
+    cycle <span class="token operator">+=</span> <span class="token number">1</span>
+    j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span>
+ 
+    <span class="token keyword">while</span> j <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        cycle <span class="token operator">+=</span> <span class="token number">1</span> <span class="token comment"># 这个cycle计数对应第j周期的</span>
+        <span class="token keyword">if</span> isFault<span class="token punctuation">(</span>s<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+            fault <span class="token operator">+=</span> <span class="token number">1</span>
+ 
+        j <span class="token operator">+=</span> <span class="token number">1</span>
+ 
+        <span class="token keyword">if</span> cycle <span class="token operator">&lt;=</span> m<span class="token punctuation">:</span>
+            <span class="token keyword">if</span> cycle <span class="token operator">==</span> m<span class="token punctuation">:</span>
+                cycle <span class="token operator">=</span> <span class="token number">0</span>
+                fault <span class="token operator">=</span> <span class="token number">0</span>
+            <span class="token keyword">if</span> fault <span class="token operator">==</span> t<span class="token punctuation">:</span>
+                cycle <span class="token operator">=</span> <span class="token number">0</span>
+                fault <span class="token operator">=</span> <span class="token number">0</span>
+                ans <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> j <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token comment"># 注意此时的j必然是故障开始的j，因此不计入正常连续周期中，因此求长度时不需要+1</span>
+                p1 <span class="token operator">=</span> p <span class="token comment"># 发现故障，故障开始，进行故障恢复判断</span>
+                <span class="token keyword">while</span> j <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span> <span class="token keyword">and</span> p1 <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                    <span class="token comment"># 故障恢复条件是，p个周期内一直都是正常数据，要求连续</span>
+                    <span class="token keyword">if</span> isFault<span class="token punctuation">(</span>s<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                        p1 <span class="token operator">=</span> p
+                    <span class="token keyword">else</span><span class="token punctuation">:</span>
+                        p1 <span class="token operator">-=</span> <span class="token number">1</span>
+                    i <span class="token operator">=</span> j
+ 
+    ans <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span> j <span class="token operator">-</span> i<span class="token punctuation">)</span> <span class="token comment"># 注意这里的j必然是越界的j，因此求长度时不需要+1</span>
+    <span class="token keyword">return</span> ans
+ 
+ 
+<span class="token comment"># 该方法用于判断数据是否错误</span>
+<span class="token keyword">def</span> <span class="token function">isFault</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> j<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token keyword">or</span> <span class="token punctuation">(</span>j <span class="token operator">&gt;=</span> <span class="token number">1</span> <span class="token keyword">and</span> <span class="token punctuation">(</span>s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token keyword">or</span> s<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">-</span> s<span class="token punctuation">[</span>j <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+ 
+ 
+<span class="token comment"># 算法调用</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>getResult<span class="token punctuation">(</span>m<span class="token punctuation">,</span> t<span class="token punctuation">,</span> p<span class="token punctuation">,</span> s<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,642 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>围棋棋盘由纵横各19条线垂直相交组成，棋盘上一共19 x 19 = 361 个交点，对弈双方一方执白棋，一方执黑棋，落子时只能将棋子置于交点上。</p> 
+<p>“气”是围棋中很重要的一个概念，某个棋子有几口气，是指其上下左右方向四个相邻的交叉点中，有几个交叉点没有棋子，由此可知：</p> 
+<ol><li>在棋盘的边缘上的棋子最多有 3 口气（黑1），在棋盘角点的棋子最多有2口气（黑2），其他情况最多有4口气（白1）</li><li>所有同色棋子的气之和叫做该色棋子的气，需要注意的是，同色棋子重合的气点，对于该颜色棋子来说，只能计算一次气，比如下图中，黑棋一共4口气，而不是5口气，因为黑1和黑2中间红色三角标出来的气是两个黑棋共有的，对于黑棋整体来说只能算一个气。</li><li>本题目只计算气，对于眼也按气计算，如果您不清楚“眼”的概念，可忽略，按照前面描述的规则计算即可。</li></ol> 
+<p>现在，请根据输入的黑棋和白棋得到坐标位置，计算黑棋和白棋一共各有多少气？</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e75249811d2a1893b6c338e2d0f9a87a.png" alt="image-20231209170003122"></p> 
+<h2><a id="_16"></a>输入描述</h2> 
+<p>输入包含两行数据，</p> 
+<p>每行数据以空格分隔，数据个数是2的整数倍，每两个数是一组，代表棋子在棋盘上的坐标；<br> 坐标的原点在棋盘左上角点，第一个值是行号，范围从0到18；第二个值是列号，范围从0到18。</p> 
+<p>举例说明：如：</p> 
+<blockquote> 
+ <p>0 5 8 9 9 10<br> 5 0 9 9 9 8</p> 
+</blockquote> 
+<p>第一行数据表示三个坐标（0, 5）、(8, 9)、(9, 10)<br> 第一行表示黑棋的坐标，第二行表示白棋的坐标。<br> 题目保证输入两行数据，无空行且每行按前文要求是偶数个，每个坐标不会超出棋盘范围。</p> 
+<h2><a id="_33"></a>输出描述</h2> 
+<p>两个数字以空格分隔，第一个数代表黑棋的气数，第二个数代表白棋的气数。</p> 
+<blockquote> 
+ <p>8 7</p> 
+</blockquote> 
+<h2><a id="_39"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>0 5 8 9 9 10
+5 0 9 9 9 8
+</code></pre> 
+<p>输出</p> 
+<pre><code>8 7
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>数数黑棋一共8口气，数数白棋一共7口气。</p> 
+ <p><img src="https://i-blog.csdnimg.cn/blog_migrate/fc1c91fb10424ce2b8e5c437f5909ef3.png" alt="image-20231210142937125"></p> 
+</blockquote> 
+<h2><a id="1_60"></a>解法1</h2> 
+<h3><a id="_62"></a>解题思路</h3> 
+<p>在这个例子中，我们有两组棋子的坐标。第一组是黑棋的坐标，第二组是白棋的坐标。</p> 
+<p>首先，得到两个整数数组，分别代表黑棋和白棋的位置。</p> 
+<p>黑棋的坐标数组为：{0_5, 8_9, 9_10}<br> 白棋的坐标数组为：{5_0, 9_9, 9_8}</p> 
+<p>然后，我们计算每组棋子的"气"。</p> 
+<p>对于黑棋，我们检查每个棋子周围的四个位置，得到的"气"的坐标集合为：{“0_4”, “0_6”, “1_5”, “7_9”, “8_8”, “8_10”, “9_9”, “9_11”, “10_10”}。然后，我们从这个集合中减去黑棋的位置和白棋占据的位置，得到最终的"气"的数量为8。</p> 
+<p>对于白棋，我们同样检查每个棋子周围的四个位置，得到的"气"的坐标集合为：{“4_0”, “5_1”, “6_0”, “8_9”, “9_8”, “9_10”, “10_9”, “10_8”}。然后，我们从这个集合中减去白棋的位置和黑棋占据的位置，得到最终的"气"的数量为7。</p> 
+<p>所以，黑棋的"气"的数量为8，白棋的"气"的数量为7。</p> 
+<h3><a id="C_79"></a>C++</h3> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_set&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 最大的棋盘边界索引</span>
+<span class="token keyword">const</span> <span class="token keyword">int</span> maxSide <span class="token operator">=</span> <span class="token number">18</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 解析输入的坐标字符串，返回整数数组</span>
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>string input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    stringstream <span class="token function">ss</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> num<span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> coordinates<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>ss <span class="token operator">&gt;&gt;</span> num<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        coordinates<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> coordinates<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算棋子的气数</span>
+<span class="token keyword">int</span> <span class="token function">counting</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> alias<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个新的unordered_set，用于存储棋子的气</span>
+    unordered_set<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> count<span class="token punctuation">;</span>
+    <span class="token comment">// 遍历己方棋子的坐标</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> alias<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x <span class="token operator">=</span> alias<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> y <span class="token operator">=</span> alias<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        string pos <span class="token operator">=</span> <span class="token function">to_string</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将己方棋子的位置添加到集合中</span>
+        count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token function">to_string</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 计算得到的气数减去己方棋子的数量</span>
+    <span class="token keyword">int</span> res <span class="token operator">=</span> count<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 减去敌方棋子占据的气点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> enemy<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string pos <span class="token operator">=</span> <span class="token function">to_string</span><span class="token punctuation">(</span>enemy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token function">to_string</span><span class="token punctuation">(</span>enemy<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>count<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span> <span class="token operator">!=</span> count<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            res<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> res <span class="token operator">-</span> alias<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string line<span class="token punctuation">;</span>
+    <span class="token comment">// 读取黑棋的坐标</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> locBlacks <span class="token operator">=</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取白棋的坐标</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> locWhites <span class="token operator">=</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">counting</span><span class="token punctuation">(</span>locBlacks<span class="token punctuation">,</span> locWhites<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> <span class="token function">counting</span><span class="token punctuation">(</span>locWhites<span class="token punctuation">,</span> locBlacks<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h3><a id="Java_154"></a>Java</h3> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Set</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashSet</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token comment">// 最大的棋盘边界索引</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> maxSide <span class="token operator">=</span> <span class="token number">18</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> in <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取黑棋的坐标</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> locBlacks <span class="token operator">=</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取白棋的坐标</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> locWhites <span class="token operator">=</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">counting</span><span class="token punctuation">(</span>locBlacks<span class="token punctuation">,</span> locWhites<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> <span class="token function">counting</span><span class="token punctuation">(</span>locWhites<span class="token punctuation">,</span> locBlacks<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算棋子的气数</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">counting</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> alias<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个新的HashSet，用于存储棋子的气</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> count <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历己方棋子的坐标</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> alias<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> alias<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> y <span class="token operator">=</span> alias<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token class-name">String</span> pos <span class="token operator">=</span> x <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> y<span class="token punctuation">;</span>
+            <span class="token comment">// 将己方棋子的位置添加到集合中</span>
+            count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 计算得到的气数减去己方棋子的数量</span>
+        <span class="token keyword">int</span> res <span class="token operator">=</span> count<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 减去敌方棋子占据的气点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> enemy<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> pos <span class="token operator">=</span> enemy<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> enemy<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>count<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                res<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> res <span class="token operator">-</span> alias<span class="token punctuation">.</span>length <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 解析输入的坐标字符串，返回整数数组</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span><span class="token class-name">String</span> input<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> tokens <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> coordinates <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>tokens<span class="token punctuation">.</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> tokens<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            coordinates<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> coordinates<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h3><a id="javaScript_225"></a>javaScript</h3> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 最大的棋盘边界索引</span>
+<span class="token keyword">const</span> maxSide <span class="token operator">=</span> <span class="token number">18</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 解析输入的坐标字符串，返回整数数组</span>
+<span class="token keyword">function</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算棋子的气数</span>
+<span class="token keyword">function</span> <span class="token function">counting</span><span class="token punctuation">(</span><span class="token parameter">alias<span class="token punctuation">,</span> enemy</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个新的Set，用于存储棋子的气</span>
+    <span class="token keyword">let</span> count <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历己方棋子的坐标</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> alias<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> x <span class="token operator">=</span> alias<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> y <span class="token operator">=</span> alias<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> pos <span class="token operator">=</span> x <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> y<span class="token punctuation">;</span>
+        <span class="token comment">// 将己方棋子的位置添加到集合中</span>
+        count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 计算得到的气数减去己方棋子的数量</span>
+    <span class="token keyword">let</span> res <span class="token operator">=</span> count<span class="token punctuation">.</span>size<span class="token punctuation">;</span>
+    <span class="token comment">// 减去敌方棋子占据的气点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> enemy<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> pos <span class="token operator">=</span> enemy<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> enemy<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>count<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            res<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> res <span class="token operator">-</span> alias<span class="token punctuation">.</span>length <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 读取黑棋的坐标</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">blackInput</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> locBlacks <span class="token operator">=</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>blackInput<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取白棋的坐标</span>
+    rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">whiteInput</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> locWhites <span class="token operator">=</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>whiteInput<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">counting</span><span class="token punctuation">(</span>locBlacks<span class="token punctuation">,</span> locWhites<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> <span class="token function">counting</span><span class="token punctuation">(</span>locWhites<span class="token punctuation">,</span> locBlacks<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h3><a id="Python_296"></a>Python</h3> 
+<pre><code class="prism language-python"><span class="token comment"># 最大的棋盘边界索引</span>
+maxSide <span class="token operator">=</span> <span class="token number">18</span>
+
+<span class="token comment"># 解析输入的坐标字符串，返回整数数组</span>
+<span class="token keyword">def</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 计算棋子的气数</span>
+<span class="token keyword">def</span> <span class="token function">counting</span><span class="token punctuation">(</span>alias<span class="token punctuation">,</span> enemy<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 创建一个新的set，用于存储棋子的气</span>
+    count <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 遍历己方棋子的坐标</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        x <span class="token operator">=</span> alias<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+        y <span class="token operator">=</span> alias<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span>
+        pos <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span>
+        <span class="token comment"># 将己方棋子的位置添加到集合中</span>
+        count<span class="token punctuation">.</span>add<span class="token punctuation">(</span>pos<span class="token punctuation">)</span>
+        <span class="token comment"># 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+        <span class="token keyword">if</span> x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            count<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">:</span>
+            count<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            count<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">:</span>
+            count<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># 计算得到的气数减去己方棋子的数量</span>
+    res <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span>
+    <span class="token comment"># 减去敌方棋子占据的气点</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>enemy<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        pos <span class="token operator">=</span> <span class="token builtin">str</span><span class="token punctuation">(</span>enemy<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"_"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>enemy<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> pos <span class="token keyword">in</span> count<span class="token punctuation">:</span>
+            res <span class="token operator">-=</span> <span class="token number">1</span>
+    <span class="token keyword">return</span> res <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+
+<span class="token comment"># 读取黑棋的坐标</span>
+locBlacks <span class="token operator">=</span> parseCoordinates<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取白棋的坐标</span>
+locWhites <span class="token operator">=</span> parseCoordinates<span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>counting<span class="token punctuation">(</span>locBlacks<span class="token punctuation">,</span> locWhites<span class="token punctuation">)</span><span class="token punctuation">,</span> counting<span class="token punctuation">(</span>locWhites<span class="token punctuation">,</span> locBlacks<span class="token punctuation">)</span><span class="token punctuation">)</span> 
+ 
+</code></pre> 
+<h3><a id="C_344"></a>C语言</h3> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 定义棋盘大小</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_SIDE</span> <span class="token expression"><span class="token number">18</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_STONES</span> <span class="token expression"><span class="token number">361</span> </span><span class="token comment">// 最多棋子数（19x19）</span></span>
+
+<span class="token comment">// 解析输入的坐标字符串，返回坐标数组</span>
+<span class="token keyword">void</span> <span class="token function">parseCoordinates</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span> input<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> coordinates<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span><span class="token operator">*</span> token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        coordinates<span class="token punctuation">[</span>index<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 检查点是否在数组中</span>
+<span class="token keyword">int</span> <span class="token function">contains</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> stones<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> stones<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> i <span class="token operator">&lt;</span> MAX_STONES <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>stones<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> x <span class="token operator">&amp;&amp;</span> stones<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算棋子的气数</span>
+<span class="token keyword">int</span> <span class="token function">counting</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span> alias<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> alias<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> i <span class="token operator">&lt;</span> MAX_STONES <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x <span class="token operator">=</span> alias<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> y <span class="token operator">=</span> alias<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> directions<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">{<!-- --></span>x<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span>x<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span>x<span class="token punctuation">,</span> y<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{<!-- --></span>x<span class="token punctuation">,</span> y<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> dx <span class="token operator">=</span> directions<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> dy <span class="token operator">=</span> directions<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 检查是否在棋盘内且不被任何棋子占据</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>dx <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> dx <span class="token operator">&lt;=</span> MAX_SIDE <span class="token operator">&amp;&amp;</span> dy <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> dy <span class="token operator">&lt;=</span> MAX_SIDE <span class="token operator">&amp;&amp;</span>
+                <span class="token operator">!</span><span class="token function">contains</span><span class="token punctuation">(</span>dx<span class="token punctuation">,</span> dy<span class="token punctuation">,</span> alias<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token function">contains</span><span class="token punctuation">(</span>dx<span class="token punctuation">,</span> dy<span class="token punctuation">,</span> enemy<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                count<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> count<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> line<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> locBlacks<span class="token punctuation">[</span>MAX_STONES <span class="token operator">*</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> locWhites<span class="token punctuation">[</span>MAX_STONES <span class="token operator">*</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 初始化数组</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>locBlacks<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>locBlacks<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>locWhites<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>locWhites<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取黑棋的坐标</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> locBlacks<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 读取白棋的坐标</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">parseCoordinates</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> locWhites<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d %d\n"</span><span class="token punctuation">,</span> <span class="token function">counting</span><span class="token punctuation">(</span>locBlacks<span class="token punctuation">,</span> locWhites<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">counting</span><span class="token punctuation">(</span>locWhites<span class="token punctuation">,</span> locBlacks<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="2_419"></a>解法2</h2> 
+<p>一种骚操作，可忽略</p> 
+<h3><a id="C_423"></a>C++</h3> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 最大的棋盘边界索引</span>
+<span class="token keyword">static</span> <span class="token keyword">int</span> maxSide <span class="token operator">=</span> <span class="token number">18</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取棋子的坐标集合</span>
+set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>string line<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> chessSet<span class="token punctuation">;</span> <span class="token comment">// 创建一个set来存储坐标</span>
+    <span class="token keyword">int</span> x<span class="token punctuation">,</span> y<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> x <span class="token operator">&gt;&gt;</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 解析行坐标和列坐标</span>
+        <span class="token comment">// 将坐标转换为一个唯一的整数表示，并添加到集合中</span>
+        chessSet<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> chessSet<span class="token punctuation">;</span> <span class="token comment">// 返回包含所有棋子坐标的集合</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算棋子的气数</span>
+<span class="token keyword">int</span> <span class="token function">counting</span><span class="token punctuation">(</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> alias<span class="token punctuation">,</span> set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个新的set，用于存储棋子的气</span>
+    set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">count</span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始包含所有己方棋子的位置</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> pos <span class="token operator">:</span> alias<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> x <span class="token operator">=</span> pos <span class="token operator">/</span> <span class="token number">19</span><span class="token punctuation">;</span> <span class="token comment">// 计算行坐标</span>
+        <span class="token keyword">int</span> y <span class="token operator">=</span> pos <span class="token operator">%</span> <span class="token number">19</span><span class="token punctuation">;</span> <span class="token comment">// 计算列坐标</span>
+        <span class="token comment">// 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 计算得到的气数减去己方棋子的数量</span>
+    <span class="token keyword">int</span> res <span class="token operator">=</span> count<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> alias<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 减去敌方棋子占据的气点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> pos <span class="token operator">:</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>count<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span> <span class="token operator">!=</span> count<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            res<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">;</span> <span class="token comment">// 返回最终的气数</span>
+<span class="token punctuation">}</span>
+
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string blackLine<span class="token punctuation">,</span> whiteLine<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> blackLine<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取黑棋的坐标集合</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> whiteLine<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取白棋的坐标集合</span>
+    set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> blackSet <span class="token operator">=</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>blackLine<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> whiteSet <span class="token operator">=</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>whiteLine<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">counting</span><span class="token punctuation">(</span>blackSet<span class="token punctuation">,</span> whiteSet<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> <span class="token function">counting</span><span class="token punctuation">(</span>whiteSet<span class="token punctuation">,</span> blackSet<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h3><a id="Java_483"></a>Java</h3> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Set</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashSet</span></span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token comment">// 最大的棋盘边界索引</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> maxSide <span class="token operator">=</span> <span class="token number">18</span><span class="token punctuation">;</span>
+
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> in <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取黑棋的坐标集合</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> blackSet <span class="token operator">=</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取白棋的坐标集合</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> whiteSet <span class="token operator">=</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">counting</span><span class="token punctuation">(</span>blackSet<span class="token punctuation">,</span> whiteSet<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> <span class="token function">counting</span><span class="token punctuation">(</span>whiteSet<span class="token punctuation">,</span> blackSet<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 读取棋子的坐标集合</span>
+    <span class="token keyword">static</span> <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> <span class="token function">readChessSet</span><span class="token punctuation">(</span><span class="token class-name">String</span> line<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parts <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的行按空格分割</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> chessSet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个HashSet来存储坐标</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> parts<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>parts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析行坐标</span>
+            <span class="token keyword">int</span> y <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>parts<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析列坐标</span>
+            <span class="token comment">// 将坐标转换为一个唯一的整数表示，并添加到集合中</span>
+            chessSet<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> chessSet<span class="token punctuation">;</span> <span class="token comment">// 返回包含所有棋子坐标的集合</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算棋子的气数</span>
+    <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">counting</span><span class="token punctuation">(</span><span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> alias<span class="token punctuation">,</span> <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个新的HashSet，用于存储棋子的气</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> count <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始包含所有己方棋子的位置</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> pos <span class="token operator">:</span> alias<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> pos <span class="token operator">/</span> <span class="token number">19</span><span class="token punctuation">;</span> <span class="token comment">// 计算行坐标</span>
+            <span class="token keyword">int</span> y <span class="token operator">=</span> pos <span class="token operator">%</span> <span class="token number">19</span><span class="token punctuation">;</span> <span class="token comment">// 计算列坐标</span>
+            <span class="token comment">// 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 计算得到的气数减去己方棋子的数量</span>
+        <span class="token keyword">int</span> res <span class="token operator">=</span> count<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> alias<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 减去敌方棋子占据的气点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> pos <span class="token operator">:</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>count<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                res<span class="token operator">--</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> res<span class="token punctuation">;</span> <span class="token comment">// 返回最终的气数</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h3><a id="javaScript_546"></a>javaScript</h3> 
+<pre><code class="prism language-js"><span class="token comment">// 最大的棋盘边界索引</span>
+<span class="token keyword">const</span> maxSide <span class="token operator">=</span> <span class="token number">18</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取棋子的坐标集合</span>
+<span class="token keyword">function</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> parts <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将输入的行按空格分割</span>
+    <span class="token keyword">const</span> chessSet <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建一个Set来存储坐标</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> parts<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> x <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>parts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析行坐标</span>
+        <span class="token keyword">const</span> y <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>parts<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析列坐标</span>
+        <span class="token comment">// 将坐标转换为一个唯一的整数表示，并添加到集合中</span>
+        chessSet<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> chessSet<span class="token punctuation">;</span> <span class="token comment">// 返回包含所有棋子坐标的集合</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 计算棋子的气数</span>
+<span class="token keyword">function</span> <span class="token function">counting</span><span class="token punctuation">(</span><span class="token parameter">alias<span class="token punctuation">,</span> enemy</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个新的Set，用于存储棋子的气</span>
+    <span class="token keyword">const</span> count <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始包含所有己方棋子的位置</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> pos <span class="token keyword">of</span> alias<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> x <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span>pos <span class="token operator">/</span> <span class="token number">19</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算行坐标</span>
+        <span class="token keyword">const</span> y <span class="token operator">=</span> pos <span class="token operator">%</span> <span class="token number">19</span><span class="token punctuation">;</span> <span class="token comment">// 计算列坐标</span>
+        <span class="token comment">// 分别检查上下左右四个方向，如果存在气则添加到集合中</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">)</span> count<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 计算得到的气数减去己方棋子的数量</span>
+    <span class="token keyword">let</span> res <span class="token operator">=</span> count<span class="token punctuation">.</span>size <span class="token operator">-</span> alias<span class="token punctuation">.</span>size<span class="token punctuation">;</span>
+    <span class="token comment">// 减去敌方棋子占据的气点</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> pos <span class="token keyword">of</span> enemy<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>count<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            res<span class="token operator">--</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">;</span> <span class="token comment">// 返回最终的气数</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">blackLine</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token parameter">whiteLine</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> blackSet <span class="token operator">=</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>blackLine<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取黑棋的坐标集合</span>
+        <span class="token keyword">const</span> whiteSet <span class="token operator">=</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>whiteLine<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取白棋的坐标集合</span>
+        <span class="token comment">// 输出黑棋和白棋的气数，两个数字以空格分隔</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">counting</span><span class="token punctuation">(</span>blackSet<span class="token punctuation">,</span> whiteSet<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">" "</span> <span class="token operator">+</span> <span class="token function">counting</span><span class="token punctuation">(</span>whiteSet<span class="token punctuation">,</span> blackSet<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        readline<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h3><a id="Python_607"></a>Python</h3> 
+<pre><code class="prism language-python">
+maxSide <span class="token operator">=</span> <span class="token number">18</span>
+
+
+<span class="token keyword">def</span> <span class="token function">readChessSet</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    parts <span class="token operator">=</span> line<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span> 
+    chessSet <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>parts<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        x <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>parts<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> 
+        y <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>parts<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> 
+        chessSet<span class="token punctuation">.</span>add<span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> chessSet 
+
+
+<span class="token keyword">def</span> <span class="token function">counting</span><span class="token punctuation">(</span>alias<span class="token punctuation">,</span> enemy<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    count <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span> 
+    <span class="token keyword">for</span> pos <span class="token keyword">in</span> alias<span class="token punctuation">:</span>
+        x <span class="token operator">=</span> pos <span class="token operator">//</span> <span class="token number">19</span> 
+        y <span class="token operator">=</span> pos <span class="token operator">%</span> <span class="token number">19</span> 
+        <span class="token keyword">if</span> x <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span> count<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> x <span class="token operator">&lt;</span> maxSide<span class="token punctuation">:</span> count<span class="token punctuation">.</span>add<span class="token punctuation">(</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> y<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> y <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span> count<span class="token punctuation">.</span>add<span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> y <span class="token operator">&lt;</span> maxSide<span class="token punctuation">:</span> count<span class="token punctuation">.</span>add<span class="token punctuation">(</span>x <span class="token operator">*</span> <span class="token number">19</span> <span class="token operator">+</span> <span class="token punctuation">(</span>y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    res <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>count<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>alias<span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> pos <span class="token keyword">in</span> enemy<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> pos <span class="token keyword">in</span> count<span class="token punctuation">:</span>
+            res <span class="token operator">-=</span> <span class="token number">1</span>
+    <span class="token keyword">return</span> res 
+
+<span class="token comment"># 主方法，程序入口</span>
+blackLine <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+whiteLine <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+blackSet <span class="token operator">=</span> readChessSet<span class="token punctuation">(</span>blackLine<span class="token punctuation">)</span>
+whiteSet <span class="token operator">=</span> readChessSet<span class="token punctuation">(</span>whiteLine<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>counting<span class="token punctuation">(</span>blackSet<span class="token punctuation">,</span> whiteSet<span class="token punctuation">)</span><span class="token punctuation">,</span> counting<span class="token punctuation">(</span>whiteSet<span class="token punctuation">,</span> blackSet<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="_650"></a>完整用例</h2> 
+<h3><a id="1_651"></a>用例1</h3> 
+<pre><code class="prism language-input1">0 0 0 1 0 2
+1 0 2 0 3 0
+</code></pre> 
+<h3><a id="2_658"></a>用例2</h3> 
+<pre><code class="prism language-input2">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14 0 15 0 16
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14 0 15 0 16 0 17 0
+</code></pre> 
+<h3><a id="3_665"></a>用例3</h3> 
+<pre><code class="prism language-input3">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14 0 15
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14 0 15 0 16 0
+</code></pre> 
+<h3><a id="4_672"></a>用例4</h3> 
+<pre><code class="prism language-input4">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14 0 15 0
+</code></pre> 
+<h3><a id="5_679"></a>用例5</h3> 
+<pre><code class="prism language-input5">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0 13 0 14 0
+</code></pre> 
+<h3><a id="6_686"></a>用例6</h3> 
+<pre><code class="prism language-input6">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0 12 0
+</code></pre> 
+<h3><a id="7_693"></a>用例7</h3> 
+<pre><code class="prism language-input7">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0 11 0
+</code></pre> 
+<h3><a id="8_700"></a>用例8</h3> 
+<pre><code class="prism language-input8">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0 10 0
+</code></pre> 
+<h3><a id="9_707"></a>用例9</h3> 
+<pre><code class="prism language-input9">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7 0 8
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0 9 0
+</code></pre> 
+<h3><a id="10_714"></a>用例10</h3> 
+<pre><code class="prism language-input10">0 0 0 1 0 2 0 3 0 4 0 5 0 6 0 7
+1 0 2 0 3 0 4 0 5 0 6 0 7 0 8 0
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_16" rel="nofollow">输入描述</a></li><li><a href="#_33" rel="nofollow">输出描述</a></li><li><a href="#_39" rel="nofollow">用例</a></li><li><a href="#1_60" rel="nofollow">解法1</a></li><li><ul><li><a href="#_62" rel="nofollow">解题思路</a></li><li><a href="#C_79" rel="nofollow">C++</a></li><li><a href="#Java_154" rel="nofollow">Java</a></li><li><a href="#javaScript_225" rel="nofollow">javaScript</a></li><li><a href="#Python_296" rel="nofollow">Python</a></li><li><a href="#C_344" rel="nofollow">C语言</a></li></ul> 
+  </li><li><a href="#2_419" rel="nofollow">解法2</a></li><li><ul><li><a href="#C_423" rel="nofollow">C++</a></li><li><a href="#Java_483" rel="nofollow">Java</a></li><li><a href="#javaScript_546" rel="nofollow">javaScript</a></li><li><a href="#Python_607" rel="nofollow">Python</a></li></ul> 
+  </li><li><a href="#_650" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_651" rel="nofollow">用例1</a></li><li><a href="#2_658" rel="nofollow">用例2</a></li><li><a href="#3_665" rel="nofollow">用例3</a></li><li><a href="#4_672" rel="nofollow">用例4</a></li><li><a href="#5_679" rel="nofollow">用例5</a></li><li><a href="#6_686" rel="nofollow">用例6</a></li><li><a href="#7_693" rel="nofollow">用例7</a></li><li><a href="#8_700" rel="nofollow">用例8</a></li><li><a href="#9_707" rel="nofollow">用例9</a></li><li><a href="#10_714" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/7ec6c6e6afed7822393eacc52a338fbb.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

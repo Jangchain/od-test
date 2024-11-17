@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>一根X米长的树木，伐木工切割成不同长度的木材后进行交易，交易价格为每根木头长度的乘积。规定切割后的每根木头长度都为正整数；也可以不切割，直接拿整根树木进行交易。</p> 
+<p>请问伐木工如何尽量少的切割，才能使收益最大化？</p> 
+<h2><a id="_9"></a>输入描述</h2> 
+<p>木材的长度（X ≤ 50）</p> 
+<h2><a id="_13"></a>输出描述</h2> 
+<p>输出最优收益时的各个树木长度，以空格分隔，按升序排列</p> 
+<h2><a id="_17"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>10
+</code></pre> 
+<p>输出</p> 
+<pre><code>3 3 4
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>一根2米长的树木，伐木工不切割，为2 * 1，收益最大为2<br> 一根4米长的树木，伐木工不需要切割为2 * 2，省去切割成本，直接整根树木交易，为4 * 1，收益最大为4<br> 一根5米长的树木，伐木工切割为2 * 3，收益最大为6<br> 一根10米长的树木，伐木工可以切割方式一：3，4，4，也可以切割为方式二：3，2，2，3，但方式二伐木工多切割一次，增加切割成本却买了一样的价格，因此并不是最优收益。</p> 
+</blockquote> 
+<h2><a id="_35"></a>解题思路</h2> 
+<h2><a id="C_39"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 定义函数，计算给定长度的最大乘积分割</span>
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">getMaxProfit</span><span class="token punctuation">(</span><span class="token keyword">int</span> length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// dp数组用于存储每个长度的最大乘积</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">dp</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// cutTimes数组用于存储每个长度的最佳切割次数</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">cutTimes</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// lastCut数组用于存储每个长度的最后一次切割长度</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">lastCut</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每个长度</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> length<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 初始化dp和lastCut数组</span>
+        dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token comment">// 遍历所有可能的切割长度</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> i<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算当前切割长度的乘积</span>
+            <span class="token keyword">int</span> product <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">*</span> j<span class="token punctuation">;</span>
+            <span class="token comment">// 如果当前乘积大于已知的最大乘积，更新最大乘积和最佳切割长度</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">&gt;</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> product<span class="token punctuation">;</span>
+                cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> 
+            <span class="token comment">// 如果当前乘积等于已知的最大乘积，但切割次数更少，更新最佳切割长度和切割次数</span>
+            <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">==</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 创建一个vector来存储结果</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> results<span class="token punctuation">;</span>
+    <span class="token comment">// 从最大长度开始，每次减去最佳切割长度，直到长度为0</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将最佳切割长度添加到结果的开头</span>
+        results<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>results<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新长度</span>
+        length <span class="token operator">-=</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 对结果进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>results<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> results<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 返回结果</span>
+    <span class="token keyword">return</span> results<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入的长度</span>
+    <span class="token keyword">int</span> length<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> length<span class="token punctuation">;</span>
+    <span class="token comment">// 调用getMaxProfit方法计算最大利润，并将结果存储在一个vector中</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> results <span class="token operator">=</span> <span class="token function">getMaxProfit</span><span class="token punctuation">(</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历结果并打印</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">:</span> results<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> i <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_107"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Collections</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个扫描器来读取用户输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取输入的长度</span>
+        <span class="token keyword">int</span> length <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 调用getMaxProfit方法计算最大利润，并将结果存储在一个ArrayList中</span>
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> results <span class="token operator">=</span> <span class="token function">getMaxProfit</span><span class="token punctuation">(</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历结果并打印</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">:</span> results<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> <span class="token function">getMaxProfit</span><span class="token punctuation">(</span><span class="token keyword">int</span> length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// dp数组用于存储每个长度的最大乘积</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// cutTimes数组用于存储每个长度的最佳切割次数</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cutTimes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// lastCut数组用于存储每个长度的最后一次切割长度</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> lastCut <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历每个长度</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 初始化dp和lastCut数组</span>
+            dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+            <span class="token comment">// 遍历所有可能的切割长度</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> i<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算当前切割长度的乘积</span>
+                <span class="token keyword">int</span> product <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">*</span> j<span class="token punctuation">;</span>
+                <span class="token comment">// 如果当前乘积大于已知的最大乘积，更新最大乘积和最佳切割长度</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">&gt;</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                    dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> product<span class="token punctuation">;</span>
+                    cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> 
+                <span class="token comment">// 如果当前乘积等于已知的最大乘积，但切割次数更少，更新最佳切割长度和切割次数</span>
+                <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">==</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                    cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 创建一个ArrayList来存储结果</span>
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> results <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 从最大长度开始，每次减去最佳切割长度，直到长度为0</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 将最佳切割长度添加到结果的开头</span>
+            results<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 更新长度</span>
+            length <span class="token operator">-=</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 对结果进行排序</span>
+        <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>results<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 返回结果</span>
+        <span class="token keyword">return</span> results<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_177"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块用于读取输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义函数getMaxProfit，计算给定长度的最大乘积分割</span>
+<span class="token keyword">const</span> <span class="token function-variable function">getMaxProfit</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">length</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// dp数组用于存储每个长度的最大乘积</span>
+    <span class="token keyword">const</span> dp <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// cutTimes数组用于存储每个长度的最佳切割次数</span>
+    <span class="token keyword">const</span> cutTimes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// lastCut数组用于存储每个长度的最后一次切割长度</span>
+    <span class="token keyword">const</span> lastCut <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每个长度，从1到length</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 初始化dp和lastCut数组</span>
+        dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token comment">// 遍历所有可能的切割长度，从1到i</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> i<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算当前切割长度的乘积</span>
+            <span class="token keyword">const</span> product <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">*</span> j<span class="token punctuation">;</span>
+            <span class="token comment">// 如果当前乘积大于已知的最大乘积，更新最大乘积和最佳切割长度</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">&gt;</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> product<span class="token punctuation">;</span>
+                lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> 
+            <span class="token comment">// 如果当前乘积等于已知的最大乘积，但切割次数更少，更新最佳切割长度和切割次数</span>
+            <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">===</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 创建一个数组来存储结果</span>
+    <span class="token keyword">const</span> results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 从最大长度开始，每次减去最佳切割长度，直到长度为0</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将最佳切割长度添加到结果的开头</span>
+        results<span class="token punctuation">.</span><span class="token function">unshift</span><span class="token punctuation">(</span>lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新长度</span>
+        length <span class="token operator">-=</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 对结果进行排序</span>
+    results<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">-</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 返回结果</span>
+    <span class="token keyword">return</span> results<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将输入转换为整数</span>
+    <span class="token keyword">const</span> length <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 调用getMaxProfit方法计算最大利润，并将结果存储在一个数组中</span>
+    <span class="token keyword">const</span> results <span class="token operator">=</span> <span class="token function">getMaxProfit</span><span class="token punctuation">(</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 打印结果</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>results<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 关闭readline接口</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_249"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 定义函数，计算给定长度的最大乘积分割</span>
+<span class="token keyword">def</span> <span class="token function">get_max_profit</span><span class="token punctuation">(</span>length<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># dp数组用于存储每个长度的最大乘积</span>
+    dp <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token comment"># cutTimes数组用于存储每个长度的最佳切割次数</span>
+    cut_times <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token comment"># lastCut数组用于存储每个长度的最后一次切割长度</span>
+    last_cut <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 遍历每个长度</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 初始化dp和lastCut数组</span>
+        dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> last_cut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i
+        <span class="token comment"># 遍历所有可能的切割长度</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># 计算当前切割长度的乘积</span>
+            product <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">*</span> j
+            <span class="token comment"># 如果当前乘积大于已知的最大乘积，更新最大乘积和最佳切割长度</span>
+            <span class="token keyword">if</span> product <span class="token operator">&gt;</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">:</span>
+                last_cut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j
+                dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> product
+                cut_times<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cut_times<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span>
+            <span class="token comment"># 如果当前乘积等于已知的最大乘积，但切割次数更少，更新最佳切割长度和切割次数</span>
+            <span class="token keyword">elif</span> product <span class="token operator">==</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token keyword">and</span> cut_times<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cut_times<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">:</span>
+                last_cut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j
+                cut_times<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cut_times<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span>
+
+    <span class="token comment"># 创建一个列表来存储结果</span>
+    results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token comment"># 从最大长度开始，每次减去最佳切割长度，直到长度为0</span>
+    <span class="token keyword">while</span> length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        <span class="token comment"># 将最佳切割长度添加到结果的开头</span>
+        results<span class="token punctuation">.</span>insert<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> last_cut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># 更新长度</span>
+        length <span class="token operator">-=</span> last_cut<span class="token punctuation">[</span>length<span class="token punctuation">]</span>
+    <span class="token comment"># 对结果进行排序</span>
+    results<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 返回结果</span>
+    <span class="token keyword">return</span> results
+
+<span class="token comment"># 读取输入的长度</span>
+length <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 调用get_max_profit方法计算最大利润，并将结果存储在一个列表中</span>
+results <span class="token operator">=</span> get_max_profit<span class="token punctuation">(</span>length<span class="token punctuation">)</span>
+<span class="token comment"># 打印结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">,</span> results<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_300"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 定义函数，计算给定长度的最大乘积分割</span>
+<span class="token keyword">void</span> <span class="token function">getMaxProfit</span><span class="token punctuation">(</span><span class="token keyword">int</span> length<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> results<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">*</span> resultsSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// dp数组用于存储每个长度的最大乘积</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> dp <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// cutTimes数组用于存储每个长度的最佳切割次数</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> cutTimes <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// lastCut数组用于存储每个长度的最后一次切割长度</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> lastCut <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span>length <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历每个长度</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> length<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 初始化dp和lastCut数组</span>
+        dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token comment">// 遍历所有可能的切割长度</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> i<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算当前切割长度的乘积</span>
+            <span class="token keyword">int</span> product <span class="token operator">=</span> dp<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">*</span> j<span class="token punctuation">;</span>
+            <span class="token comment">// 如果当前乘积大于已知的最大乘积，更新最大乘积和最佳切割长度</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">&gt;</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> product<span class="token punctuation">;</span>
+                cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> 
+            <span class="token comment">// 如果当前乘积等于已知的最大乘积，但切割次数更少，更新最佳切割长度和切割次数</span>
+            <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>product <span class="token operator">==</span> dp<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                lastCut<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j<span class="token punctuation">;</span>
+                cutTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> cutTimes<span class="token punctuation">[</span>i <span class="token operator">-</span> j<span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 从最大长度开始，每次减去最佳切割长度，直到长度为0</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 将最佳切割长度添加到结果的开头</span>
+        results<span class="token punctuation">[</span><span class="token operator">*</span>resultsSize<span class="token punctuation">]</span> <span class="token operator">=</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">(</span><span class="token operator">*</span>resultsSize<span class="token punctuation">)</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新长度</span>
+        length <span class="token operator">-=</span> lastCut<span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对结果进行排序</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token operator">*</span>resultsSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token operator">*</span>resultsSize<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>results<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> results<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> temp <span class="token operator">=</span> results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                results<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> results<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                results<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 释放动态分配的内存</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>dp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>cutTimes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>lastCut<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入的长度</span>
+    <span class="token keyword">int</span> length<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个数组来存储结果</span>
+    <span class="token keyword">int</span><span class="token operator">*</span> results <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>length <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> resultsSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 调用getMaxProfit方法计算最大利润，并将结果存储在一个数组中</span>
+    <span class="token function">getMaxProfit</span><span class="token punctuation">(</span>length<span class="token punctuation">,</span> results<span class="token punctuation">,</span> <span class="token operator">&amp;</span>resultsSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历结果并打印</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> resultsSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d "</span><span class="token punctuation">,</span> results<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 释放动态分配的内存</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>results<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_387"></a>完整用例</h2> 
+<h3><a id="1_389"></a>用例1</h3> 
+<pre><code class="prism language-input1">10
+</code></pre> 
+<h3><a id="2_395"></a>用例2</h3> 
+<pre><code class="prism language-input2">1
+</code></pre> 
+<h3><a id="3_401"></a>用例3</h3> 
+<pre><code class="prism language-input3">2
+</code></pre> 
+<h3><a id="4_407"></a>用例4</h3> 
+<pre><code class="prism language-input4">3
+</code></pre> 
+<h3><a id="5_413"></a>用例5</h3> 
+<pre><code class="prism language-input5">4
+</code></pre> 
+<h3><a id="6_419"></a>用例6</h3> 
+<pre><code class="prism language-input6">5
+</code></pre> 
+<h3><a id="7_425"></a>用例7</h3> 
+<pre><code class="prism language-input7">6
+</code></pre> 
+<h3><a id="8_431"></a>用例8</h3> 
+<pre><code class="prism language-input8">11
+</code></pre> 
+<h3><a id="9_437"></a>用例9</h3> 
+<pre><code class="prism language-input9">13
+</code></pre> 
+<h3><a id="10_443"></a>用例10</h3> 
+<pre><code class="prism language-input10">15
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_13" rel="nofollow">输出描述</a></li><li><a href="#_17" rel="nofollow">用例</a></li><li><a href="#_35" rel="nofollow">解题思路</a></li><li><a href="#C_39" rel="nofollow">C++</a></li><li><a href="#Java_107" rel="nofollow">Java</a></li><li><a href="#javaScript_177" rel="nofollow">javaScript</a></li><li><a href="#Python_249" rel="nofollow">Python</a></li><li><a href="#C_300" rel="nofollow">C语言</a></li><li><a href="#_387" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_389" rel="nofollow">用例1</a></li><li><a href="#2_395" rel="nofollow">用例2</a></li><li><a href="#3_401" rel="nofollow">用例3</a></li><li><a href="#4_407" rel="nofollow">用例4</a></li><li><a href="#5_413" rel="nofollow">用例5</a></li><li><a href="#6_419" rel="nofollow">用例6</a></li><li><a href="#7_425" rel="nofollow">用例7</a></li><li><a href="#8_431" rel="nofollow">用例8</a></li><li><a href="#9_437" rel="nofollow">用例9</a></li><li><a href="#10_443" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/25629ec713a40941daa669df381a87be.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

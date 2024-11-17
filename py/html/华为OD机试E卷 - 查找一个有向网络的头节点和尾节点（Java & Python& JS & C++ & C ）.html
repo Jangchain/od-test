@@ -1,0 +1,718 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_3"></a>题目描述</h2> 
+<p>给定一个有向图，图中可能包含有环，图使用二维矩阵表示，每一行的第一列表示起始节点，第二列表示终止节点，如 [0, 1] 表示从 0 到 1 的路径。</p> 
+<p>每个节点用正整数表示。求这个数据的首节点与尾节点，题目给的用例会是一个首节点，但可能存在多个尾节点。同时图中可能含有环。如果图中含有环，返回 [-1]。</p> 
+<p>说明：入度为0是首节点，出度为0是尾节点。</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/03a9b32046af0c1a330a3bd43353da74.png" alt="image-20240121210316419"></p> 
+<h2><a id="_14"></a>输入描述</h2> 
+<p>第一行为后续输入的键值对数量N（N ≥ 0）</p> 
+<p>第二行为2N个数字。每两个为一个起点，一个终点.</p> 
+<h2><a id="_20"></a>输出描述</h2> 
+<p>输出一行头节点和尾节点。如果有多个尾节点，按从小到大的顺序输出</p> 
+<h5><a id="_26"></a>备注</h5> 
+<ul><li>如果图有环，输出为 -1</li><li>所有输入均合法，不会出现不配对的数据</li></ul> 
+<h2><a id="1_31"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c"><span class="token number">4</span>
+<span class="token number">0</span> <span class="token number">1</span> <span class="token number">0</span> <span class="token number">2</span> <span class="token number">1</span> <span class="token number">2</span> <span class="token number">2</span> <span class="token number">3</span>
+</code></pre> 
+<p>输出</p> 
+<pre><code>0 3
+</code></pre> 
+<p>说明</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/542b36af701ab5773d7c03503e93f77f.png" alt="image-20240121210602591"></p> 
+<h2><a id="2_50"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>2
+0 1 0 2
+</code></pre> 
+<p>输出</p> 
+<pre><code>0 1 2
+</code></pre> 
+<p>说明</p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/56a4e0be85a4eb74c8b441816aa96740.png" alt="image-20240121210613459"></p> 
+<h2><a id="_66"></a>解题思路</h2> 
+<h4><a id="_70"></a>环的检测</h4> 
+<ol><li> <p><strong>DFS实现</strong>:</p> 
+  <ul><li>为了进行DFS，首先构建了图的邻接表表示。这是通过将边信息转换成每个节点的邻接节点列表来完成的。</li><li>然后，对每个节点进行DFS遍历。</li><li>在遍历过程中，维护两个集合：<code>visited</code>和<code>recStack</code>。 
+    <ul><li><code>visited</code>用于记录已经访问过的节点。</li><li><code>recStack</code>用于记录当前递归调用栈中的节点。</li></ul> </li></ul> </li><li> <p><strong>检测环的逻辑</strong>:</p> 
+  <ul><li>在DFS遍历中，如果当前节点已在<code>recStack</code>中，则表示找到了一个环，因为这意味着在遍历过程中回到了正在访问的节点。</li><li>如果节点在<code>visited</code>中但不在<code>recStack</code>中，这意味着节点已被访问且没有形成环。</li><li>对每个邻接节点重复这个过程。</li></ul> </li><li> <p><strong>结束条件</strong>:</p> 
+  <ul><li>如果在任何节点的DFS遍历中检测到环，立即返回<code>true</code>，表示图中存在环。</li><li>如果所有节点都被遍历过，且没有检测到环，则返回<code>false</code>。</li></ul> </li></ol> 
+<h4><a id="_88"></a>确定起点和终点</h4> 
+<ol><li> <p><strong>起点和终点的定义</strong>:</p> 
+  <ul><li>起点是指没有入度的节点，即没有其他节点指向它的节点。</li><li>终点是指没有出度的节点，即它不指向任何其他节点的节点。</li></ul> </li><li> <p><strong>查找方法</strong>:</p> 
+  <ul><li>遍历所有节点，检查它们的入度和出度。</li><li>对于每个节点，如果它在<code>inDegree</code>映射中没有记录，那么它就是起点。</li><li>如果它在<code>outDegree</code>映射中没有记录，那么它就是终点。</li></ul> </li><li> <p><strong>存储结果</strong>:</p> 
+  <ul><li>结果数组首先存储起点，然后是所有终点。</li><li>这个数组最后返回作为方法的输出。</li></ul> </li></ol> 
+<h2><a id="C_103"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;set&gt;</span></span>
+<span class="token comment">// 递归检测图中是否有环</span>
+bool <span class="token function">detectCycle</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> graph<span class="token punctuation">,</span> <span class="token keyword">int</span> node<span class="token punctuation">,</span> std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> visited<span class="token punctuation">,</span> std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> recStack<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>recStack<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span> <span class="token operator">!=</span> recStack<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span> <span class="token operator">!=</span> visited<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    visited<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    recStack<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">const</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> neighbors <span class="token operator">=</span> graph<span class="token punctuation">.</span><span class="token function">at</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> neighbor <span class="token operator">:</span> neighbors<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> neighbor<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    recStack<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 检测图中是否有环</span>
+bool <span class="token function">hasCycle</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> nodes<span class="token punctuation">,</span> <span class="token keyword">const</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> graph<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> node <span class="token operator">:</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        graph<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edges<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        graph<span class="token punctuation">[</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> visited<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> recStack<span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> node <span class="token operator">:</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> node<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 寻找起点和终点节点</span>
+std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> inDegree<span class="token punctuation">,</span> outDegree<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> nodes<span class="token punctuation">;</span>
+
+    <span class="token comment">// 构建入度和出度的映射</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edges<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> start <span class="token operator">=</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> end <span class="token operator">=</span> edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        nodes<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        nodes<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        inDegree<span class="token punctuation">[</span>end<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        outDegree<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检测是否有环</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">hasCycle</span><span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> edges<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 寻找起点和终点</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> endNodes<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> startNode <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> node <span class="token operator">:</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span> <span class="token operator">==</span> inDegree<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            startNode <span class="token operator">=</span> node<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>outDegree<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span> <span class="token operator">==</span> outDegree<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            endNodes<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> result <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>startNode<span class="token punctuation">}</span><span class="token punctuation">;</span>
+    result<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> endNodes<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> endNodes<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+
+
+
+<span class="token comment">// 主函数</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>string line<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取N，但在这个程序中不使用</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取边的数据</span>
+
+    std<span class="token operator">::</span>istringstream <span class="token function">iss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> edges<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> edge<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>iss <span class="token operator">&gt;&gt;</span> edge<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        edges<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>edge<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> result <span class="token operator">=</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span>edges<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> num <span class="token operator">:</span> result<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> num <span class="token operator">&lt;&lt;</span> <span class="token string">' '</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_220"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取边的数量</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 存储所有边的数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> edges <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token number">2</span> <span class="token operator">*</span> <span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 读取每条边的起点和终点</span>
+            edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 找出起点和终点</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> result <span class="token operator">=</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span>edges<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">StringBuilder</span> sb <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 构建输出字符串</span>
+            sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 打印结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 方法：找出起点和终点</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 存储每个节点的入度</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> inDegree <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 存储每个节点的出度</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> outDegree <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 存储所有节点</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> nodes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edges<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> start <span class="token operator">=</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> end <span class="token operator">=</span> edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 添加节点</span>
+            nodes<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            nodes<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 计算入度和出度</span>
+            inDegree<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>end<span class="token punctuation">,</span> inDegree<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>end<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            outDegree<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span> outDegree<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 检查是否有环</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">hasCycle</span><span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> edges<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 找出终点</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> endNodes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 起点</span>
+        <span class="token keyword">int</span> startNode <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> node <span class="token operator">:</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果一个节点没有入度，它是起点</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>inDegree<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                startNode <span class="token operator">=</span> node<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 如果一个节点没有出度，它是终点</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>outDegree<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                endNodes<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 构建结果数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>endNodes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        result<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> startNode<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> endNodes<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            result<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> endNodes<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 方法：检查是否有环</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">hasCycle</span><span class="token punctuation">(</span><span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> nodes<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> edges<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 构建图</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> graph <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> node <span class="token operator">:</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            graph<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>node<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edges<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 记录已访问和回溯栈的节点</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> recStack <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查每个节点是否有环</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> node <span class="token operator">:</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> node<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 辅助方法：递归检查环</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">detectCycle</span><span class="token punctuation">(</span><span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> graph<span class="token punctuation">,</span> <span class="token keyword">int</span> node<span class="token punctuation">,</span> 
+                                       <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> visited<span class="token punctuation">,</span> <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> recStack<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果节点在回溯栈中，表示有环</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>recStack<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果已经访问过，不需要再次访问</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 标记节点为已访问，并加入回溯栈</span>
+        visited<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        recStack<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查相邻节点</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> neighbors <span class="token operator">=</span> graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> neighbor <span class="token operator">:</span> neighbors<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> neighbor<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 从回溯栈中移除节点</span>
+        recStack<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_359"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 导入必要的模块</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建读取行的接口</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ 
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token constant">N</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">edgesString</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> edges <span class="token operator">=</span> edgesString<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span>edges<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+<span class="token comment">// 寻找起点和终点节点</span>
+<span class="token keyword">function</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span><span class="token parameter">edges</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 存储入度和出度</span>
+    <span class="token keyword">let</span> inDegree <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> outDegree <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> nodes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 构建入度和出度的映射</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edges<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> start <span class="token operator">=</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> end <span class="token operator">=</span> edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        nodes<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        nodes<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        inDegree<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>end<span class="token punctuation">,</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>end<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        outDegree<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span> <span class="token punctuation">(</span>outDegree<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检测是否有环</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">hasCycle</span><span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> edges<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 寻找起点和终点</span>
+    <span class="token keyword">let</span> endNodes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> startNode <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> node <span class="token keyword">of</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>inDegree<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            startNode <span class="token operator">=</span> node<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>outDegree<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            endNodes<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token punctuation">[</span>startNode<span class="token punctuation">,</span> <span class="token operator">...</span>endNodes<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 检测图中是否有环</span>
+<span class="token keyword">function</span> <span class="token function">hasCycle</span><span class="token punctuation">(</span><span class="token parameter">nodes<span class="token punctuation">,</span> edges</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> graph <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    nodes<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">node</span> <span class="token operator">=&gt;</span> graph<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>node<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edges<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">let</span> visited <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> recStack <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> node <span class="token keyword">of</span> nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> node<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 递归检测图中是否有环</span>
+<span class="token keyword">function</span> <span class="token function">detectCycle</span><span class="token punctuation">(</span><span class="token parameter">graph<span class="token punctuation">,</span> node<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>recStack<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>visited<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    visited<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    recStack<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">let</span> neighbors <span class="token operator">=</span> graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> neighbor <span class="token keyword">of</span> neighbors<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> neighbor<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    recStack<span class="token punctuation">.</span><span class="token function">delete</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+ 
+</code></pre> 
+<h2><a id="Python_467"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">def</span> <span class="token function">find_start_and_end_nodes</span><span class="token punctuation">(</span>edges<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    寻找起点和终点节点。
+
+    参数:
+    edges - 边的数组。
+
+    返回:
+    起点和所有终点的数组。
+    """</span>
+    in_degree <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>  <span class="token comment"># 用于存储每个节点的入度</span>
+    out_degree <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>  <span class="token comment"># 用于存储每个节点的出度</span>
+    nodes <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment"># 存储所有节点</span>
+
+    <span class="token comment"># 遍历边，构建入度和出度的映射</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>edges<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        start<span class="token punctuation">,</span> end <span class="token operator">=</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span>
+        nodes<span class="token punctuation">.</span>add<span class="token punctuation">(</span>start<span class="token punctuation">)</span>
+        nodes<span class="token punctuation">.</span>add<span class="token punctuation">(</span>end<span class="token punctuation">)</span>
+        in_degree<span class="token punctuation">[</span>end<span class="token punctuation">]</span> <span class="token operator">=</span> in_degree<span class="token punctuation">.</span>get<span class="token punctuation">(</span>end<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+        out_degree<span class="token punctuation">[</span>start<span class="token punctuation">]</span> <span class="token operator">=</span> out_degree<span class="token punctuation">.</span>get<span class="token punctuation">(</span>start<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+
+    <span class="token comment"># 检测是否有环</span>
+    <span class="token keyword">if</span> has_cycle<span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> edges<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 寻找起点和终点</span>
+    end_nodes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    start_node <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+    <span class="token keyword">for</span> node <span class="token keyword">in</span> nodes<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> node <span class="token keyword">not</span> <span class="token keyword">in</span> in_degree<span class="token punctuation">:</span>
+            start_node <span class="token operator">=</span> node
+        <span class="token keyword">if</span> node <span class="token keyword">not</span> <span class="token keyword">in</span> out_degree<span class="token punctuation">:</span>
+            end_nodes<span class="token punctuation">.</span>append<span class="token punctuation">(</span>node<span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> <span class="token punctuation">[</span>start_node<span class="token punctuation">]</span> <span class="token operator">+</span> end_nodes
+
+<span class="token keyword">def</span> <span class="token function">has_cycle</span><span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> edges<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    检测图中是否有环。
+
+    参数:
+    nodes - 节点集合。
+    edges - 边的数组。
+
+    返回:
+    布尔值，表示图中是否有环。
+    """</span>
+    graph <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>node<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token keyword">for</span> node <span class="token keyword">in</span> nodes<span class="token punctuation">}</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>edges<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        graph<span class="token punctuation">[</span>edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    visited <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    rec_stack <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> node <span class="token keyword">in</span> nodes<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> detect_cycle<span class="token punctuation">(</span>graph<span class="token punctuation">,</span> node<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> rec_stack<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token keyword">def</span> <span class="token function">detect_cycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> node<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> rec_stack<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    递归检测图中是否有环。
+
+    参数:
+    graph - 图的邻接表表示。
+    node - 当前检测的节点。
+    visited - 访问过的节点集合。
+    rec_stack - 递归栈。
+
+    返回:
+    布尔值，表示从当前节点开始是否有环。
+    """</span>
+    <span class="token keyword">if</span> node <span class="token keyword">in</span> rec_stack<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">if</span> node <span class="token keyword">in</span> visited<span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+    visited<span class="token punctuation">.</span>add<span class="token punctuation">(</span>node<span class="token punctuation">)</span>
+    rec_stack<span class="token punctuation">.</span>add<span class="token punctuation">(</span>node<span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> neighbor <span class="token keyword">in</span> graph<span class="token punctuation">[</span>node<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> detect_cycle<span class="token punctuation">(</span>graph<span class="token punctuation">,</span> neighbor<span class="token punctuation">,</span> visited<span class="token punctuation">,</span> rec_stack<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+    rec_stack<span class="token punctuation">.</span>remove<span class="token punctuation">(</span>node<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+<span class="token comment"># 主函数</span>
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    N <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    edges <span class="token operator">=</span>  <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    result <span class="token operator">=</span> find_start_and_end_nodes<span class="token punctuation">(</span>edges<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_573"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_EDGES</span> <span class="token expression"><span class="token number">1000</span> </span><span class="token comment">// 定义最大边数</span></span>
+
+<span class="token comment">// 图的结构体定义</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> node<span class="token punctuation">;</span> <span class="token comment">// 节点编号</span>
+    <span class="token keyword">int</span> neighbors<span class="token punctuation">[</span>MAX_EDGES<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 邻接节点数组</span>
+    <span class="token keyword">int</span> neighbor_count<span class="token punctuation">;</span> <span class="token comment">// 邻接节点的数量</span>
+<span class="token punctuation">}</span> Graph<span class="token punctuation">;</span>
+
+<span class="token comment">// 集合的结构体定义</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> items<span class="token punctuation">[</span>MAX_EDGES<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 集合中的元素数组</span>
+    <span class="token keyword">int</span> size<span class="token punctuation">;</span> <span class="token comment">// 集合中元素的数量</span>
+<span class="token punctuation">}</span> Set<span class="token punctuation">;</span>
+
+<span class="token comment">// 向集合中插入元素</span>
+<span class="token keyword">void</span> <span class="token function">set_insert</span><span class="token punctuation">(</span>Set <span class="token operator">*</span>set<span class="token punctuation">,</span> <span class="token keyword">int</span> item<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> set<span class="token operator">-&gt;</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>set<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> item<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果元素已存在，直接返回</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    set<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>set<span class="token operator">-&gt;</span>size<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> item<span class="token punctuation">;</span> <span class="token comment">// 插入元素到集合中</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 检查集合中是否包含某元素</span>
+<span class="token keyword">int</span> <span class="token function">set_contains</span><span class="token punctuation">(</span>Set <span class="token operator">*</span>set<span class="token punctuation">,</span> <span class="token keyword">int</span> item<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> set<span class="token operator">-&gt;</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>set<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> item<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果找到元素，返回1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 未找到元素，返回0</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 从集合中删除元素</span>
+<span class="token keyword">void</span> <span class="token function">set_erase</span><span class="token punctuation">(</span>Set <span class="token operator">*</span>set<span class="token punctuation">,</span> <span class="token keyword">int</span> item<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> set<span class="token operator">-&gt;</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>set<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> item<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            set<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> set<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span><span class="token operator">--</span>set<span class="token operator">-&gt;</span>size<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 删除元素，通过将最后一个元素移动到删除位置</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 检测图中是否存在环</span>
+<span class="token keyword">int</span> <span class="token function">detectCycle</span><span class="token punctuation">(</span>Graph <span class="token operator">*</span>graph<span class="token punctuation">,</span> <span class="token keyword">int</span> node<span class="token punctuation">,</span> Set <span class="token operator">*</span>visited<span class="token punctuation">,</span> Set <span class="token operator">*</span>recStack<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">set_contains</span><span class="token punctuation">(</span>recStack<span class="token punctuation">,</span> node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果节点在递归栈中，表示找到环</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">set_contains</span><span class="token punctuation">(</span>visited<span class="token punctuation">,</span> node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果节点已访问，跳过</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">set_insert</span><span class="token punctuation">(</span>visited<span class="token punctuation">,</span> node<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 标记节点为已访问</span>
+    <span class="token function">set_insert</span><span class="token punctuation">(</span>recStack<span class="token punctuation">,</span> node<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将节点加入递归栈</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> graph<span class="token punctuation">[</span>node<span class="token punctuation">]</span><span class="token punctuation">.</span>neighbor_count<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> graph<span class="token punctuation">[</span>node<span class="token punctuation">]</span><span class="token punctuation">.</span>neighbors<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> visited<span class="token punctuation">,</span> recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 递归检测邻接节点，如果找到环，返回1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">set_erase</span><span class="token punctuation">(</span>recStack<span class="token punctuation">,</span> node<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从递归栈中移除节点</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 未找到环，返回0</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 检测图中是否有环的主函数</span>
+<span class="token keyword">int</span> <span class="token function">hasCycle</span><span class="token punctuation">(</span>Graph <span class="token operator">*</span>graph<span class="token punctuation">,</span> Set <span class="token operator">*</span>nodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Set visited <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> recStack <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> nodes<span class="token operator">-&gt;</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">detectCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> nodes<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>visited<span class="token punctuation">,</span> <span class="token operator">&amp;</span>recStack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果检测到环，返回1</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 未检测到环，返回0</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 寻找起点和终点节点</span>
+<span class="token keyword">int</span> <span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span>Graph <span class="token operator">*</span>graph<span class="token punctuation">,</span> Set <span class="token operator">*</span>nodes<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>edges<span class="token punctuation">,</span> <span class="token keyword">int</span> edge_count<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>startNode<span class="token punctuation">,</span> Set <span class="token operator">*</span>endNodes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> inDegree<span class="token punctuation">[</span>MAX_EDGES<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> outDegree<span class="token punctuation">[</span>MAX_EDGES<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 入度和出度数组</span>
+
+    <span class="token comment">// 构建图的邻接表，计算每个节点的入度和出度</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> edge_count<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> start <span class="token operator">=</span> edges<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> end <span class="token operator">=</span> edges<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">set_insert</span><span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> start<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">set_insert</span><span class="token punctuation">(</span>nodes<span class="token punctuation">,</span> end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        inDegree<span class="token punctuation">[</span>end<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        outDegree<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        graph<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">.</span>neighbors<span class="token punctuation">[</span>graph<span class="token punctuation">[</span>start<span class="token punctuation">]</span><span class="token punctuation">.</span>neighbor_count<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> end<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果图中有环，返回-1</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">hasCycle</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> nodes<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 寻找起点和终点</span>
+    <span class="token operator">*</span>startNode <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> nodes<span class="token operator">-&gt;</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> node <span class="token operator">=</span> nodes<span class="token operator">-&gt;</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token operator">*</span>startNode <span class="token operator">=</span> node<span class="token punctuation">;</span> <span class="token comment">// 找到入度为0的节点作为起点</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>outDegree<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">set_insert</span><span class="token punctuation">(</span>endNodes<span class="token punctuation">,</span> node<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 找到出度为0的节点作为终点</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 主函数</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> line<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取N，但在这个程序中不使用</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取边的数据</span>
+
+    <span class="token keyword">int</span> edges<span class="token punctuation">[</span>MAX_EDGES<span class="token punctuation">]</span><span class="token punctuation">,</span> edge_count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>line<span class="token punctuation">,</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        edges<span class="token punctuation">[</span>edge_count<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析边数据</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    Graph graph<span class="token punctuation">[</span>MAX_EDGES<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    Set nodes <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">,</span> endNodes <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> startNode <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 寻找起点和终点</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">findStartAndEndNodes</span><span class="token punctuation">(</span>graph<span class="token punctuation">,</span> <span class="token operator">&amp;</span>nodes<span class="token punctuation">,</span> edges<span class="token punctuation">,</span> edge_count<span class="token punctuation">,</span> <span class="token operator">&amp;</span>startNode<span class="token punctuation">,</span> <span class="token operator">&amp;</span>endNodes<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果有环，输出-1</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d "</span><span class="token punctuation">,</span> startNode<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出起点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> endNodes<span class="token punctuation">.</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d "</span><span class="token punctuation">,</span> endNodes<span class="token punctuation">.</span>items<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出终点</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_726"></a>完整用例</h2> 
+<h3><a id="1_728"></a>用例1</h3> 
+<pre><code class="prism language-input1">3
+0 1 1 2 2 3
+</code></pre> 
+<h3><a id="2_735"></a>用例2</h3> 
+<pre><code class="prism language-input2">3
+0 1 1 2 2 0
+</code></pre> 
+<h3><a id="3_742"></a>用例3</h3> 
+<pre><code class="prism language-input3">4
+0 1 0 2 0 3 1 4
+</code></pre> 
+<h3><a id="4_749"></a>用例4</h3> 
+<pre><code class="prism language-input4">3
+1 2 2 4 4 3
+</code></pre> 
+<h3><a id="5_756"></a>用例5</h3> 
+<pre><code class="prism language-input5">6
+0 1 0 2 1 3 2 3 3 4 4 2
+</code></pre> 
+<h3><a id="6_763"></a>用例6</h3> 
+<pre><code class="prism language-input6">4
+0 1 1 0 1 2 2 3
+</code></pre> 
+<h3><a id="7_770"></a>用例7</h3> 
+<pre><code class="prism language-input7">3
+0 1 0 2 1 3
+</code></pre> 
+<h3><a id="8_777"></a>用例8</h3> 
+<pre><code class="prism language-input8">7
+1 2 2 3 2 4 2 5 3 6 4 6 4 7
+</code></pre> 
+<h3><a id="9_784"></a>用例9</h3> 
+<pre><code class="prism language-input9">4
+1 2 2 4 4 3 2 3
+</code></pre> 
+<h3><a id="10_791"></a>用例10</h3> 
+<pre><code class="prism language-input10">4
+0 1 1 0 2 3 3 2
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_3" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_20" rel="nofollow">输出描述</a></li><li><ul><li><ul><li><ul><li><a href="#_26" rel="nofollow">备注</a></li></ul> 
+   </li></ul> 
+  </li></ul> 
+  </li><li><a href="#1_31" rel="nofollow">用例1</a></li><li><a href="#2_50" rel="nofollow">用例2</a></li><li><a href="#_66" rel="nofollow">解题思路</a></li><li><ul><li><ul><li><a href="#_70" rel="nofollow">环的检测</a></li><li><a href="#_88" rel="nofollow">确定起点和终点</a></li></ul> 
+  </li></ul> 
+  </li><li><a href="#C_103" rel="nofollow">C++</a></li><li><a href="#Java_220" rel="nofollow">Java</a></li><li><a href="#javaScript_359" rel="nofollow">javaScript</a></li><li><a href="#Python_467" rel="nofollow">Python</a></li><li><a href="#C_573" rel="nofollow">C语言</a></li><li><a href="#_726" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_728" rel="nofollow">用例1</a></li><li><a href="#2_735" rel="nofollow">用例2</a></li><li><a href="#3_742" rel="nofollow">用例3</a></li><li><a href="#4_749" rel="nofollow">用例4</a></li><li><a href="#5_756" rel="nofollow">用例5</a></li><li><a href="#6_763" rel="nofollow">用例6</a></li><li><a href="#7_770" rel="nofollow">用例7</a></li><li><a href="#8_777" rel="nofollow">用例8</a></li><li><a href="#9_784" rel="nofollow">用例9</a></li><li><a href="#10_791" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/356cfd6fba0b1cdb14e4a3e5328dccad.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

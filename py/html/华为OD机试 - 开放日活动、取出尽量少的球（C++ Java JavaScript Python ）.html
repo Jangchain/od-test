@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>某部门开展<strong>Family Day</strong>开放日活动，其中有个从桶里取球的游戏，游戏规则如下：</p> 
+<p>有N个容量一样的小桶等距排开，</p> 
+<p>且每个小桶都默认装了数量不等的小球，</p> 
+<p>每个小桶装的小球数量记录在数组 bucketBallNums 中，</p> 
+<p>游戏开始时，要求所有桶的小球总数不能超过SUM，</p> 
+<p>如果小球总数超过SUM，则需对所有的小桶统一设置一个容量最大值 maxCapacity，</p> 
+<p>并需将超过容量最大值的小球拿出来，直至小桶里的小球数量小于 maxCapacity;</p> 
+<p>请您根据输入的数据，计算从每个小桶里拿出的小球数量。</p> 
+<p>限制规则一：</p> 
+<p>所有小桶的小球总和小于SUM，则无需设置容量值maxCapacity，并且无需从小桶中拿球出来，返回结果[]</p> 
+<p>限制规则二：</p> 
+<p>如果所有小桶的小球总和大于SUM，则需设置容量最大值maxCapacity，并且需从小桶中拿球出来，返回从每个小桶拿出的小球数量组成的数组；</p> 
+<h4><a id="_27"></a>输入描述</h4> 
+<p>第一行输入2个正整数，数字之间使用空格隔开，其中第一个数字表示SUM，第二个数字表示bucketBallNums数组长度；<br> 第二行输入N个正整数，数字之间使用空格隔开，表示bucketBallNums的每一项；</p> 
+<h4><a id="_32"></a>输出描述</h4> 
+<p>找到一个maxCapacity，来保证取出尽量少的球，并返回从每个小桶拿出的小球数量组成的数组。</p> 
+<h4><a id="_36"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>14 7<br>2 3 2 5 5 1 4</td></tr><tr><td>输出</td><td>[0,1,0,3,3,0,2]</td></tr><tr><td>说明</td><td>小球总数为22，SUM=14，超出范围了，需从小桶取球，<br>maxCapacity=1，取出球后，桶里剩余小球总和为7，远小于14<br>maxCapacity=2，取出球后，桶里剩余小球总和为13，<br>maxCapacity=3，取出球后，桶里剩余小球总和为16，大于14<br>因此maxCapacity为2 ，每个小桶小球数量大于2的都需要拿出来；</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>3 3<br>1 2 3</td></tr><tr><td>输出</td><td>[0,1,2]</td></tr><tr><td>说明</td><td>小球总数为6，SUM=3，超出范围了，需从小桶中取球，maxCapacity=1，则小球总数为3，从1号桶取0个球，2号桶取1个球，3号桶取2个球；</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>6 2<br>3 2</td></tr><tr><td>输出</td><td>[]</td></tr><tr><td>说明</td><td>小球总数为5，SUM=6，在范围内，无需从小桶取球；</td></tr></tbody></table> 
+<h4><a id="_44"></a>题目解析</h4> 
+<p>这个问题的解题思路是通过二分查找来确定每个桶中保留的最大球数，以便使得保留的球数之和不超过目标和。以下是详细的解题方法：</p> 
+<ol><li>首先，从输入中获取目标和（<code>targetSum</code>）和桶的数量（<code>numBuckets</code>）。</li><li>接下来，从输入中获取每个桶中的球数（<code>ballsInBuckets</code>）。</li><li>计算桶中球数的最大值（<code>maxBalls</code>）和总和（<code>totalBalls</code>）。</li><li>如果<code>totalBalls</code>大于<code>targetSum</code>，则开始寻找解决方案。否则，输出空列表，因为不需要移除任何球。</li><li>初始化二分查找的边界，<code>left</code>设置为1，<code>right</code>设置为<code>maxBalls</code>。</li><li>当<code>left</code>小于等于<code>right</code>时，执行以下操作：<br> a. 计算<code>mid</code>，即<code>(left + right) / 2</code>的向下取整。<br> b. 计算每个桶中保留的球数，即<code>ballsInBuckets</code>中的每个元素与<code>mid</code>的较小值。<br> c. 计算保留球数的总和（<code>tempTotal</code>）。<br> d. 如果<code>tempTotal</code>小于等于<code>targetSum</code>，则更新<code>maxCapacity</code>为<code>mid</code>，并将<code>left</code>设置为<code>mid + 1</code>。这意味着我们可以尝试保留更多的球，以便更接近目标和。<br> e. 否则，将<code>right</code>设置为<code>mid - 1</code>。这意味着我们需要减少保留的球数，以使保留球数之和不超过目标和。</li><li>当二分查找完成后，我们找到了每个桶中保留的最大球数（<code>maxCapacity</code>）。</li><li>计算每个桶需要移除的球数，即<code>ballsInBuckets</code>中的每个元素减去<code>maxCapacity</code>的较大值。</li><li>输出结果，即每个桶需要移除的球数。</li></ol> 
+<p>通过这种方法，我们可以在保证保留球数之和不超过目标和的前提下，找到每个桶需要移除的最小球数。</p> 
+<h4><a id="C_64"></a>C++</h4> 
+<pre><code class="prism language-c"> <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iterator&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;numeric&gt;</span></span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取输入，获取目标和桶的数量</span>
+    <span class="token keyword">int</span> targetSum<span class="token punctuation">,</span> numBuckets<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> targetSum <span class="token operator">&gt;&gt;</span> numBuckets<span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取输入，获取每个桶中的球数</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">ballsInBuckets</span><span class="token punctuation">(</span>numBuckets<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numBuckets<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> ballsInBuckets<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 计算桶中球数的最大值和总和</span>
+    <span class="token keyword">int</span> maxBalls <span class="token operator">=</span> <span class="token operator">*</span>std<span class="token operator">::</span><span class="token function">max_element</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ballsInBuckets<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> totalBalls <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">accumulate</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ballsInBuckets<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果总球数大于目标和，开始寻找解决方案</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>totalBalls <span class="token operator">&gt;</span> targetSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 初始化二分查找的边界</span>
+        <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> right <span class="token operator">=</span> maxBalls<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> maxCapacity <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">result</span><span class="token punctuation">(</span>numBuckets<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 当左边界小于等于右边界时，继续二分查找</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;=</span> right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> mid <span class="token operator">=</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> right<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 计算每个桶中保留的球数</span>
+            std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">retainedBalls</span><span class="token punctuation">(</span>numBuckets<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            std<span class="token operator">::</span><span class="token function">transform</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ballsInBuckets<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> retainedBalls<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                           <span class="token punctuation">[</span>mid<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> ball<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token keyword">return</span> std<span class="token operator">::</span><span class="token function">min</span><span class="token punctuation">(</span>ball<span class="token punctuation">,</span> mid<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 计算保留球数的总和</span>
+            <span class="token keyword">int</span> tempTotal <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">accumulate</span><span class="token punctuation">(</span>retainedBalls<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> retainedBalls<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果保留球数的总和小于等于目标和，更新maxCapacity并向右移动左边界</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>tempTotal <span class="token operator">&lt;=</span> targetSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                maxCapacity <span class="token operator">=</span> mid<span class="token punctuation">;</span>
+                left <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 否则，向左移动右边界</span>
+                right <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 计算每个桶需要移除的球数</span>
+        std<span class="token operator">::</span><span class="token function">transform</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ballsInBuckets<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> result<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                       <span class="token punctuation">[</span>maxCapacity<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> ball<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token keyword">return</span> std<span class="token operator">::</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> ball <span class="token operator">-</span> maxCapacity<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出结果</span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"["</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> result<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> result<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"]"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果总球数小于等于目标和，输出空列表</span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"[]"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+
+</code></pre> 
+<h4><a id="JavaScript_145"></a>JavaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入，获取目标和桶的数量</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>targetSum<span class="token punctuation">,</span> numBuckets<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 读取输入，获取每个桶中的球数</span>
+  rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">bucketsInput</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> ballsInBuckets <span class="token operator">=</span> bucketsInput<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 计算桶中球数的最大值和总和</span>
+    <span class="token keyword">const</span> maxBalls <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token operator">...</span>ballsInBuckets<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> totalBalls <span class="token operator">=</span> ballsInBuckets<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">+</span> b<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果总球数大于目标和，开始寻找解决方案</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>totalBalls <span class="token operator">&gt;</span> targetSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 初始化二分查找的边界</span>
+      <span class="token keyword">let</span> left <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> right <span class="token operator">=</span> maxBalls<span class="token punctuation">;</span>
+      <span class="token keyword">let</span> maxCapacity <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+      <span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>numBuckets<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token comment">// 当左边界小于等于右边界时，继续二分查找</span>
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;=</span> right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> mid <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span><span class="token punctuation">(</span>left <span class="token operator">+</span> right<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算每个桶中保留的球数</span>
+        <span class="token keyword">const</span> retainedBalls <span class="token operator">=</span> ballsInBuckets<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">ball</span> <span class="token operator">=&gt;</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>ball<span class="token punctuation">,</span> mid<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算保留球数的总和</span>
+        <span class="token keyword">const</span> tempTotal <span class="token operator">=</span> retainedBalls<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a <span class="token operator">+</span> b<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果保留球数的总和小于等于目标和，更新maxCapacity并向右移动左边界</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>tempTotal <span class="token operator">&lt;=</span> targetSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          maxCapacity <span class="token operator">=</span> mid<span class="token punctuation">;</span>
+          left <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+          <span class="token comment">// 否则，向左移动右边界</span>
+          right <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token comment">// 计算每个桶需要移除的球数</span>
+      <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numBuckets<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> ballsInBuckets<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> maxCapacity<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+
+      <span class="token comment">// 输出结果</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">[</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>result<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">]</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 如果总球数小于等于目标和，输出空列表</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'[]'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+</code></pre> 
+<h4><a id="Java_213"></a>Java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>stream<span class="token punctuation">.</span></span><span class="token class-name">Collectors</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取输入，获取目标和桶的数量</span>
+        <span class="token keyword">int</span> targetSum <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> numBuckets <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取输入，获取每个桶中的球数</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> ballsInBuckets <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token punctuation">.</span><span class="token function">mapToInt</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">parseInt</span><span class="token punctuation">)</span>
+                <span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 计算桶中球数的最大值和总和</span>
+        <span class="token keyword">int</span> maxBalls <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getAsInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> totalBalls <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sum</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果总球数大于目标和，开始寻找解决方案</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>totalBalls <span class="token operator">&gt;</span> targetSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 初始化二分查找的边界</span>
+            <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> right <span class="token operator">=</span> maxBalls<span class="token punctuation">;</span>
+            <span class="token keyword">int</span> maxCapacity <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>numBuckets<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 当左边界小于等于右边界时，继续二分查找</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;=</span> right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> mid <span class="token operator">=</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> right<span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 计算每个桶中保留的球数</span>
+                <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> retainedBalls <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>ballsInBuckets<span class="token punctuation">)</span>
+                        <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>ball <span class="token operator">-&gt;</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>ball<span class="token punctuation">,</span> mid<span class="token punctuation">)</span><span class="token punctuation">)</span>
+                        <span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 计算保留球数的总和</span>
+                <span class="token keyword">int</span> tempTotal <span class="token operator">=</span> <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>retainedBalls<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">sum</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 如果保留球数的总和小于等于目标和，更新maxCapacity并向右移动左边界</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>tempTotal <span class="token operator">&lt;=</span> targetSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    maxCapacity <span class="token operator">=</span> mid<span class="token punctuation">;</span>
+                    left <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 否则，向左移动右边界</span>
+                    right <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 计算每个桶需要移除的球数</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numBuckets<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> ballsInBuckets<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> maxCapacity<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 输出结果</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">stream</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span>
+                    <span class="token punctuation">.</span><span class="token function">mapToObj</span><span class="token punctuation">(</span><span class="token class-name">Integer</span><span class="token operator">::</span><span class="token function">toString</span><span class="token punctuation">)</span>
+                    <span class="token punctuation">.</span><span class="token function">collect</span><span class="token punctuation">(</span><span class="token class-name">Collectors</span><span class="token punctuation">.</span><span class="token function">joining</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">,</span> <span class="token string">"["</span><span class="token punctuation">,</span> <span class="token string">"]"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果总球数小于等于目标和，输出空列表</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"[]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="Python_285"></a>Python</h4> 
+<pre><code class="prism language-python"><span class="token comment"># 读取输入，获取目标和桶的数量</span>
+target_sum<span class="token punctuation">,</span> num_buckets <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取输入，获取每个桶中的球数</span>
+balls_in_buckets <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 计算桶中球数的最大值和总和</span>
+max_balls <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>balls_in_buckets<span class="token punctuation">)</span>
+total_balls <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>balls_in_buckets<span class="token punctuation">)</span>
+
+<span class="token comment"># 如果总球数大于目标和，开始寻找解决方案</span>
+<span class="token keyword">if</span> total_balls <span class="token operator">&gt;</span> target_sum<span class="token punctuation">:</span>
+    <span class="token comment"># 初始化二分查找的边界</span>
+    left<span class="token punctuation">,</span> right <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> max_balls
+    max_capacity <span class="token operator">=</span> <span class="token number">0</span>
+    result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 当左边界小于等于右边界时，继续二分查找</span>
+    <span class="token keyword">while</span> left <span class="token operator">&lt;=</span> right<span class="token punctuation">:</span>
+        mid <span class="token operator">=</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> right<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span>
+        <span class="token comment"># 计算每个桶中保留的球数</span>
+        retained_balls <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">min</span><span class="token punctuation">(</span>ball<span class="token punctuation">,</span> mid<span class="token punctuation">)</span> <span class="token keyword">for</span> ball <span class="token keyword">in</span> balls_in_buckets<span class="token punctuation">]</span>
+        <span class="token comment"># 计算保留球数的总和</span>
+        temp_total <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>retained_balls<span class="token punctuation">)</span>
+
+        <span class="token comment"># 如果保留球数的总和小于等于目标和，更新max_capacity并向右移动左边界</span>
+        <span class="token keyword">if</span> temp_total <span class="token operator">&lt;=</span> target_sum<span class="token punctuation">:</span>
+            max_capacity <span class="token operator">=</span> mid
+            left <span class="token operator">=</span> mid <span class="token operator">+</span> <span class="token number">1</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 否则，向左移动右边界</span>
+            right <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span>
+
+    <span class="token comment"># 计算每个桶需要移除的球数</span>
+    result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">max</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> ball <span class="token operator">-</span> max_capacity<span class="token punctuation">)</span> <span class="token keyword">for</span> ball <span class="token keyword">in</span> balls_in_buckets<span class="token punctuation">]</span>
+    <span class="token comment"># 输出结果</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"["</span> <span class="token operator">+</span> <span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"]"</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+    <span class="token comment"># 如果总球数小于等于目标和，输出空列表</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"[]"</span><span class="token punctuation">)</span>
+
+
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_27" rel="nofollow">输入描述</a></li><li><a href="#_32" rel="nofollow">输出描述</a></li><li><a href="#_36" rel="nofollow">用例</a></li><li><a href="#_44" rel="nofollow">题目解析</a></li><li><a href="#C_64" rel="nofollow">C++</a></li><li><a href="#JavaScript_145" rel="nofollow">JavaScript</a></li><li><a href="#Java_213" rel="nofollow">Java</a></li><li><a href="#Python_285" rel="nofollow">Python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

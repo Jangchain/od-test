@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>给定一个矩阵，包含 N * M 个整数，和一个包含 K 个整数的数组。</p> 
+<p>现在要求在这个矩阵中找一个宽度最小的子矩阵，要求子矩阵包含数组中所有的整数。</p> 
+<h2><a id="_10"></a>输入描述</h2> 
+<p>第一行输入两个正整数 N，M，表示矩阵大小。</p> 
+<p>接下来 N 行 M 列表示矩阵内容。</p> 
+<p>下一行包含一个正整数 K。</p> 
+<p>下一行包含 K 个整数，表示所需包含的数组，K 个整数可能存在重复数字。</p> 
+<p>所有输入数据小于1000。</p> 
+<h2><a id="_22"></a>输出描述</h2> 
+<p>输出包含一个整数，表示满足要求子矩阵的最小宽度，若找不到，输出-1。</p> 
+<h2><a id="1_26"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>2 5
+1 2 2 3 1
+2 3 2 3 2
+3
+1 2 3
+</code></pre> 
+<p>输出</p> 
+<pre><code>2
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>矩阵第0、3列包含了1，2，3，矩阵第3，4列包含了1，2，3</p> 
+</blockquote> 
+<h2><a id="2_48"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>2 5
+1 2 2 3 1
+1 3 2 3 4
+3
+1 1 4
+</code></pre> 
+<p>输出</p> 
+<pre><code>5
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>矩阵第1、2、3、4、5列包含了1、1、4</p> 
+</blockquote> 
+<h2><a id="_70"></a>解题思路</h2> 
+<h2><a id="C_74"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;climits&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 检查矩阵的指定列区间是否包含所有要求的整数</span>
+bool <span class="token function">containsAll</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> left<span class="token punctuation">,</span> <span class="token keyword">int</span> right<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> requiredNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> countMap<span class="token punctuation">;</span> <span class="token comment">// 使用哈希表记录每个要求整数的数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> num <span class="token operator">:</span> requiredNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 初始化要求整数的数量</span>
+        <span class="token operator">++</span>countMap<span class="token punctuation">[</span>num<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> matrix<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历矩阵的每一行</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> left<span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> right<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历指定的列区间</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">!=</span> countMap<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果当前元素是要求的整数之一</span>
+                <span class="token operator">--</span>countMap<span class="token punctuation">[</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 减少哈希表中对应整数的数量</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">[</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果某个整数的数量减少到0</span>
+                    countMap<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从哈希表中移除该整数</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> countMap<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果哈希表为空，则表示所有要求的整数都包含在内</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 寻找最小宽度子矩阵的方法</span>
+<span class="token keyword">int</span> <span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> matrix<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> requiredNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> minWidth <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span> <span class="token comment">// 设置最小宽度初始值为最大整数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> left <span class="token operator">&lt;</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>left<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有可能的左边界</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> right <span class="token operator">=</span> left<span class="token punctuation">;</span> right <span class="token operator">&lt;</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有可能的右边界</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">containsAll</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> requiredNums<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 检查当前列区间是否包含所有要求的整数</span>
+                minWidth <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>minWidth<span class="token punctuation">,</span> right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新最小宽度</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> minWidth <span class="token operator">==</span> INT_MAX <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> minWidth<span class="token punctuation">;</span> <span class="token comment">// 如果找到符合条件的子矩阵，返回最小宽度；否则返回-1</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">,</span> M<span class="token punctuation">;</span> <span class="token comment">// 矩阵的行数和列数</span>
+    cin <span class="token operator">&gt;&gt;</span> N <span class="token operator">&gt;&gt;</span> M<span class="token punctuation">;</span> <span class="token comment">// 读取行数和列数</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">matrix</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>M<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 读取矩阵中的每个元素</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cin <span class="token operator">&gt;&gt;</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">int</span> K<span class="token punctuation">;</span> <span class="token comment">// 要包含的整数数组的长度</span>
+    cin <span class="token operator">&gt;&gt;</span> K<span class="token punctuation">;</span> <span class="token comment">// 读取长度</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">requiredNums</span><span class="token punctuation">(</span>K<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化要包含的整数数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> K<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 读取要包含的整数</span>
+        cin <span class="token operator">&gt;&gt;</span> requiredNums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> requiredNums<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出找到的最小宽度子矩阵的宽度</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_139"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">HashMap</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Map</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 使用Scanner类读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取矩阵的行数N和列数M</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token class-name">M</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化矩阵</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">N</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token class-name">M</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取矩阵中的每个元素</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> <span class="token class-name">M</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 读取数组的长度K</span>
+        <span class="token keyword">int</span> <span class="token class-name">K</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化要包含的整数数组</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> requiredNums <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token class-name">K</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取要包含的整数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">K</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            requiredNums<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 输出找到的最小宽度子矩阵的宽度</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> requiredNums<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 寻找最小宽度子矩阵的方法</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> requiredNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 设置最小宽度初始值为最大整数</span>
+        <span class="token keyword">int</span> minWidth <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">;</span>
+        <span class="token comment">// 遍历矩阵的所有列组合</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> left <span class="token operator">&lt;</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span> left<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> right <span class="token operator">=</span> left<span class="token punctuation">;</span> right <span class="token operator">&lt;</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span> right<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 检查当前列组合是否包含所有要求的整数</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">containsAll</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> requiredNums<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 更新最小宽度</span>
+                    minWidth <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>minWidth<span class="token punctuation">,</span> right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    
+                     
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果找到符合条件的子矩阵，返回最小宽度；否则返回-1</span>
+        <span class="token keyword">return</span> minWidth <span class="token operator">==</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> minWidth<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 检查矩阵的指定列区间是否包含所有要求的整数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">containsAll</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> left<span class="token punctuation">,</span> <span class="token keyword">int</span> right<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> requiredNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 使用HashMap记录每个要求整数的数量</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> countMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> num <span class="token operator">:</span> requiredNums<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            countMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>num<span class="token punctuation">,</span> countMap<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>num<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 遍历矩阵的指定列区间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> matrix<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> left<span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> right<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果当前元素是要求的整数之一，减少其计数</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    countMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> countMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 如果某个整数的计数降至0，从HashMap中移除</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        countMap<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果HashMap为空，表示所有要求的整数都包含在内</span>
+        <span class="token keyword">return</span> countMap<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_219"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 导入readline模块，用于从命令行读取输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span> <span class="token comment">// 输入流为标准输入</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 输出流为标准输出</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 检查矩阵的指定列区间是否包含所有要求的整数</span>
+<span class="token keyword">function</span> <span class="token function">containsAll</span><span class="token punctuation">(</span><span class="token parameter">matrix<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> requiredNums</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个Map来存储每个需要的数字及其出现的次数</span>
+    <span class="token keyword">const</span> countMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    requiredNums<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">num</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果Map中已经有这个数字，那么获取它的次数并加一；否则，次数为1</span>
+        countMap<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>num<span class="token punctuation">,</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>num<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历矩阵的每一行</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> matrix<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 遍历指定的列区间</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> left<span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> right<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前元素是需要的数字之一</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">.</span><span class="token function">has</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 减少Map中该数字的次数</span>
+                countMap<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> countMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果某个数字的次数降至0，则从Map中删除该数字</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    countMap<span class="token punctuation">.</span><span class="token function">delete</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果Map为空，表示所有需要的数字都在指定的列区间中</span>
+    <span class="token keyword">return</span> countMap<span class="token punctuation">.</span>size <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 寻找最小宽度子矩阵的方法</span>
+<span class="token keyword">function</span> <span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span><span class="token parameter">matrix<span class="token punctuation">,</span> requiredNums</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 初始化最小宽度为Infinity</span>
+    <span class="token keyword">let</span> minWidth <span class="token operator">=</span> <span class="token number">Infinity</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历矩阵的所有列组合</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> left <span class="token operator">&lt;</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span> left<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> right <span class="token operator">=</span> left<span class="token punctuation">;</span> right <span class="token operator">&lt;</span> matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span> right<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前列组合包含所有需要的数字</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">containsAll</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> requiredNums<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 更新最小宽度</span>
+                minWidth <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>minWidth<span class="token punctuation">,</span> right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果找到符合条件的子矩阵，返回最小宽度；否则返回-1</span>
+    <span class="token keyword">return</span> minWidth <span class="token operator">===</span> <span class="token number">Infinity</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> minWidth<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 创建一个数组来存储输入的每一行</span>
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token comment">// 当接收到一行输入时</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将这一行添加到输入数组中</span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 如果输入的行数等于矩阵的行数加3（包括矩阵的大小、矩阵本身和需要的数字）</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>input<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 解析矩阵的行数和列数</span>
+        <span class="token keyword">const</span> <span class="token punctuation">[</span><span class="token constant">N</span><span class="token punctuation">,</span> <span class="token constant">M</span><span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 解析矩阵</span>
+        <span class="token keyword">const</span> matrix <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token constant">N</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">row</span> <span class="token operator">=&gt;</span> row<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 解析需要的数字</span>
+        <span class="token keyword">const</span> requiredNums <span class="token operator">=</span> input<span class="token punctuation">[</span>input<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 调用findMinWidthSubmatrix函数并打印结果</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> requiredNums<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 关闭readline接口</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_300"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">def</span> <span class="token function">contains_all</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> required_nums<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    检查矩阵的指定列区间是否包含所有要求的整数
+    :param matrix: 二维矩阵
+    :param left: 检查区间的左边界
+    :param right: 检查区间的右边界
+    :param required_nums: 需要包含的整数列表
+    :return: 如果包含所有要求的整数返回True，否则返回False
+    """</span>
+    <span class="token comment"># 创建一个字典来存储每个要求整数的数量</span>
+    count_map <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>num<span class="token punctuation">:</span> required_nums<span class="token punctuation">.</span>count<span class="token punctuation">(</span>num<span class="token punctuation">)</span> <span class="token keyword">for</span> num <span class="token keyword">in</span> <span class="token builtin">set</span><span class="token punctuation">(</span>required_nums<span class="token punctuation">)</span><span class="token punctuation">}</span>
+    <span class="token comment"># 遍历矩阵的指定列区间</span>
+    <span class="token keyword">for</span> row <span class="token keyword">in</span> matrix<span class="token punctuation">:</span>
+        <span class="token keyword">for</span> num <span class="token keyword">in</span> row<span class="token punctuation">[</span>left<span class="token punctuation">:</span>right <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> num <span class="token keyword">in</span> count_map<span class="token punctuation">:</span>
+                count_map<span class="token punctuation">[</span>num<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>
+                <span class="token keyword">if</span> count_map<span class="token punctuation">[</span>num<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                    <span class="token keyword">del</span> count_map<span class="token punctuation">[</span>num<span class="token punctuation">]</span>
+    <span class="token comment"># 如果字典为空，表示所有要求的整数都包含在内</span>
+    <span class="token keyword">return</span> <span class="token keyword">not</span> count_map
+
+<span class="token keyword">def</span> <span class="token function">find_min_width_submatrix</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> required_nums<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    寻找最小宽度子矩阵的方法
+    :param matrix: 二维矩阵
+    :param required_nums: 需要包含的整数列表
+    :return: 满足要求子矩阵的最小宽度，如果不存在则返回-1
+    """</span>
+    <span class="token comment"># 设置最小宽度初始值为无穷大</span>
+    min_width <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span>
+    <span class="token comment"># 遍历矩阵的所有列组合</span>
+    <span class="token keyword">for</span> left <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> right <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>left<span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>matrix<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># 检查当前列组合是否包含所有要求的整数</span>
+            <span class="token keyword">if</span> contains_all<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> required_nums<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># 更新最小宽度</span>
+                min_width <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>min_width<span class="token punctuation">,</span> right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token comment"># 如果找到符合条件的子矩阵，返回最小宽度；否则返回-1</span>
+    <span class="token keyword">return</span> min_width <span class="token keyword">if</span> min_width <span class="token operator">!=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token operator">-</span><span class="token number">1</span>
+
+<span class="token comment"># 主函数，用于读取输入并调用函数输出结果</span>
+ 
+N<span class="token punctuation">,</span> M <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取矩阵内容</span>
+matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">]</span>
+K <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取要求的整数个数</span>
+required_nums <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 读取要求的整数列表</span>
+<span class="token comment"># 输出找到的最小宽度子矩阵的宽度</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>find_min_width_submatrix<span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> required_nums<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<h2><a id="C_357"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_SIZE</span> <span class="token expression"><span class="token number">1000</span></span></span>
+
+<span class="token comment">// 检查矩阵的指定列区间是否包含所有要求的整数</span>
+<span class="token keyword">int</span> <span class="token function">containsAll</span><span class="token punctuation">(</span><span class="token keyword">int</span> matrix<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> N<span class="token punctuation">,</span> <span class="token keyword">int</span> M<span class="token punctuation">,</span> <span class="token keyword">int</span> left<span class="token punctuation">,</span> <span class="token keyword">int</span> right<span class="token punctuation">,</span> <span class="token keyword">int</span> requiredNums<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> K<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> countMap<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 使用数组模拟哈希表记录每个要求整数的数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> K<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 初始化要求整数的数量</span>
+        countMap<span class="token punctuation">[</span>requiredNums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历矩阵的每一行</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> left<span class="token punctuation">;</span> j <span class="token operator">&lt;=</span> right<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历指定的列区间</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">[</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果当前元素是要求的整数之一</span>
+                <span class="token operator">--</span>countMap<span class="token punctuation">[</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 减少数组中对应整数的数量</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> K<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 检查是否所有要求的整数都被包含</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>countMap<span class="token punctuation">[</span>requiredNums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果有整数未被包含，返回0</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果所有要求的整数都被包含，返回1</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 寻找最小宽度子矩阵的方法</span>
+<span class="token keyword">int</span> <span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span><span class="token keyword">int</span> matrix<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> N<span class="token punctuation">,</span> <span class="token keyword">int</span> M<span class="token punctuation">,</span> <span class="token keyword">int</span> requiredNums<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> K<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> minWidth <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span> <span class="token comment">// 设置最小宽度初始值为最大整数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> left <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> <span class="token operator">++</span>left<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有可能的左边界</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> right <span class="token operator">=</span> left<span class="token punctuation">;</span> right <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> <span class="token operator">++</span>right<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有可能的右边界</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">containsAll</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> N<span class="token punctuation">,</span> M<span class="token punctuation">,</span> left<span class="token punctuation">,</span> right<span class="token punctuation">,</span> requiredNums<span class="token punctuation">,</span> K<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 检查当前列区间是否包含所有要求的整数</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> minWidth<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    minWidth <span class="token operator">=</span> right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 更新最小宽度</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> minWidth <span class="token operator">==</span> INT_MAX <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> minWidth<span class="token punctuation">;</span> <span class="token comment">// 如果找到符合条件的子矩阵，返回最小宽度；否则返回-1</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> N<span class="token punctuation">,</span> M<span class="token punctuation">;</span> <span class="token comment">// 矩阵的行数和列数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">,</span> <span class="token operator">&amp;</span>M<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取行数和列数</span>
+    <span class="token keyword">int</span> matrix<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 初始化矩阵</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 读取矩阵中的每个元素</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> M<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">int</span> K<span class="token punctuation">;</span> <span class="token comment">// 要包含的整数数组的长度</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>K<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取长度</span>
+    <span class="token keyword">int</span> requiredNums<span class="token punctuation">[</span>MAX_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 初始化要包含的整数数组</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> K<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 读取要包含的整数</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>requiredNums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> <span class="token function">findMinWidthSubmatrix</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> N<span class="token punctuation">,</span> M<span class="token punctuation">,</span> requiredNums<span class="token punctuation">,</span> K<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出找到的最小宽度子矩阵的宽度</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_426"></a>完整用例</h2> 
+<h3><a id="1_428"></a>用例1</h3> 
+<pre><code class="prism language-input1">2 5
+1 2 2 3 1
+2 3 2 3 2
+3
+1 2 3
+</code></pre> 
+<h3><a id="2_438"></a>用例2</h3> 
+<pre><code class="prism language-input2">2 5
+1 2 2 3 1
+1 3 2 3 4
+3
+1 1 4
+</code></pre> 
+<h3><a id="3_448"></a>用例3</h3> 
+<pre><code class="prism language-input3">3 3
+1 2 3
+4 5 6
+7 8 9
+3
+2 5 8
+</code></pre> 
+<h3><a id="4_459"></a>用例4</h3> 
+<pre><code class="prism language-input4">1 7
+1 2 3 4 5 6 7
+3
+3 4 5
+</code></pre> 
+<h3><a id="5_468"></a>用例5</h3> 
+<pre><code class="prism language-input5">4 4
+1 2 3 4
+5 6 7 8
+9 10 11 12
+13 14 15 16
+4
+4 8 12 16
+</code></pre> 
+<h3><a id="6_480"></a>用例6</h3> 
+<pre><code class="prism language-input6">2 2
+1 2
+3 4
+2
+1 4
+</code></pre> 
+<h3><a id="7_490"></a>用例7</h3> 
+<pre><code class="prism language-input7">3 5
+1 2 3 2 1
+2 3 4 3 2
+3 4 5 4 3
+5
+1 2 3 4 5
+</code></pre> 
+<h3><a id="8_501"></a>用例8</h3> 
+<pre><code class="prism language-input8">3 3
+1 2 3
+4 5 6
+7 8 9
+3
+1 5 9
+</code></pre> 
+<h3><a id="9_512"></a>用例9</h3> 
+<pre><code class="prism language-input9">4 4
+1 2 3 4
+5 6 7 8
+9 10 11 12
+13 14 15 16
+2
+7 11
+</code></pre> 
+<h3><a id="10_524"></a>用例10</h3> 
+<pre><code class="prism language-input10">2 7
+1 3 5 7 9 11 13
+2 4 6 8 10 12 14
+4
+7 8 10 13
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/f1c9542eb184dda508c21a36fe68f226.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

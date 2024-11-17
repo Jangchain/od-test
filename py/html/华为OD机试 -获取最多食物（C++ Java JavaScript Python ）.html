@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h3><a id="_1"></a>题目描述</h3> 
+<p>主办方设计了一个获取食物的游戏。</p> 
+<p>游戏的地图由 N N N 个方格组成，每个方格上至多 2 2 2 个传送门，通过传送门可将参与者传送至指定的其它方格。<br> 同时，每个方格上标注了三个数字：</p> 
+<ol><li>第一个数字 i d id id：代表方格的编号，从 0 0 0 到 N − 1 N-1 N−1，每个方格各不相同；</li><li>第二个数字 p a r e n t − i d parent-id parent−id：代表从编号为 p a r e n t − i d parent-id parent−id 的方格可以通过传送门传送到当前方格( − 1 -1 −1 则表示没有任何方格可以通过传送门传送到此方格，这样的方格在地图中有且仅有一个)；</li><li>第三个数字 v a l u e value value：取值在 [ 100 ， 100 ] [100，100] [100，100] 的整数值，正整数代表参与者得到相应取值单位的食物，负整数代表失去相应数值单位的食物(参与者可能存在临时持有食物为负数的情况)， 0 0 0 则代表无变化。</li></ol> 
+<p>此外，地图设计时保证了参与者不可能到达相同的方格两次，并且至少有一个方格的value 是正整数。</p> 
+<p>游戏开始后，参与者任意选择一个方格作为出发点，当遇到下列情况之一退出游戏：</p> 
+<ul><li>参与者当前所处的方格无传送门；</li><li>参与者在任意方格上主动宣布退出游戏。</li></ul> 
+<p>请计算参与者退出游戏后，最多可以获得多少单位的食物。</p> 
+<h3><a id="_21"></a>输入描述</h3> 
+<p>第一行: 方块个数N (N &lt;10000)<br> 接下来输入N行(id&lt;Nparent-id &lt; N,)，每行记录了相应方格上标注的3个数字，即id (0 &lt;= id &lt; 10000) 、parent-id (0 &lt;= parent-id &lt; 10000和value (-100&lt;= value &lt;= 100)<br> 特殊的 parent-id 可以取-1， 则表示没有任何方格可以通过传送门传送到此方格，这样的方格在地图中有且仅有一个。</p> 
+<h3><a id="_26"></a>输出描述</h3> 
+<p>输出为一个整数，表示参与者退出游戏后最多可以获得多少单位的食物。</p> 
+<p>示例一<br> 输入</p> 
+<pre><code>7
+0 1 8
+1 -1 -2
+2 1 9
+4 0 -2
+5 4 3
+3 0 -3
+6 2 -3
+</code></pre> 
+<p>输出</p> 
+<pre><code>9
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>参与者从方格 0 0 0 出发，通过传送门到达方格 4 4 4，再通过传送门到达方格 5 5 5。一共获得 8 + ( − 2 ) + 3 = 9 8+(-2) +3=9 8+(−2)+3=9 个单位食物，得到食物最多<br> 或者参与者在游戏开始时处于方格 2 2 2，直接主动宣布退出游戏，也可以获得 9 9 9 个单位食物。</p> 
+</blockquote> 
+<p>示例二</p> 
+<p>输入</p> 
+<pre><code>3
+0 -1 3
+1 0 1
+2 0 2
+</code></pre> 
+<p>输出</p> 
+<pre><code>5
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>参与者从方格 0 0 0 出发，通过传送门到达方格 2 2 2，一共可以获得 3 + 2 = 5 3+2=5 3+2=5 个单位食物，此时得到食物最多。</p> 
+</blockquote> 
+<h3><a id="_77"></a>思路</h3> 
+<p>题目要求我们计算参与者退出游戏后，最多可以获得多少单位的食物。因此，我们需要找到从某个方块出发，遍历到某个方块可以获得的最大食物单位数。具体实现思路如下：</p> 
+<ol><li> <p>读入方块信息，构建图。将每个方块看做一个节点，节点之间的边表示传送门。对于每个方块，记录其编号、父节点编号、value值。如果父节点编号为-1，则该方块为根节点。</p> </li><li> <p>从根节点开始进行深度优先搜索（DFS），递归遍历每个节点的子节点，并计算从该节点出发到达子节点可以获得的最大食物单位数。具体实现时，可以定义一个辅助函数dfs，其中参数id表示当前节点编号，graph表示图的邻接表表示，values表示每个节点的value值，maxValues表示从该节点出发到达子节点可以获得的最大食物单位数。</p> </li><li> <p>在dfs函数中，首先遍历当前节点的所有子节点，并递归调用dfs函数。然后，计算当前节点到达子节点可以获得的最大食物单位数。具体实现时，定义一个变量idMax表示当前节点到达所有子节点可以获得的最大食物单位数，然后遍历当前节点的所有子节点j，计算从子节点j出发到达其他子节点可以获得的最大食物单位数，并取最大值更新idMax。最后，将当前节点的value值加上idMax，得到从该节点出发到达子节点可以获得的最大食物单位数，并更新maxValues数组。</p> </li><li> <p>在主函数中，调用dfs函数从根节点开始遍历整个图，得到每个节点的maxValues值。然后，找到maxValues数组中的最大值，即为参与者退出游戏后可以获得的最大食物单位数。</p> </li><li> <p>输出最大食物单位数。</p> </li></ol> 
+<h3><a id="C_91"></a>C++</h3> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> id<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> graph<span class="token punctuation">,</span> <span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> values<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> idMax <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">:</span> graph<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        idMax <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>j<span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">,</span> idMax<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> values<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">+</span> idMax<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">graph</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">values</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> id<span class="token punctuation">,</span> parentId<span class="token punctuation">,</span> value<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> id <span class="token operator">&gt;&gt;</span> parentId <span class="token operator">&gt;&gt;</span> value<span class="token punctuation">;</span>
+        values<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> value<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>parentId <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            graph<span class="token punctuation">[</span>parentId<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> maxFood <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    cout <span class="token operator">&lt;&lt;</span> maxFood <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h3><a id="python_134"></a>python</h3> 
+<pre><code class="prism language-python"><span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    graph <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> n
+
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">id</span><span class="token punctuation">,</span> parent_id<span class="token punctuation">,</span> value <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        values<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span> <span class="token operator">=</span> value
+        <span class="token keyword">if</span> parent_id <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">:</span>
+            graph<span class="token punctuation">[</span>parent_id<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">)</span>
+
+    max_food <span class="token operator">=</span> dfs<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>max_food<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token builtin">id</span><span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    id_max <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> graph<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        id_max <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>dfs<span class="token punctuation">(</span>j<span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">,</span> id_max<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> values<span class="token punctuation">[</span><span class="token builtin">id</span><span class="token punctuation">]</span> <span class="token operator">+</span> id_max
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<h3><a id="javaScript_164"></a>javaScript</h3> 
+<pre><code class="prism language-java"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> inputLines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>line<span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">{<!-- --></span>
+  inputLines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>inputLines<span class="token punctuation">.</span>length <span class="token operator">==</span><span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputLines<span class="token punctuation">.</span><span class="token function">shift</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> graph <span class="token operator">=</span> <span class="token class-name">Array</span><span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span> length<span class="token operator">:</span> n <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> values <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>let i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">const</span> <span class="token punctuation">[</span>id<span class="token punctuation">,</span> parentId<span class="token punctuation">,</span> value<span class="token punctuation">]</span> <span class="token operator">=</span> inputLines<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">Number</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      values<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> value<span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>parentId <span class="token operator">!=</span><span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        graph<span class="token punctuation">[</span>parentId<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">const</span> maxFood <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>maxFood<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    inputLines<span class="token punctuation">.</span>length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+function <span class="token function">dfs</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  let idMax <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> j of graph<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    idMax <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>j<span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">,</span> idMax<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">return</span> values<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">+</span> idMax<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h3><a id="java_209"></a>java</h3> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 方块个数</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> graph <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// graph[i]是编号为i的节点的子节点（i方块所能进入的方块）</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> values <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>n<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            graph<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> id <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> parentId <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> value <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            values<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> value<span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>parentId <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>parentId<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> maxFood <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>maxFood<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// dfs搜索，返回以id为初始位置遍历时的最大路径加权</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> id<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> graph<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> values<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> idMax <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 遍历id节点的所有子节点</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">:</span> graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            idMax <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token function">dfs</span><span class="token punctuation">(</span>j<span class="token punctuation">,</span> graph<span class="token punctuation">,</span> values<span class="token punctuation">)</span><span class="token punctuation">,</span> idMax<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归搜索子节点</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> values<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">+</span> idMax<span class="token punctuation">;</span> <span class="token comment">// 返回以id为初始位置遍历时的最大路径加权</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_21" rel="nofollow">输入描述</a></li><li><a href="#_26" rel="nofollow">输出描述</a></li><li><a href="#_77" rel="nofollow">思路</a></li><li><a href="#C_91" rel="nofollow">C++</a></li><li><a href="#python_134" rel="nofollow">python</a></li><li><a href="#javaScript_164" rel="nofollow">javaScript</a></li><li><a href="#java_209" rel="nofollow">java</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/1d2f33ed8cf2fb1b9a4fe09513f7aa94.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

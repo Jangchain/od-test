@@ -1,0 +1,838 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>请设计一个文件<a href="https://so.csdn.net/so/search?q=%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F&amp;spm=1001.2101.3001.7020">缓存系统</a>，该文件缓存系统可以指定缓存的最大值（单位为字节）。</p> 
+<p>文件缓存系统有两种操作：</p> 
+<ul><li>存储文件（put）</li><li>读取文件（get）</li></ul> 
+<p>操作命令为：</p> 
+<ul><li>put fileName fileSize</li><li>get fileName</li></ul> 
+<p>存储文件是把文件放入文件缓存系统中；</p> 
+<p>读取文件是从文件缓存系统中访问已存在，如果文件不存在，则不作任何操作。</p> 
+<p>当缓存空间不足以存放新的文件时，根据规则删除文件，直到剩余空间满足新的文件大小位置，再存放新文件。</p> 
+<p>具体的删除规则为：文件访问过后，会更新文件的最近访问时间和总的访问次数，当缓存不够时，按照第一优先顺序为访问次数从少到多，第二顺序为时间从老到新的方式来删除文件。</p> 
+<h2><a id="_30"></a>输入描述</h2> 
+<p>第一行为缓存<a href="https://so.csdn.net/so/search?q=%E6%9C%80%E5%A4%A7%E5%80%BC&amp;spm=1001.2101.3001.7020">最大值</a> m（整数，取值范围为 0 &lt; m ≤ 52428800）</p> 
+<p>第二行为文件操作序列个数 n（0 ≤ n ≤ 300000）</p> 
+<p>从第三行起为文件操作序列，每个序列单独一行，文件操作定义为：</p> 
+<blockquote> 
+ <p>op file_name file_size</p> 
+</blockquote> 
+<p>file_name 是文件名，file_size 是文件大小</p> 
+<h2><a id="_42"></a>输出描述</h2> 
+<p>输出当前文件缓存中的文件名列表，文件名用英文逗号分隔，按字典顺序排序，如：</p> 
+<blockquote> 
+ <p>a,c</p> 
+</blockquote> 
+<p>如果文件缓存中没有文件，则输出NONE</p> 
+<p>备注</p> 
+<ol><li>如果新文件的文件名和文件缓存中已有的文件名相同，则不会放在缓存中</li><li>新的文件第一次存入到文件缓存中时，文件的总访问次数不会变化，文件的最近访问时间会更新到最新时间</li><li>每次文件访问后，总访问次数加1，最近访问时间更新到最新时间</li><li>任何两个文件的最近访问时间不会重复</li><li>文件名不会为空，均为小写字母，最大长度为10</li><li>缓存空间不足时，不能存放新文件</li><li>每个文件大小都是大于 0 的整数</li></ol> 
+<h2><a id="1_60"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>50
+6
+put a 10
+put b 20
+get a
+get a
+get b
+put c 30
+</code></pre> 
+<p>输出</p> 
+<pre><code>a,c
+</code></pre> 
+<h2><a id="2_82"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>50
+1
+get file
+</code></pre> 
+<p>输出</p> 
+<pre><code>NONE
+</code></pre> 
+<h2><a id="_99"></a>解题思路</h2> 
+<p>主要考察“最少使用频率”（Least Frequently Used, LFU）缓存策略的文件缓存系统。这种缓存系统特别适用于需要优先保留最常被访问的项的场景。解题思路和方法如下：</p> 
+<h4><a id="_103"></a>解题思路：</h4> 
+<ol><li> <p><strong>初始化数据结构</strong>:</p> 
+  <ul><li>存储文件及其属性（文件名、大小、访问次数、最后访问时间）。</li><li>使用（最小堆）维护文件的删除顺序，基于访问次数和最后访问时间。</li></ul> </li><li> <p><strong>处理输入</strong>:</p> 
+  <ul><li>接收缓存的最大容量和操作数。</li><li>对于每个操作（存储或获取文件），解析并执行相应的逻辑。</li></ul> </li><li> <p><strong>缓存操作</strong>:</p> 
+  <ul><li><code>put</code>方法：添加新文件到缓存。如果缓存已满，先移除访问次数最少且最早的文件，然后添加新文件。</li><li><code>get</code>方法：从缓存中检索文件，同时更新其访问次数和最后访问时间。</li></ul> </li><li> <p><strong>更新和维护缓存</strong>:</p> 
+  <ul><li>每当文件被访问时，更新其在<code>文件信息</code>和<code>最小堆</code>中的信息。</li><li>当缓存空间不足时，根据LFU策略移除文件。</li></ul> </li></ol> 
+<h4><a id="LFU_121"></a>LFU缓存方法：</h4> 
+<p>LFU缓存是一种缓存算法，用于管理有限的资源（如内存）。其核心思想是当需要空间时，优先移除访问频率最低的项。与之相对的是LRU（最近最少使用）缓存，后者基于时间顺序（最近使用的）移除元素。</p> 
+<p>LFU缓存的关键特点：</p> 
+<ul><li><strong>访问计数</strong>：每个缓存项都有一个与之关联的访问计数器，记录该项被访问的次数。</li><li><strong>优先级队列</strong>：使用优先级队列（如最小堆）来保持项的顺序，基于访问次数。</li><li><strong>动态调整</strong>：缓存项的访问计数随着时间的推移动态更新，以反映其使用频率。</li></ul> 
+<h2><a id="C_133"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;functional&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 用于表示缓存中文件的结构体</span>
+<span class="token keyword">struct</span> <span class="token class-name">File</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> accessCount<span class="token punctuation">;</span> <span class="token comment">// 文件访问次数</span>
+    <span class="token keyword">int</span> fileSize<span class="token punctuation">;</span>    <span class="token comment">// 文件大小</span>
+    string fileName<span class="token punctuation">;</span> <span class="token comment">// 文件名</span>
+    <span class="token keyword">int</span> timeStamp<span class="token punctuation">;</span>   <span class="token comment">// 时间戳</span>
+
+    <span class="token comment">// 需要定义 &gt; 操作符，因为 priority_queue 在内部用它来进行比较</span>
+    bool operator<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token keyword">const</span> File<span class="token operator">&amp;</span> other<span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>accessCount <span class="token operator">==</span> other<span class="token punctuation">.</span>accessCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> timeStamp <span class="token operator">&gt;</span> other<span class="token punctuation">.</span>timeStamp<span class="token punctuation">;</span> <span class="token comment">// 最小堆，用于最近最少使用（LRU）</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> accessCount <span class="token operator">&gt;</span> other<span class="token punctuation">.</span>accessCount<span class="token punctuation">;</span> <span class="token comment">// 最小堆，用于最不频繁使用（LFU）</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+class FileCacheSystem <span class="token punctuation">{<!-- --></span>
+private<span class="token operator">:</span>
+    <span class="token keyword">int</span> maxCacheSize<span class="token punctuation">;</span> <span class="token comment">// 缓存最大容量</span>
+    <span class="token keyword">int</span> currentCacheSize<span class="token punctuation">;</span> <span class="token comment">// 当前缓存大小</span>
+    unordered_map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> File<span class="token operator">&gt;</span> cache<span class="token punctuation">;</span> <span class="token comment">// 缓存映射，用于快速查找文件</span>
+    priority_queue<span class="token operator">&lt;</span>File<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>File<span class="token operator">&gt;</span><span class="token punctuation">,</span> greater<span class="token operator">&lt;</span>File<span class="token operator">&gt;&gt;</span> minHeap<span class="token punctuation">;</span> <span class="token comment">// 最小堆，用于维护文件优先级</span>
+    <span class="token keyword">int</span> time<span class="token punctuation">;</span> <span class="token comment">// 时间计数器，用于更新文件时间戳</span>
+
+    <span class="token comment">// 重建堆 - 这是必要的，因为 priority_queue 不允许直接更新元素</span>
+    <span class="token keyword">void</span> <span class="token function">rebuildHeap</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        priority_queue<span class="token operator">&lt;</span>File<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>File<span class="token operator">&gt;</span><span class="token punctuation">,</span> greater<span class="token operator">&lt;</span>File<span class="token operator">&gt;&gt;</span> newHeap<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span><span class="token operator">&amp;</span> pair <span class="token operator">:</span> cache<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            newHeap<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>pair<span class="token punctuation">.</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        minHeap<span class="token punctuation">.</span><span class="token function">swap</span><span class="token punctuation">(</span>newHeap<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 用新堆替换旧堆</span>
+    <span class="token punctuation">}</span>
+
+public<span class="token operator">:</span>
+    <span class="token function">FileCacheSystem</span><span class="token punctuation">(</span><span class="token keyword">int</span> maxSize<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">maxCacheSize</span><span class="token punctuation">(</span>maxSize<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">currentCacheSize</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">time</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+    <span class="token keyword">void</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> fileName<span class="token punctuation">,</span> <span class="token keyword">int</span> fileSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fileSize <span class="token operator">&gt;</span> maxCacheSize<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件大小超过缓存容量，则不处理</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cache<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span> <span class="token operator">!=</span> cache<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件已存在于缓存中，则更新其访问次数</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果加入新文件后超出缓存容量，需要移除优先级最低的文件</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>currentCacheSize <span class="token operator">+</span> fileSize <span class="token operator">&gt;</span> maxCacheSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            File toRemove <span class="token operator">=</span> minHeap<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            minHeap<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cache<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>toRemove<span class="token punctuation">.</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            currentCacheSize <span class="token operator">-=</span> toRemove<span class="token punctuation">.</span>fileSize<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        time<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 更新时间戳</span>
+        File file <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">1</span><span class="token punctuation">,</span> fileSize<span class="token punctuation">,</span> fileName<span class="token punctuation">,</span> time<span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 创建新文件</span>
+        minHeap<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将新文件加入最小堆</span>
+        cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span> <span class="token operator">=</span> file<span class="token punctuation">;</span> <span class="token comment">// 将新文件加入缓存映射</span>
+        currentCacheSize <span class="token operator">+=</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">void</span> <span class="token function">get</span><span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> fileName<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cache<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span> <span class="token operator">==</span> cache<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件不在缓存中，则不处理</span>
+
+        File<span class="token operator">&amp;</span> file <span class="token operator">=</span> cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        file<span class="token punctuation">.</span>accessCount<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 更新访问次数</span>
+        file<span class="token punctuation">.</span>timeStamp <span class="token operator">=</span> <span class="token operator">++</span>time<span class="token punctuation">;</span> <span class="token comment">// 更新时间戳</span>
+        <span class="token function">rebuildHeap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新文件后重建堆</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> <span class="token function">getCurrentCache</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> files<span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span><span class="token operator">&amp;</span> pair <span class="token operator">:</span> cache<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            files<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>pair<span class="token punctuation">.</span>first<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将缓存中的文件名添加到列表</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">sort</span><span class="token punctuation">(</span>files<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> files<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对文件名进行排序</span>
+        <span class="token keyword">return</span> files<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> maxCacheSize<span class="token punctuation">,</span> operationsCount<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> maxCacheSize <span class="token operator">&gt;&gt;</span> operationsCount<span class="token punctuation">;</span> <span class="token comment">// 读取缓存最大容量和操作数</span>
+
+    FileCacheSystem <span class="token function">cacheSystem</span><span class="token punctuation">(</span>maxCacheSize<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建文件缓存系统实例</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> operationsCount<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string operation<span class="token punctuation">,</span> fileName<span class="token punctuation">;</span>
+        cin <span class="token operator">&gt;&gt;</span> operation <span class="token operator">&gt;&gt;</span> fileName<span class="token punctuation">;</span> <span class="token comment">// 读取操作和文件名</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>operation <span class="token operator">==</span> <span class="token string">"put"</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> fileSize<span class="token punctuation">;</span>
+            cin <span class="token operator">&gt;&gt;</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 读取文件大小</span>
+            cacheSystem<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行 put 操作</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>operation <span class="token operator">==</span> <span class="token string">"get"</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cacheSystem<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行 get 操作</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> currentCache <span class="token operator">=</span> cacheSystem<span class="token punctuation">.</span><span class="token function">getCurrentCache</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取当前缓存中的文件列表</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentCache<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token string">"NONE"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 如果缓存为空，输出 "NONE"</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> currentCache<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> cout <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span> <span class="token comment">// 输出文件名之间的逗号</span>
+            cout <span class="token operator">&lt;&lt;</span> currentCache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 输出文件名</span>
+        <span class="token punctuation">}</span>
+        cout <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出换行符</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_258"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建扫描器读取输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取缓存最大值</span>
+        <span class="token keyword">int</span> maxCacheSize <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取操作数量</span>
+        <span class="token keyword">int</span> operationsCount <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 清除行结束符</span>
+
+        <span class="token comment">// 初始化文件缓存系统</span>
+        <span class="token class-name">FileCacheSystem</span> cacheSystem <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FileCacheSystem</span><span class="token punctuation">(</span>maxCacheSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 循环处理所有操作</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> operationsCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 读取操作指令</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">String</span> operation <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 操作类型</span>
+            <span class="token class-name">String</span> fileName <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 文件名</span>
+
+            <span class="token comment">// 如果是存储文件操作</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token string">"put"</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>operation<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">int</span> fileSize <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 文件大小</span>
+                cacheSystem<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储文件</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token string">"get"</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>operation<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果是读取文件操作</span>
+                cacheSystem<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取文件</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 获取当前缓存中的文件名列表</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> currentCache <span class="token operator">=</span> cacheSystem<span class="token punctuation">.</span><span class="token function">getCurrentCache</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果列表为空，输出NONE</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentCache<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"NONE"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 否则，输出文件名列表，用逗号分隔</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">,</span> currentCache<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 文件缓存系统类</span>
+    <span class="token keyword">static</span> <span class="token keyword">class</span> <span class="token class-name">FileCacheSystem</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 文件类</span>
+        <span class="token keyword">private</span> <span class="token keyword">class</span> <span class="token class-name">File</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> name<span class="token punctuation">;</span> <span class="token comment">// 文件名</span>
+            <span class="token keyword">int</span> size<span class="token punctuation">;</span> <span class="token comment">// 文件大小</span>
+            <span class="token keyword">int</span> accessCount<span class="token punctuation">;</span> <span class="token comment">// 访问次数</span>
+            <span class="token keyword">long</span> lastAccessTime<span class="token punctuation">;</span> <span class="token comment">// 最近访问时间</span>
+
+            <span class="token comment">// 文件构造函数</span>
+            <span class="token class-name">File</span><span class="token punctuation">(</span><span class="token class-name">String</span> name<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">,</span> <span class="token keyword">long</span> lastAccessTime<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>size <span class="token operator">=</span> size<span class="token punctuation">;</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>accessCount <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始访问次数为1</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>lastAccessTime <span class="token operator">=</span> lastAccessTime<span class="token punctuation">;</span> <span class="token comment">// 设置最近访问时间</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 缓存最大值</span>
+        <span class="token keyword">private</span> <span class="token keyword">int</span> maxCacheSize<span class="token punctuation">;</span>
+        <span class="token comment">// 当前缓存大小</span>
+        <span class="token keyword">private</span> <span class="token keyword">int</span> currentCacheSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token comment">// 缓存映射，存储文件名和文件信息</span>
+        <span class="token keyword">private</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">File</span><span class="token punctuation">&gt;</span></span> cache<span class="token punctuation">;</span>
+        <span class="token comment">// 优先队列，用于维护删除顺序</span>
+        <span class="token keyword">private</span> <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">File</span><span class="token punctuation">&gt;</span></span> minHeap<span class="token punctuation">;</span>
+        <span class="token comment">// 时间戳，用于更新文件的最近访问时间</span>
+        <span class="token keyword">private</span> <span class="token keyword">long</span> time<span class="token punctuation">;</span>
+
+        <span class="token comment">// 文件缓存系统构造函数</span>
+        <span class="token keyword">public</span> <span class="token class-name">FileCacheSystem</span><span class="token punctuation">(</span><span class="token keyword">int</span> maxCacheSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>maxCacheSize <span class="token operator">=</span> maxCacheSize<span class="token punctuation">;</span> <span class="token comment">// 设置缓存最大值</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>cache <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始化缓存映射</span>
+            <span class="token comment">// 初始化优先队列，比较器根据访问次数和最近访问时间排序</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PriorityQueue</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">.</span>accessCount <span class="token operator">==</span> b<span class="token punctuation">.</span>accessCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">return</span> <span class="token class-name">Long</span><span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span>a<span class="token punctuation">.</span>lastAccessTime<span class="token punctuation">,</span> b<span class="token punctuation">.</span>lastAccessTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">return</span> a<span class="token punctuation">.</span>accessCount <span class="token operator">-</span> b<span class="token punctuation">.</span>accessCount<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化时间戳</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 存储文件方法</span>
+        <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token class-name">String</span> fileName<span class="token punctuation">,</span> <span class="token keyword">int</span> fileSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>fileSize <span class="token operator">&gt;</span> maxCacheSize<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件大小超过最大缓存，不存储</span>
+
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cache<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件已存在，更新访问次数和时间</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 当缓存空间不足时，删除访问次数最少且最早访问的文件</span>
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>currentCacheSize <span class="token operator">+</span> fileSize <span class="token operator">&gt;</span> maxCacheSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">File</span> toRemove <span class="token operator">=</span> minHeap<span class="token punctuation">.</span><span class="token function">poll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从优先队列中取出要删除的文件</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>toRemove <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    cache<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>toRemove<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从缓存映射中删除</span>
+                    currentCacheSize <span class="token operator">-=</span> toRemove<span class="token punctuation">.</span>size<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 创建新文件，添加到缓存映射和优先队列中</span>
+            <span class="token class-name">File</span> file <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">File</span><span class="token punctuation">(</span>fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">,</span> <span class="token operator">++</span>time<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cache<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>fileName<span class="token punctuation">,</span> file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            minHeap<span class="token punctuation">.</span><span class="token function">offer</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            currentCacheSize <span class="token operator">+=</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取文件方法</span>
+        <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">get</span><span class="token punctuation">(</span><span class="token class-name">String</span> fileName<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>cache<span class="token punctuation">.</span><span class="token function">containsKey</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件不存在，不作操作</span>
+
+            <span class="token comment">// 获取文件信息，更新访问次数和最近访问时间</span>
+            <span class="token class-name">File</span> file <span class="token operator">=</span> cache<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            minHeap<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从优先队列中移除</span>
+            file<span class="token punctuation">.</span>accessCount<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 增加访问次数</span>
+            file<span class="token punctuation">.</span>lastAccessTime <span class="token operator">=</span> <span class="token operator">++</span>time<span class="token punctuation">;</span> <span class="token comment">// 更新最近访问时间</span>
+            minHeap<span class="token punctuation">.</span><span class="token function">offer</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 重新添加到优先队列</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 获取当前缓存文件名列表方法</span>
+        <span class="token keyword">public</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> <span class="token function">getCurrentCache</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> files <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span>cache<span class="token punctuation">.</span><span class="token function">keySet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取所有文件名</span>
+            <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>files<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 按字典顺序排序</span>
+            <span class="token keyword">return</span> files<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_392"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">class</span> <span class="token class-name">FileCacheSystem</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 构造函数，初始化文件缓存系统</span>
+    <span class="token function">constructor</span><span class="token punctuation">(</span><span class="token parameter">maxCacheSize</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>maxCacheSize <span class="token operator">=</span> maxCacheSize<span class="token punctuation">;</span> <span class="token comment">// 最大缓存大小</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>currentCacheSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前缓存大小</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>cache <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 缓存存储对象，键为文件名，值为文件信息</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 最小堆数组，用于维护文件的访问优先级</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 时间戳，用于记录文件的最后访问时间</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 比较器函数，用于维护最小堆的顺序</span>
+    <span class="token function">compare</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token punctuation">.</span>accessCount <span class="token operator">===</span> b<span class="token punctuation">.</span>accessCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果访问次数相同，则比较最后访问时间</span>
+            <span class="token keyword">return</span> a<span class="token punctuation">.</span>lastAccessTime <span class="token operator">-</span> b<span class="token punctuation">.</span>lastAccessTime<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 否则，比较访问次数</span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span>accessCount <span class="token operator">-</span> b<span class="token punctuation">.</span>accessCount<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 最小堆的堆化操作，确保父节点的值小于子节点的值</span>
+    <span class="token function">minHeapify</span><span class="token punctuation">(</span><span class="token parameter">index</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> smallest <span class="token operator">=</span> index<span class="token punctuation">;</span> <span class="token comment">// 假设当前索引所在的节点是最小的</span>
+        <span class="token keyword">const</span> leftChild <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 左子节点索引</span>
+        <span class="token keyword">const</span> rightChild <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> index <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 右子节点索引</span>
+
+        <span class="token comment">// 如果左子节点存在，且小于当前最小节点，则更新最小节点索引</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>leftChild <span class="token operator">&lt;</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>leftChild<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            smallest <span class="token operator">=</span> leftChild<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果右子节点存在，且小于当前最小节点，则更新最小节点索引</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>rightChild <span class="token operator">&lt;</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>rightChild<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            smallest <span class="token operator">=</span> rightChild<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果最小节点索引有更新，则交换当前节点与最小节点的位置，并递归调用堆化操作</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>smallest <span class="token operator">!==</span> index<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token punctuation">[</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapify</span><span class="token punctuation">(</span>smallest<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 插入元素到最小堆，维护最小堆的性质</span>
+    <span class="token function">minHeapInsert</span><span class="token punctuation">(</span><span class="token parameter">file</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将文件信息插入到最小堆数组的末尾</span>
+        <span class="token keyword">let</span> index <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 新插入元素的索引</span>
+        <span class="token keyword">let</span> parentIndex <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span><span class="token punctuation">(</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 新插入元素的父节点索引</span>
+
+        <span class="token comment">// 当新插入元素的值小于其父节点的值时，交换它们的位置，并更新索引为父节点的索引，继续向上比较</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span>index <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>parentIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token punctuation">[</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>parentIndex<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>parentIndex<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            index <span class="token operator">=</span> parentIndex<span class="token punctuation">;</span>
+            parentIndex <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">floor</span><span class="token punctuation">(</span><span class="token punctuation">(</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 移除并返回最小堆的顶部元素，即优先级最高（访问次数最少，最早访问）的文件</span>
+    <span class="token function">minHeapPop</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token keyword">null</span><span class="token punctuation">;</span> <span class="token comment">// 如果最小堆为空，则返回null</span>
+        <span class="token keyword">const</span> minItem <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 获取最小堆的顶部元素</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将最小堆的最后一个元素移动到顶部</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 移除最小堆的最后一个元素</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapify</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对新的顶部元素执行堆化操作</span>
+        <span class="token keyword">return</span> minItem<span class="token punctuation">;</span> <span class="token comment">// 返回被移除的顶部元素</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 从最小堆中删除指定元素</span>
+    <span class="token function">minHeapRemove</span><span class="token punctuation">(</span><span class="token parameter">file</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> index <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span><span class="token function">findIndex</span><span class="token punctuation">(</span><span class="token parameter">f</span> <span class="token operator">=&gt;</span> f<span class="token punctuation">.</span>name <span class="token operator">===</span> file<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 查找要删除的文件在最小堆中的索引</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">===</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件不存在于最小堆中，则不执行删除操作</span>
+
+        <span class="token comment">// 将最小堆的最后一个元素移动到要删除的元素的位置，并执行堆化操作</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">[</span><span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapify</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 存储文件的方法</span>
+    <span class="token function">put</span><span class="token punctuation">(</span><span class="token parameter">fileName<span class="token punctuation">,</span> fileSize</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fileSize <span class="token operator">&gt;</span> <span class="token keyword">this</span><span class="token punctuation">.</span>maxCacheSize<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件大小超过最大缓存大小，则不执行存储操作</span>
+
+        <span class="token keyword">const</span> currentTime <span class="token operator">=</span> Date<span class="token punctuation">.</span><span class="token function">now</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取当前时间戳</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果文件已经存在于缓存中，则更新文件的访问信息</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 当当前缓存大小加上新文件的大小超过最大缓存大小时，从最小堆中移除优先级最高的文件</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>currentCacheSize <span class="token operator">+</span> fileSize <span class="token operator">&gt;</span> <span class="token keyword">this</span><span class="token punctuation">.</span>maxCacheSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">const</span> toRemove <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapPop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>toRemove<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">delete</span> <span class="token keyword">this</span><span class="token punctuation">.</span>cache<span class="token punctuation">[</span>toRemove<span class="token punctuation">.</span>name<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 从缓存存储对象中删除文件</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>currentCacheSize <span class="token operator">-=</span> toRemove<span class="token punctuation">.</span>size<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 创建新文件对象，包含文件名、大小、访问次数和最后访问时间，并将其添加到缓存存储对象和最小堆中</span>
+        <span class="token keyword">const</span> file <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span> <span class="token literal-property property">name</span><span class="token operator">:</span> fileName<span class="token punctuation">,</span> <span class="token literal-property property">size</span><span class="token operator">:</span> fileSize<span class="token punctuation">,</span> <span class="token literal-property property">accessCount</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token literal-property property">lastAccessTime</span><span class="token operator">:</span> currentTime <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span> <span class="token operator">=</span> file<span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapInsert</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>currentCacheSize <span class="token operator">+=</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取文件的方法</span>
+    <span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token keyword">this</span><span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件不存在于缓存中，则不执行任何操作</span>
+
+        <span class="token keyword">const</span> file <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 获取文件信息</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapRemove</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从最小堆中删除文件信息</span>
+        file<span class="token punctuation">.</span>accessCount<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 更新文件的访问次数</span>
+        file<span class="token punctuation">.</span>lastAccessTime <span class="token operator">=</span> Date<span class="token punctuation">.</span><span class="token function">now</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新文件的最后访问时间</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">minHeapInsert</span><span class="token punctuation">(</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将更新后的文件信息重新插入到最小堆中</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取当前缓存中所有文件名的方法</span>
+    <span class="token function">getCurrentCache</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> files <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">keys</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>cache<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取缓存存储对象中所有的键，即文件名</span>
+        files<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对文件名进行字典序排序</span>
+        <span class="token keyword">return</span> files<span class="token punctuation">;</span> <span class="token comment">// 返回排序后的文件名数组</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 以下是模拟主函数的部分，用于处理输入和输出</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 引入readline模块</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span> <span class="token comment">// 输入来源为标准输入</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 输出目标为标准输出</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> inputs <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储输入行的数组</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    inputs<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将每行输入添加到数组中</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 当输入结束时执行的回调函数</span>
+    <span class="token keyword">const</span> maxCacheSize <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputs<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析最大缓存大小</span>
+    <span class="token keyword">const</span> operationsCount <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>inputs<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析操作数量</span>
+    <span class="token keyword">const</span> cacheSystem <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FileCacheSystem</span><span class="token punctuation">(</span>maxCacheSize<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建文件缓存系统实例</span>
+
+    <span class="token comment">// 循环处理每个操作</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> operationsCount <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> input <span class="token operator">=</span> inputs<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 分割输入行为操作和参数</span>
+        <span class="token keyword">const</span> operation <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 操作类型</span>
+        <span class="token keyword">const</span> fileName <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 文件名</span>
+
+        <span class="token comment">// 根据操作类型执行相应的方法</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>operation <span class="token operator">===</span> <span class="token string">'put'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">const</span> fileSize <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 解析文件大小</span>
+            cacheSystem<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行存储文件操作</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>operation <span class="token operator">===</span> <span class="token string">'get'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cacheSystem<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>fileName<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行获取文件操作</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取当前缓存中的所有文件名，并输出</span>
+    <span class="token keyword">const</span> currentCache <span class="token operator">=</span> cacheSystem<span class="token punctuation">.</span><span class="token function">getCurrentCache</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentCache<span class="token punctuation">.</span>length <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'NONE'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果没有文件，则输出NONE</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>currentCache<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 否则输出文件名，用逗号分隔</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_561"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> heapq
+
+<span class="token keyword">class</span> <span class="token class-name">Main</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 创建输入扫描器</span>
+        self<span class="token punctuation">.</span>cacheSystem <span class="token operator">=</span> <span class="token boolean">None</span>
+
+    <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 读取缓存最大值</span>
+        maxCacheSize <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token comment"># 读取操作数量</span>
+        operationsCount <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># 初始化文件缓存系统</span>
+        self<span class="token punctuation">.</span>cacheSystem <span class="token operator">=</span> FileCacheSystem<span class="token punctuation">(</span>maxCacheSize<span class="token punctuation">)</span>
+
+        <span class="token comment"># 循环处理所有操作</span>
+        <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>operationsCount<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># 读取操作指令</span>
+            input_line <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span>
+            operation <span class="token operator">=</span> input_line<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>  <span class="token comment"># 操作类型</span>
+            fileName <span class="token operator">=</span> input_line<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>  <span class="token comment"># 文件名</span>
+
+            <span class="token comment"># 如果是存储文件操作</span>
+            <span class="token keyword">if</span> operation <span class="token operator">==</span> <span class="token string">"put"</span><span class="token punctuation">:</span>
+                fileSize <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>input_line<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 文件大小</span>
+                self<span class="token punctuation">.</span>cacheSystem<span class="token punctuation">.</span>put<span class="token punctuation">(</span>fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">)</span>  <span class="token comment"># 存储文件</span>
+            <span class="token keyword">elif</span> operation <span class="token operator">==</span> <span class="token string">"get"</span><span class="token punctuation">:</span>  <span class="token comment"># 如果是读取文件操作</span>
+                self<span class="token punctuation">.</span>cacheSystem<span class="token punctuation">.</span>get<span class="token punctuation">(</span>fileName<span class="token punctuation">)</span>  <span class="token comment"># 读取文件</span>
+
+        <span class="token comment"># 获取当前缓存中的文件名列表</span>
+        currentCache <span class="token operator">=</span> self<span class="token punctuation">.</span>cacheSystem<span class="token punctuation">.</span>getCurrentCache<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token comment"># 如果列表为空，输出NONE</span>
+        <span class="token keyword">if</span> <span class="token keyword">not</span> currentCache<span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"NONE"</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>  <span class="token comment"># 否则，输出文件名列表，用逗号分隔</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>currentCache<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">FileCacheSystem</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> maxCacheSize<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 缓存最大值</span>
+        self<span class="token punctuation">.</span>maxCacheSize <span class="token operator">=</span> maxCacheSize
+        <span class="token comment"># 当前缓存大小</span>
+        self<span class="token punctuation">.</span>currentCacheSize <span class="token operator">=</span> <span class="token number">0</span>
+        <span class="token comment"># 缓存映射，存储文件名和文件信息</span>
+        self<span class="token punctuation">.</span>cache <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+        <span class="token comment"># 优先队列，用于维护删除顺序</span>
+        self<span class="token punctuation">.</span>minHeap <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token comment"># 时间戳，用于更新文件的最近访问时间</span>
+        self<span class="token punctuation">.</span>time <span class="token operator">=</span> <span class="token number">0</span>
+
+    <span class="token keyword">def</span> <span class="token function">put</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 存储文件方法</span>
+        <span class="token keyword">if</span> fileSize <span class="token operator">&gt;</span> self<span class="token punctuation">.</span>maxCacheSize<span class="token punctuation">:</span>
+            <span class="token keyword">return</span>  <span class="token comment"># 如果文件大小超过最大缓存，不存储</span>
+
+        <span class="token keyword">if</span> fileName <span class="token keyword">in</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>get<span class="token punctuation">(</span>fileName<span class="token punctuation">)</span>  <span class="token comment"># 如果文件已存在，更新访问次数和时间</span>
+            <span class="token keyword">return</span>
+
+        <span class="token comment"># 当缓存空间不足时，删除访问次数最少且最早访问的文件</span>
+        <span class="token keyword">while</span> self<span class="token punctuation">.</span>currentCacheSize <span class="token operator">+</span> fileSize <span class="token operator">&gt;</span> self<span class="token punctuation">.</span>maxCacheSize<span class="token punctuation">:</span>
+            toRemove <span class="token operator">=</span> heapq<span class="token punctuation">.</span>heappop<span class="token punctuation">(</span>self<span class="token punctuation">.</span>minHeap<span class="token punctuation">)</span>  <span class="token comment"># 从优先队列中取出要删除的文件</span>
+            <span class="token keyword">del</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>toRemove<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">]</span>  <span class="token comment"># 从缓存映射中删除</span>
+            self<span class="token punctuation">.</span>currentCacheSize <span class="token operator">-=</span> toRemove<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>  <span class="token comment"># 更新当前缓存大小</span>
+
+        <span class="token comment"># 创建新文件，添加到缓存映射和优先队列中</span>
+        self<span class="token punctuation">.</span>time <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token builtin">file</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> fileSize<span class="token punctuation">,</span> fileName<span class="token punctuation">,</span> self<span class="token punctuation">.</span>time<span class="token punctuation">)</span>  <span class="token comment"># 访问次数, 文件大小, 文件名, 最近访问时间</span>
+        self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">file</span>
+        heapq<span class="token punctuation">.</span>heappush<span class="token punctuation">(</span>self<span class="token punctuation">.</span>minHeap<span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>currentCacheSize <span class="token operator">+=</span> fileSize  <span class="token comment"># 更新当前缓存大小</span>
+
+    <span class="token keyword">def</span> <span class="token function">get</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 读取文件方法</span>
+        <span class="token keyword">if</span> fileName <span class="token keyword">not</span> <span class="token keyword">in</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">:</span>
+            <span class="token keyword">return</span>  <span class="token comment"># 如果文件不存在，不作操作</span>
+
+        <span class="token comment"># 获取文件信息，更新访问次数和最近访问时间</span>
+        <span class="token builtin">file</span> <span class="token operator">=</span> self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>minHeap<span class="token punctuation">.</span>remove<span class="token punctuation">(</span><span class="token builtin">file</span><span class="token punctuation">)</span>  <span class="token comment"># 从优先队列中移除</span>
+        self<span class="token punctuation">.</span>time <span class="token operator">+=</span> <span class="token number">1</span>
+        new_file <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token builtin">file</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> self<span class="token punctuation">.</span>time<span class="token punctuation">)</span>  <span class="token comment"># 更新文件信息</span>
+        heapq<span class="token punctuation">.</span>heappush<span class="token punctuation">(</span>self<span class="token punctuation">.</span>minHeap<span class="token punctuation">,</span> new_file<span class="token punctuation">)</span>  <span class="token comment"># 重新添加到优先队列</span>
+        self<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>fileName<span class="token punctuation">]</span> <span class="token operator">=</span> new_file  <span class="token comment"># 更新缓存映射</span>
+
+    <span class="token keyword">def</span> <span class="token function">getCurrentCache</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 获取当前缓存文件名列表方法</span>
+        <span class="token keyword">return</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>cache<span class="token punctuation">.</span>keys<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># 获取所有文件名并按字典顺序排序</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    Main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_662"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token comment">// 引入标准输入输出库、标准库、字符串操作库和时间库</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;time.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_FILES</span> <span class="token expression"><span class="token number">1000</span> </span><span class="token comment">// 定义最大文件数量常量</span></span>
+
+<span class="token comment">// 定义文件结构体，包含文件名、大小、访问次数和最后访问时间</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> name<span class="token punctuation">[</span><span class="token number">256</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 文件名，假设最大长度为255</span>
+    <span class="token keyword">int</span> size<span class="token punctuation">;</span>       <span class="token comment">// 文件大小，单位为字节</span>
+    <span class="token keyword">int</span> accessCount<span class="token punctuation">;</span> <span class="token comment">// 访问次数，用于记录文件被访问的频率</span>
+    <span class="token keyword">long</span> lastAccessTime<span class="token punctuation">;</span> <span class="token comment">// 最后访问时间，用于记录文件最后被访问的时间戳</span>
+<span class="token punctuation">}</span> File<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义文件缓存系统结构体，包含最大缓存大小、当前缓存大小、缓存数组和最小堆数组</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> maxCacheSize<span class="token punctuation">;</span> <span class="token comment">// 最大缓存大小，单位为字节</span>
+    <span class="token keyword">int</span> currentCacheSize<span class="token punctuation">;</span> <span class="token comment">// 当前缓存大小，单位为字节</span>
+    File <span class="token operator">*</span>cache<span class="token punctuation">[</span>MAX_FILES<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 缓存数组，用于存储文件指针</span>
+    File <span class="token operator">*</span>minHeap<span class="token punctuation">[</span>MAX_FILES<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 最小堆数组，用于维护文件的优先级队列</span>
+    <span class="token keyword">int</span> minHeapSize<span class="token punctuation">;</span> <span class="token comment">// 最小堆的当前大小，用于记录最小堆中元素的数量</span>
+<span class="token punctuation">}</span> FileCacheSystem<span class="token punctuation">;</span>
+
+<span class="token comment">// 比较器函数，用于比较两个文件的访问优先级</span>
+<span class="token keyword">int</span> <span class="token function">compare</span><span class="token punctuation">(</span>File <span class="token operator">*</span>a<span class="token punctuation">,</span> File <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>a<span class="token operator">-&gt;</span>accessCount <span class="token operator">==</span> b<span class="token operator">-&gt;</span>accessCount<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果访问次数相同，则比较最后访问时间，时间早的优先级高</span>
+        <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span>a<span class="token operator">-&gt;</span>lastAccessTime <span class="token operator">-</span> b<span class="token operator">-&gt;</span>lastAccessTime<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果访问次数不同，则访问次数少的优先级高</span>
+    <span class="token keyword">return</span> a<span class="token operator">-&gt;</span>accessCount <span class="token operator">-</span> b<span class="token operator">-&gt;</span>accessCount<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 最小堆的堆化操作，确保父节点的值小于子节点的值</span>
+<span class="token keyword">void</span> <span class="token function">minHeapify</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">,</span> <span class="token keyword">int</span> index<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> smallest <span class="token operator">=</span> index<span class="token punctuation">;</span> <span class="token comment">// 当前节点索引</span>
+    <span class="token keyword">int</span> leftChild <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 左子节点索引</span>
+    <span class="token keyword">int</span> rightChild <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> index <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 右子节点索引</span>
+
+    <span class="token comment">// 如果左子节点存在且小于当前节点，更新最小值索引</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>leftChild <span class="token operator">&lt;</span> fcs<span class="token operator">-&gt;</span>minHeapSize <span class="token operator">&amp;&amp;</span> <span class="token function">compare</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>leftChild<span class="token punctuation">]</span><span class="token punctuation">,</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        smallest <span class="token operator">=</span> leftChild<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果右子节点存在且小于当前节点，更新最小值索引</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>rightChild <span class="token operator">&lt;</span> fcs<span class="token operator">-&gt;</span>minHeapSize <span class="token operator">&amp;&amp;</span> <span class="token function">compare</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>rightChild<span class="token punctuation">]</span><span class="token punctuation">,</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        smallest <span class="token operator">=</span> rightChild<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果最小值索引不是当前节点，交换并递归调用堆化操作</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>smallest <span class="token operator">!=</span> index<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        File <span class="token operator">*</span>temp <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>smallest<span class="token punctuation">]</span> <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+        <span class="token function">minHeapify</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> smallest<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 插入元素到最小堆，维护最小堆的性质</span>
+<span class="token keyword">void</span> <span class="token function">minHeapInsert</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">,</span> File <span class="token operator">*</span>file<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 将新文件插入到最小堆末尾</span>
+    fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>fcs<span class="token operator">-&gt;</span>minHeapSize<span class="token punctuation">]</span> <span class="token operator">=</span> file<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> index <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeapSize<span class="token punctuation">;</span> <span class="token comment">// 新插入元素的索引</span>
+    fcs<span class="token operator">-&gt;</span>minHeapSize<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 堆大小增加</span>
+
+    <span class="token comment">// 从当前节点开始，向上调整堆</span>
+    <span class="token keyword">int</span> parentIndex <span class="token operator">=</span> <span class="token punctuation">(</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 父节点索引</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>index <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token function">compare</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">,</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>parentIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前节点小于父节点，则交换它们的位置</span>
+        File <span class="token operator">*</span>temp <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>parentIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>parentIndex<span class="token punctuation">]</span> <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+        <span class="token comment">// 更新当前节点和父节点的索引，继续向上调整</span>
+        index <span class="token operator">=</span> parentIndex<span class="token punctuation">;</span>
+        parentIndex <span class="token operator">=</span> <span class="token punctuation">(</span>index <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 移除并返回最小堆的顶部元素</span>
+File <span class="token operator">*</span><span class="token function">minHeapPop</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeapSize <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span> <span class="token comment">// 如果堆为空，则返回NULL</span>
+    File <span class="token operator">*</span>minItem <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 获取堆顶元素</span>
+    <span class="token comment">// 将堆的最后一个元素移动到堆顶</span>
+    fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>fcs<span class="token operator">-&gt;</span>minHeapSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    fcs<span class="token operator">-&gt;</span>minHeapSize<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 堆大小减少</span>
+    <span class="token function">minHeapify</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对新的堆顶元素进行堆化操作</span>
+    <span class="token keyword">return</span> minItem<span class="token punctuation">;</span> <span class="token comment">// 返回原堆顶元素</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 从最小堆中删除指定元素</span>
+<span class="token keyword">void</span> <span class="token function">minHeapRemove</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">,</span> File <span class="token operator">*</span>file<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 遍历最小堆，找到要删除的元素的索引</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> fcs<span class="token operator">-&gt;</span>minHeapSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">-&gt;</span>name<span class="token punctuation">,</span> file<span class="token operator">-&gt;</span>name<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            index <span class="token operator">=</span> i<span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果未找到，直接返回</span>
+
+    <span class="token comment">// 将堆的最后一个元素移动到要删除的元素的位置</span>
+    fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">[</span>fcs<span class="token operator">-&gt;</span>minHeapSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    fcs<span class="token operator">-&gt;</span>minHeapSize<span class="token operator">--</span><span class="token punctuation">;</span> <span class="token comment">// 堆大小减少</span>
+    <span class="token function">minHeapify</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> index<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 对新的元素进行堆化操作</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 存储文件的方法</span>
+<span class="token keyword">void</span> <span class="token function">put</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span>fileName<span class="token punctuation">,</span> <span class="token keyword">int</span> fileSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>fileSize <span class="token operator">&gt;</span> fcs<span class="token operator">-&gt;</span>maxCacheSize<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 如果文件大小超过最大缓存大小，直接返回</span>
+
+    <span class="token keyword">long</span> currentTime <span class="token operator">=</span> <span class="token function">time</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取当前时间</span>
+    <span class="token comment">// 遍历缓存数组，检查文件是否已存在</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_FILES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token constant">NULL</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">-&gt;</span>name<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果文件已存在，则更新文件的访问信息</span>
+            <span class="token function">get</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果当前缓存加上新文件大小超过最大缓存大小，则移除优先级最低的文件</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>currentCacheSize <span class="token operator">+</span> fileSize <span class="token operator">&gt;</span> fcs<span class="token operator">-&gt;</span>maxCacheSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        File <span class="token operator">*</span>toRemove <span class="token operator">=</span> <span class="token function">minHeapPop</span><span class="token punctuation">(</span>fcs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>toRemove <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 遍历缓存数组，找到并释放要移除的文件</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_FILES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> toRemove<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    fcs<span class="token operator">-&gt;</span>currentCacheSize <span class="token operator">-=</span> toRemove<span class="token operator">-&gt;</span>size<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+                    <span class="token function">free</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 释放文件内存</span>
+                    fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span> <span class="token comment">// 将缓存位置置为空</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 为新文件分配内存并初始化</span>
+    File <span class="token operator">*</span>file <span class="token operator">=</span> <span class="token punctuation">(</span>File <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>File<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>file<span class="token operator">-&gt;</span>name<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 复制文件名</span>
+    file<span class="token operator">-&gt;</span>size <span class="token operator">=</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 设置文件大小</span>
+    file<span class="token operator">-&gt;</span>accessCount <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 初始化访问次数为1</span>
+    file<span class="token operator">-&gt;</span>lastAccessTime <span class="token operator">=</span> currentTime<span class="token punctuation">;</span> <span class="token comment">// 设置最后访问时间为当前时间</span>
+
+    <span class="token comment">// 将新文件添加到缓存数组中的空位置</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_FILES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> file<span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 将新文件插入到最小堆中</span>
+    <span class="token function">minHeapInsert</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    fcs<span class="token operator">-&gt;</span>currentCacheSize <span class="token operator">+=</span> fileSize<span class="token punctuation">;</span> <span class="token comment">// 更新当前缓存大小</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 获取文件的方法</span>
+<span class="token keyword">void</span> <span class="token function">get</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span>fileName<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 遍历缓存数组，查找文件</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_FILES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token constant">NULL</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">-&gt;</span>name<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            File <span class="token operator">*</span>file <span class="token operator">=</span> fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 从最小堆中移除文件</span>
+            <span class="token function">minHeapRemove</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 更新文件的访问次数和最后访问时间</span>
+            file<span class="token operator">-&gt;</span>accessCount<span class="token operator">++</span><span class="token punctuation">;</span>
+            file<span class="token operator">-&gt;</span>lastAccessTime <span class="token operator">=</span> <span class="token function">time</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 将更新后的文件重新插入到最小堆中</span>
+            <span class="token function">minHeapInsert</span><span class="token punctuation">(</span>fcs<span class="token punctuation">,</span> file<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 初始化文件缓存系统</span>
+<span class="token keyword">void</span> <span class="token function">initFileCacheSystem</span><span class="token punctuation">(</span>FileCacheSystem <span class="token operator">*</span>fcs<span class="token punctuation">,</span> <span class="token keyword">int</span> maxCacheSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    fcs<span class="token operator">-&gt;</span>maxCacheSize <span class="token operator">=</span> maxCacheSize<span class="token punctuation">;</span> <span class="token comment">// 设置最大缓存大小</span>
+    fcs<span class="token operator">-&gt;</span>currentCacheSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化当前缓存大小为0</span>
+    fcs<span class="token operator">-&gt;</span>minHeapSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最小堆大小为0</span>
+    <span class="token comment">// 清空缓存数组和最小堆数组</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>cache<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>fcs<span class="token operator">-&gt;</span>minHeap<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 主函数，用于处理输入和输出</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> maxCacheSize<span class="token punctuation">,</span> operationsCount<span class="token punctuation">;</span>
+    <span class="token comment">// 读取最大缓存大小和操作次数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d %d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>maxCacheSize<span class="token punctuation">,</span> <span class="token operator">&amp;</span>operationsCount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    FileCacheSystem fcs<span class="token punctuation">;</span>
+    <span class="token comment">// 初始化文件缓存系统</span>
+    <span class="token function">initFileCacheSystem</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>fcs<span class="token punctuation">,</span> maxCacheSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">char</span> operation<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">,</span> fileName<span class="token punctuation">[</span><span class="token number">256</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> fileSize<span class="token punctuation">;</span>
+    <span class="token comment">// 根据操作次数，循环读取操作和文件信息</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> operationsCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s %s"</span><span class="token punctuation">,</span> operation<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>operation<span class="token punctuation">,</span> <span class="token string">"put"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果是put操作，读取文件大小并存储文件</span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>fileSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">put</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>fcs<span class="token punctuation">,</span> fileName<span class="token punctuation">,</span> fileSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>operation<span class="token punctuation">,</span> <span class="token string">"get"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果是get操作，获取文件</span>
+            <span class="token function">get</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>fcs<span class="token punctuation">,</span> fileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出当前缓存中的所有文件名</span>
+    <span class="token keyword">int</span> isEmpty <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记缓存是否为空</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_FILES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>isEmpty<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                isEmpty <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果找到第一个文件，更新标记</span>
+                <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> fcs<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">-&gt;</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出第一个文件名</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">",%s"</span><span class="token punctuation">,</span> fcs<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">-&gt;</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出后续文件名，用逗号分隔</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>isEmpty<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"NONE\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果缓存为空，输出NONE</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出换行符</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 释放分配的内存</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_FILES<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>fcs<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">free</span><span class="token punctuation">(</span>fcs<span class="token punctuation">.</span>cache<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 释放文件内存</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 程序结束</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_2" rel="nofollow">题目描述</a></li><li><a href="#_30" rel="nofollow">输入描述</a></li><li><a href="#_42" rel="nofollow">输出描述</a></li><li><a href="#1_60" rel="nofollow">用例1</a></li><li><a href="#2_82" rel="nofollow">用例2</a></li><li><a href="#_99" rel="nofollow">解题思路</a></li><li><ul><li><ul><li><a href="#_103" rel="nofollow">解题思路：</a></li><li><a href="#LFU_121" rel="nofollow">LFU缓存方法：</a></li></ul> 
+  </li></ul> 
+  </li><li><a href="#C_133" rel="nofollow">C++</a></li><li><a href="#Java_258" rel="nofollow">Java</a></li><li><a href="#javaScript_392" rel="nofollow">javaScript</a></li><li><a href="#Python_561" rel="nofollow">Python</a></li><li><a href="#C_662" rel="nofollow">C语言</a></li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/8ed60e6203c18dd34d589c4ed3f704af.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

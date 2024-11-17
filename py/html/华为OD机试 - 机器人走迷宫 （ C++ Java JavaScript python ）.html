@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_2"></a>题目描述</h4> 
+<ol><li>房间由XY的方格组成，例如下图为64的大小。每一个方格以坐标(x，y)描述。</li><li>机器人固定从方格(0，0)出发，只能向东或者向北前进。出口固定为房间的最东北角，如下图的方格(5，3)。用例保证机器人可以从入口走到出口。</li><li>房间有些方格是墙壁，如(4，1)，机器人不能经过那儿。</li><li>有些地方是一旦到达就无法走到出口的，如标记为B的方格，称之为陷阱方格。</li><li>有些地方是机器人无法到达的的，如标记为A的方格，称之为不可达方格，不可达方格不包括墙壁所在的位置。</li><li>如下示例图中，陷阱方格有2个，不可达方格有3个。</li><li>请为该机器人实现路径规划功能：给定房间大小、墙壁位置，请计算出陷阱方格与不可达方格分别有多少个。</li></ol> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/34317d2fe918a356149fb893b21cd65f.png" alt="img"></p> 
+<h4><a id="_14"></a>输入描述</h4> 
+<ul><li>第一行为房间的X和Y（0 &lt; X,Y &lt;= 1000）</li><li>第二行为房间中墙壁的个数N（0 &lt;= N &lt; X*Y）</li><li>接着下面会有N行墙壁的坐标</li></ul> 
+<p>同一行中如果有多个数据以一个空格隔开，用例保证所有的输入数据均合法。（结尾不带回车换行）</p> 
+<h4><a id="_22"></a>输出描述</h4> 
+<p>陷阱方格与不可达方格数量，两个信息在一行中输出，以一个空格隔开。（结尾不带回车换行）</p> 
+<h4><a id="1_26"></a>用例1</h4> 
+<p>输入</p> 
+<pre><code>6 4
+5
+0 2
+1 2
+2 2
+4 1
+5 1
+</code></pre> 
+<p>输出</p> 
+<pre><code>2 3
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>该输入对应上图示例中的迷宫，陷阱方格有2个，不可达方格有3个</p> 
+</blockquote> 
+<h4><a id="2_50"></a>用例2</h4> 
+<p>输入</p> 
+<pre><code>6 4
+4
+2 0
+2 1
+3 0
+3 1
+</code></pre> 
+<p>输出</p> 
+<pre><code>0 4
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>该输入对应的迷宫如下图，没有陷阱方格，不可达方格有4个，分别是(4, 0) (4, 1) (5, 0) (5, 1)<img src="https://i-blog.csdnimg.cn/blog_migrate/dfa718c6ebf86ccb96f54ab8b7846a15.png" alt="img"></p> 
+</blockquote> 
+<h4><a id="C_79"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> row<span class="token punctuation">;</span> <span class="token comment">// 行数</span>
+<span class="token keyword">int</span> col<span class="token punctuation">;</span> <span class="token comment">// 列数</span>
+<span class="token keyword">int</span> wallNum<span class="token punctuation">;</span> <span class="token comment">// 墙的数量</span>
+vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> walls<span class="token punctuation">;</span> <span class="token comment">// 墙的位置</span>
+vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> matrix<span class="token punctuation">;</span> <span class="token comment">// 迷宫矩阵</span>
+
+bool <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    cin <span class="token operator">&gt;&gt;</span> row <span class="token operator">&gt;&gt;</span> col <span class="token operator">&gt;&gt;</span> wallNum<span class="token punctuation">;</span>
+
+    walls<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>wallNum<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> wallNum<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> walls<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">&gt;&gt;</span> walls<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    matrix<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>col<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> wall <span class="token operator">:</span> walls<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> i <span class="token operator">=</span> wall<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> j <span class="token operator">=</span> wall<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记墙</span>
+    <span class="token punctuation">}</span>
+
+    matrix<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 标记出口</span>
+
+    <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从入口开始搜索</span>
+
+    <span class="token keyword">int</span> trapNum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 陷阱方格数量</span>
+    <span class="token keyword">int</span> unreachableNum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 不可达方格数量</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> row<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> col<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                unreachableNum<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                trapNum<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> trapNum <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> unreachableNum <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+bool <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> y<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>x <span class="token operator">&gt;=</span> row <span class="token operator">||</span> y <span class="token operator">&gt;=</span> col <span class="token operator">||</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token operator">||</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果越界、是墙或陷阱，返回 false</span>
+        <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果到达出口，返回 true</span>
+        <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    bool east <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 搜索东边的方格</span>
+    bool north <span class="token operator">=</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 搜索北边的方格</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>east <span class="token operator">||</span> north<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 如果能到达出口，标记为可达</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+        matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果不能到达出口，标记为陷阱</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 返回当前方格是否可达</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h4><a id="node_159"></a>node</h4> 
+<pre><code class="prism language-node">const readline = require("readline");
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const lines = [];
+let roomX, roomY, wallCount, wallPositions;
+
+rl.on("line", (line) =&gt; {
+  lines.push(line);
+
+  if (lines.length === 2) {
+    [roomX, roomY] = lines[0].split(" ").map(Number);
+    wallCount = lines[1] - 0;
+  }
+
+  if (wallCount !== undefined &amp;&amp; lines.length === wallCount + 2) {
+    wallPositions = lines.slice(2).map((line) =&gt; line.split(" ").map(Number));
+    const roomMatrix = new Array(roomX).fill(0).map(() =&gt; new Array(roomY).fill(0));
+
+    for (let [i, j] of wallPositions) {
+      roomMatrix[i][j] = 1;  
+    }
+
+    roomMatrix[roomX - 1][roomY - 1] = 2; 
+
+    dfs(0, 0, roomMatrix);
+
+    let trapCount = 0;  
+    let unreachableCount = 0; 
+
+    for (let i = 0; i &lt; roomX; i++) {
+      for (let j = 0; j &lt; roomY; j++) {
+        if (roomMatrix[i][j] == 0) unreachableCount++;
+        else if (roomMatrix[i][j] == -1) trapCount++;
+      }
+    }
+
+    console.log(`${trapCount} ${unreachableCount}`);
+    lines.length = 0;
+  }
+});
+
+function dfs(currentX, currentY, roomMatrix) {
+  if (currentX &gt;= roomX || currentY &gt;= roomY) return false; 
+
+  if (roomMatrix[currentX][currentY] == 1) return false;  
+  if (roomMatrix[currentX][currentY] == -1) return false; 
+  if (roomMatrix[currentX][currentY] == 2) return true;  
+
+  if (roomMatrix[currentX][currentY] == 0) {
+    const canMoveEast = dfs(currentX + 1, currentY, roomMatrix); 
+    const canMoveNorth = dfs(currentX, currentY + 1, roomMatrix);
+
+    if (canMoveEast || canMoveNorth) {
+      roomMatrix[currentX][currentY] = 2;
+    } else {
+      roomMatrix[currentX][currentY] = -1; 
+    }
+  }
+
+  return roomMatrix[currentX][currentY] == 2;
+}
+</code></pre> 
+<h4><a id="Java_231"></a>Java</h4> 
+<pre><code>import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class Main {
+    static int row, col, wallNum;
+    static List&lt;List&lt;Integer&gt;&gt; walls, matrix;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // 读取输入的房间大小和墙壁数量
+        row = sc.nextInt();
+        col = sc.nextInt();
+        wallNum = sc.nextInt();
+
+        // 初始化墙壁列表
+        walls = new ArrayList&lt;&gt;();
+        // 读取每个墙壁的坐标并添加到墙壁列表中
+        for (int i = 0; i &lt; wallNum; i++) {
+            List&lt;Integer&gt; wall = new ArrayList&lt;&gt;();
+            wall.add(sc.nextInt());
+            wall.add(sc.nextInt());
+            walls.add(wall);
+        }
+
+        // 初始化房间矩阵
+        matrix = new ArrayList&lt;&gt;();
+        // 将房间矩阵的每个元素初始化为0
+        for (int i = 0; i &lt; row; i++) {
+            List&lt;Integer&gt; rowList = new ArrayList&lt;&gt;();
+            for (int j = 0; j &lt; col; j++) {
+                rowList.add(0);
+            }
+            matrix.add(rowList);
+        }
+
+        // 将墙壁的位置在房间矩阵中标记为1
+        for (List&lt;Integer&gt; wall : walls) {
+            int x = wall.get(0);
+            int y = wall.get(1);
+            matrix.get(x).set(y, 1);
+        }
+
+        // 将出口位置标记为2
+        matrix.get(row - 1).set(col - 1, 2);
+
+        // 调用深度优先搜索函数进行路径规划
+        dfs(0, 0);
+
+        // 统计陷阱方格和不可达方格的数量
+        int trapNum = 0, unreachableNum = 0;
+
+        for (List&lt;Integer&gt; rowList : matrix) {
+            for (int cell : rowList) {
+                if (cell == 0) {
+                    unreachableNum++;
+                } else if (cell == -1) {
+                    trapNum++;
+                }
+            }
+        }
+
+        // 输出陷阱方格和不可达方格的数量
+        System.out.println(trapNum + " " + unreachableNum);
+    }
+
+    public static boolean dfs(int x, int y) {
+        // 如果机器人越界或者当前位置是墙壁或者陷阱方格，返回false
+        if (x &gt;= row || y &gt;= col || matrix.get(x).get(y) == 1 || matrix.get(x).get(y) == -1) {
+            return false;
+        }
+
+        // 如果机器人到达出口，返回true
+        if (matrix.get(x).get(y) == 2) {
+            return true;
+        }
+
+        // 递归搜索机器人向东和向北的路径
+        boolean east = dfs(x + 1, y);
+        boolean north = dfs(x, y + 1);
+
+        // 根据机器人能否到达出口，将当前位置标记为2或者-1
+        matrix.get(x).set(y, east || north ? 2 : -1);
+
+        // 返回当前位置是否是出口
+        return matrix.get(x).get(y) == 2;
+    }
+}
+
+</code></pre> 
+<h4><a id="python_328"></a>python</h4> 
+<pre><code class="prism language-python">
+<span class="token keyword">import</span> sys
+
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> x <span class="token operator">&gt;=</span> row <span class="token keyword">or</span> y <span class="token operator">&gt;=</span> col <span class="token keyword">or</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">or</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+
+    <span class="token keyword">if</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">2</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+    east <span class="token operator">=</span> dfs<span class="token punctuation">(</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span>
+    north <span class="token operator">=</span> dfs<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">if</span> east <span class="token keyword">or</span> north<span class="token punctuation">:</span>
+        matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">2</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
+
+    <span class="token keyword">return</span> matrix<span class="token punctuation">[</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>y<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">2</span>
+
+row<span class="token punctuation">,</span> col  <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+wallNum <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+walls <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>wallNum<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+matrix <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> col <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token keyword">for</span> wall <span class="token keyword">in</span> walls<span class="token punctuation">:</span>
+    i <span class="token operator">=</span> wall<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    j <span class="token operator">=</span> wall<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+    matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span>
+
+matrix<span class="token punctuation">[</span>row <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">[</span>col <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">2</span>
+
+dfs<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+trapNum <span class="token operator">=</span> <span class="token number">0</span>
+unreachableNum <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>row<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>col<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            unreachableNum <span class="token operator">+=</span> <span class="token number">1</span>
+        <span class="token keyword">elif</span> matrix<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">:</span>
+            trapNum <span class="token operator">+=</span> <span class="token number">1</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span>trapNum<span class="token punctuation">,</span> unreachableNum<span class="token punctuation">)</span>
+
+</code></pre> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p> 
+<h4><a id="_383"></a>完整用例</h4> 
+<h5><a id="1_384"></a>用例1</h5> 
+<pre><code class="prism language-input1">6 4
+5
+0 2
+1 2
+2 2
+4 1
+5 1
+</code></pre> 
+<h5><a id="2_396"></a>用例2</h5> 
+<pre><code class="prism language-input2">6 4
+4
+2 0
+2 1
+3 0
+3 1
+</code></pre> 
+<h5><a id="3_407"></a>用例3</h5> 
+<pre><code class="prism language-input3">3 3
+2
+1 0
+2 1
+</code></pre> 
+<h5><a id="4_416"></a>用例4</h5> 
+<pre><code class="prism language-input4">5 5
+1
+3 2
+</code></pre> 
+<h5><a id="5_424"></a>用例5</h5> 
+<pre><code class="prism language-input5">2 2
+2
+0 1
+1 0
+</code></pre> 
+<h5><a id="6__433"></a>用例6 不符合题意的极端案例，可忽略</h5> 
+<pre><code class="prism language-input6">10 10
+20
+0 1
+0 3
+0 5
+0 7
+0 9
+1 0
+1 2
+1 4
+1 6
+1 8
+2 1
+2 3
+2 5
+2 7
+2 9
+3 0
+3 2
+3 4
+3 6
+3 8
+4 1
+</code></pre> 
+<h5><a id="7___461"></a>用例7 不符合题意的极端案例，可忽略</h5> 
+<pre><code class="prism language-input7">8 8
+10
+0 1
+1 1
+2 1
+3 1
+4 1
+5 1
+6 1
+7 1
+7 2
+7 3
+</code></pre> 
+<h5><a id="8_478"></a>用例8</h5> 
+<pre><code class="prism language-input8">5 5
+6
+0 1
+1 0
+2 2
+3 3
+4 4
+4 3
+</code></pre> 
+<h5><a id="9_491"></a>用例9</h5> 
+<pre><code class="prism language-input9">7 7
+0
+</code></pre> 
+<h5><a id="10_498"></a>用例10</h5> 
+<pre><code class="prism language-input10">1000 1000
+0
+</code></pre>
+                </div>
+</body>
+</html>

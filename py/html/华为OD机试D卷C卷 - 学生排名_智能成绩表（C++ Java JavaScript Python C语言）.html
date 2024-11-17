@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>小明来到学校当老师，需要将学生按考试总分或单科分数进行排名，你能帮帮他吗？</p> 
+<h2><a id="_8"></a>输入描述</h2> 
+<p>第 1 行输入两个整数，学生人数 n 和科目数量 m。</p> 
+<ul><li>0 &lt; n &lt; 100</li><li>0 &lt; m &lt; 10</li></ul> 
+<p>第 2 行输入 m 个科目名称，彼此之间用空格隔开。</p> 
+<ul><li>科目名称只由英文字母构成，单个长度不超过10个字符。</li><li>科目的出现顺序和后续输入的学生成绩一一对应。</li><li>不会出现重复的科目名称。</li></ul> 
+<p>第 3 行开始的 n 行，每行包含一个学生的姓名和该生 m 个科目的成绩（空格隔开）</p> 
+<ul><li>学生不会重名。</li><li>学生姓名只由英文字母构成，长度不超过10个字符。</li><li>成绩是0~100的整数，依次对应第2行种输入的科目。</li></ul> 
+<p>第n+2行，输入用作排名的科目名称。若科目不存在，则按总分进行排序。</p> 
+<h2><a id="_27"></a>输出描述</h2> 
+<p>输出一行，按成绩排序后的学生名字，空格隔开。成绩相同的按照学生姓名字典顺序排序。</p> 
+<h2><a id="1_31"></a>样例1</h2> 
+<p><strong>输入</strong></p> 
+<pre><code>3 2
+yuwen shuxue
+fangfang 95 90
+xiaohua 88 98
+minmin 100 82
+shuxue
+</code></pre> 
+<p><strong>输出</strong></p> 
+<pre><code>xiaohua fangfang minmin
+</code></pre> 
+<p><strong>说明</strong>：</p> 
+<blockquote> 
+ <p>按照shuxue成绩排名依次是 xiaohua fangfang minmin</p> 
+</blockquote> 
+<h2><a id="2_54"></a>样例2</h2> 
+<p><strong>输入</strong></p> 
+<pre><code>3 2
+yuwen shuxue
+fangfang 95 90
+xiaohua 88 95
+minmin 90 95
+zongfen
+</code></pre> 
+<p><strong>输出</strong></p> 
+<pre><code>fangfang minmin xiaohua
+</code></pre> 
+<p><strong>说明</strong>：</p> 
+<blockquote> 
+ <p>排序科目不存在，按总分排序 , fangfang 和 minmin 总分相同，按姓名的字典序顺序， fangfang 排在前面</p> 
+</blockquote> 
+<h2><a id="_77"></a>解题思路</h2> 
+<h2><a id="C_81"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义学生类</span>
+class Student <span class="token punctuation">{<!-- --></span>
+public<span class="token operator">:</span>
+    string name<span class="token punctuation">;</span> <span class="token comment">// 学生姓名</span>
+    <span class="token keyword">int</span> totalScore<span class="token punctuation">;</span> <span class="token comment">// 学生总分</span>
+    map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> scores<span class="token punctuation">;</span> <span class="token comment">// 存储学生各科成绩的映射</span>
+
+    <span class="token comment">// 构造函数，初始化学生姓名和总分</span>
+    <span class="token function">Student</span><span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> name<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">name</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">totalScore</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+    <span class="token comment">// 添加成绩的方法，同时累加到总分</span>
+    <span class="token keyword">void</span> <span class="token function">addScore</span><span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> subject<span class="token punctuation">,</span> <span class="token keyword">int</span> score<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        scores<span class="token punctuation">[</span>subject<span class="token punctuation">]</span> <span class="token operator">=</span> score<span class="token punctuation">;</span> <span class="token comment">// 设置指定科目的成绩</span>
+        totalScore <span class="token operator">+=</span> score<span class="token punctuation">;</span> <span class="token comment">// 累加到总分</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 获取指定科目的成绩</span>
+    <span class="token keyword">int</span> <span class="token function">getScore</span><span class="token punctuation">(</span><span class="token keyword">const</span> string<span class="token operator">&amp;</span> subject<span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">auto</span> it <span class="token operator">=</span> scores<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>subject<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 查找科目对应的成绩</span>
+        <span class="token keyword">return</span> it <span class="token operator">!=</span> scores<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">?</span> it<span class="token operator">-&gt;</span>second <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果找到，则返回成绩，否则返回0</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> m<span class="token punctuation">;</span> <span class="token comment">// n为学生数量，m为科目数量</span>
+    cin <span class="token operator">&gt;&gt;</span> n <span class="token operator">&gt;&gt;</span> m<span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> <span class="token function">subjects</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 存储科目名称的向量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> subjects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 输入科目名称</span>
+    <span class="token punctuation">}</span>
+    vector<span class="token operator">&lt;</span>Student<span class="token operator">&gt;</span> students<span class="token punctuation">;</span> <span class="token comment">// 存储学生对象的向量</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string name<span class="token punctuation">;</span> <span class="token comment">// 学生姓名</span>
+        cin <span class="token operator">&gt;&gt;</span> name<span class="token punctuation">;</span> <span class="token comment">// 输入学生姓名</span>
+        Student <span class="token function">student</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建学生对象</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> score<span class="token punctuation">;</span> <span class="token comment">// 成绩</span>
+            cin <span class="token operator">&gt;&gt;</span> score<span class="token punctuation">;</span> <span class="token comment">// 输入成绩</span>
+            student<span class="token punctuation">.</span><span class="token function">addScore</span><span class="token punctuation">(</span>subjects<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> score<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 添加成绩到学生对象</span>
+        <span class="token punctuation">}</span>
+        students<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>student<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将学生对象添加到向量中</span>
+    <span class="token punctuation">}</span>
+
+    string rankSubject<span class="token punctuation">;</span> <span class="token comment">// 用作排名的科目名称</span>
+    cin <span class="token operator">&gt;&gt;</span> rankSubject<span class="token punctuation">;</span> <span class="token comment">// 输入排名科目</span>
+
+    <span class="token comment">// 对学生进行排序</span>
+    <span class="token function">sort</span><span class="token punctuation">(</span>students<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> students<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token operator">&amp;</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">const</span> Student<span class="token operator">&amp;</span> a<span class="token punctuation">,</span> <span class="token keyword">const</span> Student<span class="token operator">&amp;</span> b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> scoreA <span class="token operator">=</span> rankSubject<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">?</span> a<span class="token punctuation">.</span>totalScore <span class="token operator">:</span> a<span class="token punctuation">.</span><span class="token function">getScore</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取a的排名科目成绩或总分</span>
+        <span class="token keyword">int</span> scoreB <span class="token operator">=</span> rankSubject<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">?</span> b<span class="token punctuation">.</span>totalScore <span class="token operator">:</span> b<span class="token punctuation">.</span><span class="token function">getScore</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取b的排名科目成绩或总分</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>scoreA <span class="token operator">!=</span> scoreB<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> scoreA <span class="token operator">&gt;</span> scoreB<span class="token punctuation">;</span> <span class="token comment">// 成绩高的排前面</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">return</span> a<span class="token punctuation">.</span>name <span class="token operator">&lt;</span> b<span class="token punctuation">.</span>name<span class="token punctuation">;</span> <span class="token comment">// 成绩相同则按姓名字典序排列</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出排序后的学生姓名</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> student <span class="token operator">:</span> students<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> student<span class="token punctuation">.</span>name <span class="token operator">&lt;&lt;</span> <span class="token char">' '</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    cout <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_158"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 定义学生类</span>
+    <span class="token keyword">static</span> <span class="token keyword">class</span> <span class="token class-name">Student</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">String</span> name<span class="token punctuation">;</span> <span class="token comment">// 学生姓名</span>
+        <span class="token keyword">int</span> totalScore<span class="token punctuation">;</span> <span class="token comment">// 学生总分</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> scores<span class="token punctuation">;</span> <span class="token comment">// 存储学生各科成绩的映射</span>
+
+        <span class="token comment">// 构造函数，初始化学生姓名、成绩映射和总分</span>
+        <span class="token class-name">Student</span><span class="token punctuation">(</span><span class="token class-name">String</span> name<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>scores <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>totalScore <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 添加成绩的方法，同时累加到总分</span>
+        <span class="token keyword">void</span> <span class="token function">addScore</span><span class="token punctuation">(</span><span class="token class-name">String</span> subject<span class="token punctuation">,</span> <span class="token keyword">int</span> score<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            scores<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>subject<span class="token punctuation">,</span> score<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            totalScore <span class="token operator">+=</span> score<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 获取指定科目的成绩，若没有则返回0</span>
+        <span class="token keyword">int</span> <span class="token function">getScore</span><span class="token punctuation">(</span><span class="token class-name">String</span> subject<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> scores<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>subject<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取学生人数和科目数量</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> m <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取并忽略换行符</span>
+
+        <span class="token comment">// 读取科目名称</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> subjects <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Student</span><span class="token punctuation">&gt;</span></span> students <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取每个学生的姓名和成绩</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> tokens <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Student</span> student <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Student</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                student<span class="token punctuation">.</span><span class="token function">addScore</span><span class="token punctuation">(</span>subjects<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span>j <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            students<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>student<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 读取用作排名的科目名称</span>
+        <span class="token class-name">String</span> rankSubject <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 关闭扫描器</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 对学生列表进行排序</span>
+        students<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span>s1<span class="token punctuation">,</span> s2<span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 根据指定科目或总分进行比较</span>
+            <span class="token keyword">int</span> score1 <span class="token operator">=</span> rankSubject<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span> <span class="token operator">?</span> s1<span class="token punctuation">.</span>totalScore <span class="token operator">:</span> s1<span class="token punctuation">.</span><span class="token function">getScore</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> score2 <span class="token operator">=</span> rankSubject<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span> <span class="token operator">?</span> s2<span class="token punctuation">.</span>totalScore <span class="token operator">:</span> s2<span class="token punctuation">.</span><span class="token function">getScore</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>score1 <span class="token operator">!=</span> score2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> score2 <span class="token operator">-</span> score1<span class="token punctuation">;</span> <span class="token comment">// 降序排序</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> s1<span class="token punctuation">.</span>name<span class="token punctuation">.</span><span class="token function">compareTo</span><span class="token punctuation">(</span>s2<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 成绩相同则按姓名升序排序</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输出排序后的学生姓名</span>
+        students<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span>student <span class="token operator">-&gt;</span> <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>student<span class="token punctuation">.</span>name <span class="token operator">+</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_233"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入 readline 模块用于读取命令行输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建 readline 接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义学生类</span>
+<span class="token keyword">class</span> <span class="token class-name">Student</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token function">constructor</span><span class="token punctuation">(</span><span class="token parameter">name</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>name <span class="token operator">=</span> name<span class="token punctuation">;</span> <span class="token comment">// 学生姓名</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>totalScore <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 学生总分</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>scores <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 存储学生各科成绩的映射</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 添加成绩的方法，同时累加到总分</span>
+  <span class="token function">addScore</span><span class="token punctuation">(</span><span class="token parameter">subject<span class="token punctuation">,</span> score</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>scores<span class="token punctuation">[</span>subject<span class="token punctuation">]</span> <span class="token operator">=</span> score<span class="token punctuation">;</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>totalScore <span class="token operator">+=</span> score<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 获取指定科目的成绩，若没有则返回0</span>
+  <span class="token function">getScore</span><span class="token punctuation">(</span><span class="token parameter">subject</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">.</span>scores<span class="token punctuation">[</span>subject<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 创建一个异步处理函数</span>
+<span class="token keyword">async</span> <span class="token keyword">function</span> <span class="token function">processInput</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 通过 readline 逐行读取输入</span>
+  <span class="token keyword">const</span> lines <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token keyword">await</span> <span class="token punctuation">(</span><span class="token keyword">const</span> line <span class="token keyword">of</span> rl<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    lines<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 解析输入数据</span>
+  <span class="token keyword">const</span> <span class="token punctuation">[</span>n<span class="token punctuation">,</span> m<span class="token punctuation">]</span> <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> subjects <span class="token operator">=</span> lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> students <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 读取每个学生的姓名和成绩</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> tokens <span class="token operator">=</span> lines<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> student <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Student</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      student<span class="token punctuation">.</span><span class="token function">addScore</span><span class="token punctuation">(</span>subjects<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span>j <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    students<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>student<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 读取用作排名的科目名称</span>
+  <span class="token keyword">const</span> rankSubject <span class="token operator">=</span> lines<span class="token punctuation">[</span>n <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 对学生列表进行排序</span>
+  students<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">s1<span class="token punctuation">,</span> s2</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> score1 <span class="token operator">=</span> rankSubject <span class="token operator">===</span> <span class="token string">''</span> <span class="token operator">?</span> s1<span class="token punctuation">.</span>totalScore <span class="token operator">:</span> s1<span class="token punctuation">.</span><span class="token function">getScore</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> score2 <span class="token operator">=</span> rankSubject <span class="token operator">===</span> <span class="token string">''</span> <span class="token operator">?</span> s2<span class="token punctuation">.</span>totalScore <span class="token operator">:</span> s2<span class="token punctuation">.</span><span class="token function">getScore</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>score1 <span class="token operator">!==</span> score2<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> score2 <span class="token operator">-</span> score1<span class="token punctuation">;</span> <span class="token comment">// 降序排序</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token keyword">return</span> s1<span class="token punctuation">.</span>name<span class="token punctuation">.</span><span class="token function">localeCompare</span><span class="token punctuation">(</span>s2<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 成绩相同则按姓名升序排序</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 输出排序后的学生姓名</span>
+  students<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">student</span> <span class="token operator">=&gt;</span> process<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span><span class="token function">write</span><span class="token punctuation">(</span><span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>student<span class="token punctuation">.</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> </span><span class="token template-punctuation string">`</span></span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  process<span class="token punctuation">.</span>stdout<span class="token punctuation">.</span><span class="token function">write</span><span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 关闭 readline 接口</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 调用异步处理函数</span>
+<span class="token function">processInput</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_316"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入必要的库</span>
+<span class="token keyword">from</span> collections <span class="token keyword">import</span> defaultdict
+
+<span class="token comment"># 定义学生类</span>
+<span class="token keyword">class</span> <span class="token class-name">Student</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>name <span class="token operator">=</span> name  <span class="token comment"># 学生姓名</span>
+        self<span class="token punctuation">.</span>total_score <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment"># 学生总分</span>
+        self<span class="token punctuation">.</span>scores <span class="token operator">=</span> defaultdict<span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">)</span>  <span class="token comment"># 存储学生各科成绩的字典，默认值为0</span>
+
+    <span class="token comment"># 添加成绩的方法，同时累加到总分</span>
+    <span class="token keyword">def</span> <span class="token function">add_score</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> subject<span class="token punctuation">,</span> score<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>scores<span class="token punctuation">[</span>subject<span class="token punctuation">]</span> <span class="token operator">=</span> score
+        self<span class="token punctuation">.</span>total_score <span class="token operator">+=</span> score
+
+    <span class="token comment"># 获取指定科目的成绩</span>
+    <span class="token keyword">def</span> <span class="token function">get_score</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> subject<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>scores<span class="token punctuation">[</span>subject<span class="token punctuation">]</span>
+
+<span class="token comment"># 主函数</span>
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取学生人数和科目数量</span>
+    n<span class="token punctuation">,</span> m <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># 读取科目名称</span>
+    subjects <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    students <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># 读取每个学生的姓名和成绩</span>
+    <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        tokens <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        student <span class="token operator">=</span> Student<span class="token punctuation">(</span>tokens<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            student<span class="token punctuation">.</span>add_score<span class="token punctuation">(</span>subjects<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>tokens<span class="token punctuation">[</span>j <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        students<span class="token punctuation">.</span>append<span class="token punctuation">(</span>student<span class="token punctuation">)</span>
+
+    <span class="token comment"># 读取用作排名的科目名称</span>
+    rank_subject <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 对学生列表进行排序</span>
+    students<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> s<span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token operator">-</span>s<span class="token punctuation">.</span>get_score<span class="token punctuation">(</span>rank_subject<span class="token punctuation">)</span> <span class="token keyword">if</span> rank_subject <span class="token keyword">else</span> <span class="token operator">-</span>s<span class="token punctuation">.</span>total_score<span class="token punctuation">,</span> s<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 输出排序后的学生姓名</span>
+    <span class="token keyword">for</span> student <span class="token keyword">in</span> students<span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>student<span class="token punctuation">.</span>name<span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">' '</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 调用主函数</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_370"></a>C语言</h2> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_STUDENTS</span> <span class="token expression"><span class="token number">100</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_SUBJECTS</span> <span class="token expression"><span class="token number">10</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_NAME_LEN</span> <span class="token expression"><span class="token number">11</span></span></span>
+
+<span class="token comment">// 定义学生结构体</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> name<span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 学生姓名</span>
+    <span class="token keyword">int</span> totalScore<span class="token punctuation">;</span> <span class="token comment">// 学生总分</span>
+    <span class="token keyword">int</span> scores<span class="token punctuation">[</span>MAX_SUBJECTS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储学生各科成绩的数组</span>
+<span class="token punctuation">}</span> Student<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义全局变量</span>
+<span class="token keyword">int</span> n<span class="token punctuation">,</span> m<span class="token punctuation">;</span> <span class="token comment">// n为学生数量，m为科目数量</span>
+<span class="token keyword">char</span> subjects<span class="token punctuation">[</span>MAX_SUBJECTS<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储科目名称的数组</span>
+Student students<span class="token punctuation">[</span>MAX_STUDENTS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储学生对象的数组</span>
+<span class="token keyword">char</span> rankSubject<span class="token punctuation">[</span>MAX_NAME_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 用作排名的科目名称</span>
+
+<span class="token comment">// 定义比较函数，用于 qsort 函数</span>
+<span class="token keyword">int</span> <span class="token function">cmp</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Student <span class="token operator">*</span>studentA <span class="token operator">=</span> <span class="token punctuation">(</span>Student <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    Student <span class="token operator">*</span>studentB <span class="token operator">=</span> <span class="token punctuation">(</span>Student <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> scoreA <span class="token operator">=</span> studentA<span class="token operator">-&gt;</span>totalScore<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> scoreB <span class="token operator">=</span> studentB<span class="token operator">-&gt;</span>totalScore<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>rankSubject<span class="token punctuation">,</span> subjects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                scoreA <span class="token operator">=</span> studentA<span class="token operator">-&gt;</span>scores<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                scoreB <span class="token operator">=</span> studentB<span class="token operator">-&gt;</span>scores<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>scoreA <span class="token operator">!=</span> scoreB<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> scoreB <span class="token operator">-</span> scoreA<span class="token punctuation">;</span> <span class="token comment">// 成绩高的排前面</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>studentA<span class="token operator">-&gt;</span>name<span class="token punctuation">,</span> studentB<span class="token operator">-&gt;</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 成绩相同则按姓名字典序排列</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">,</span> <span class="token operator">&amp;</span>m<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> subjects<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> students<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        students<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>totalScore <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>students<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>scores<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            students<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>totalScore <span class="token operator">+=</span> students<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>scores<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> rankSubject<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对学生进行排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>students<span class="token punctuation">,</span> n<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Student<span class="token punctuation">)</span><span class="token punctuation">,</span> cmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出排序后的学生姓名</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s "</span><span class="token punctuation">,</span> students<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_444"></a>完整用例</h2> 
+<h3><a id="1_446"></a>用例1</h3> 
+<pre><code class="prism language-input1">3 2
+yuwen shuxue
+fangfang 95 90
+xiaohua 88 95
+minmin 100 82
+shuxue
+</code></pre> 
+<h3><a id="2_457"></a>用例2</h3> 
+<pre><code class="prism language-input2">3 2
+yuwen shuxue
+fangfang 95 90
+xiaohua 88 95
+minmin 90 95
+zongfen
+</code></pre> 
+<h3><a id="3_468"></a>用例3</h3> 
+<pre><code class="prism language-input3">5 3
+Math English Science
+Alice 80 90 100
+Bob 80 95 90
+Charlie 80 85 95
+David 80 100 85
+Eve 80 80 80
+Math
+</code></pre> 
+<h3><a id="4_481"></a>用例4</h3> 
+<pre><code class="prism language-input4">4 2
+Literature History
+Alice 90 10
+Bob 85 15
+Charlie 80 20
+David 75 25
+zongfen
+</code></pre> 
+<h3><a id="5_493"></a>用例5</h3> 
+<pre><code class="prism language-input5">3 2
+Physics Chemistry
+Alice 100 0
+Bob 50 50
+Charlie 0 100
+Chemistry
+</code></pre> 
+<h3><a id="6_504"></a>用例6</h3> 
+<pre><code class="prism language-input6">3 3
+Math Physics Chemistry
+Alice 100 100 100
+Bob 90 90 90
+Charlie 80 80 80
+Math
+</code></pre> 
+<h3><a id="7_515"></a>用例7</h3> 
+<pre><code class="prism language-input7">3 3
+Math English Science
+Alice 95 85 75
+Bob 85 75 95
+Charlie 75 95 85
+Literature
+</code></pre> 
+<h3><a id="8_526"></a>用例8</h3> 
+<pre><code class="prism language-input8">1 1
+PE
+Single 100
+PE
+</code></pre> 
+<h3><a id="9_535"></a>用例9</h3> 
+<pre><code class="prism language-input9">3 2
+Biology Biochemistry
+Alice 60 70
+Bob 70 60
+Charlie 80 80
+Biology
+</code></pre> 
+<h3><a id="10_546"></a>用例10</h3> 
+<pre><code class="prism language-input10">2 2
+Mathematics History
+Alexanderson 95 85
+Benjaminson 85 95
+Mathematics
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_8" rel="nofollow">输入描述</a></li><li><a href="#_27" rel="nofollow">输出描述</a></li><li><a href="#1_31" rel="nofollow">样例1</a></li><li><a href="#2_54" rel="nofollow">样例2</a></li><li><a href="#_77" rel="nofollow">解题思路</a></li><li><a href="#C_81" rel="nofollow">C++</a></li><li><a href="#Java_158" rel="nofollow">Java</a></li><li><a href="#javaScript_233" rel="nofollow">javaScript</a></li><li><a href="#Python_316" rel="nofollow">Python</a></li><li><a href="#C_370" rel="nofollow">C语言</a></li><li><a href="#_444" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_446" rel="nofollow">用例1</a></li><li><a href="#2_457" rel="nofollow">用例2</a></li><li><a href="#3_468" rel="nofollow">用例3</a></li><li><a href="#4_481" rel="nofollow">用例4</a></li><li><a href="#5_493" rel="nofollow">用例5</a></li><li><a href="#6_504" rel="nofollow">用例6</a></li><li><a href="#7_515" rel="nofollow">用例7</a></li><li><a href="#8_526" rel="nofollow">用例8</a></li><li><a href="#9_535" rel="nofollow">用例9</a></li><li><a href="#10_546" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/b139992af7ed535341c1616b5c9130e1.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

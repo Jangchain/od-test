@@ -1,0 +1,420 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_5"></a>题目描述</h2> 
+<p>小明在玩一个游戏，游戏规则如下：在游戏开始前，小明站在坐标轴原点处（坐标值为0）.</p> 
+<p>给定一组指令和一个幸运数，每个指令都是一个整数，小明按照指令前进指定步数或者后退指定步数。前进代表朝坐标轴的正方向走，后退代表朝坐标轴的负方向走。</p> 
+<p>幸运数为一个整数，如果某个指令正好和幸运数相等，则小明行进步数+1。</p> 
+<p>例如：</p> 
+<p>幸运数为3，指令为[2,3,0,-5]</p> 
+<p>指令为2，表示前进2步；</p> 
+<p>指令为3，正好和幸运数相等，前进3+1=4步；</p> 
+<p>指令为0，表示原地不动，既不前进，也不后退。</p> 
+<p>指令为-5，表示后退5步。</p> 
+<p>请你计算小明在整个游戏过程中，小明所处的最大坐标值。</p> 
+<h2><a id="_28"></a>输入描述</h2> 
+<p>第一行输入1个数字，代表指令的总个数 n（1 ≤ n ≤ 100）</p> 
+<p>第二行输入1个数字，代表幸运数m（-100 ≤ m ≤ 100）</p> 
+<p>第三行输入n个指令，每个指令的取值范围为：-100 ≤ 指令值 ≤ 100</p> 
+<h2><a id="_36"></a>输出描述</h2> 
+<p>输出在整个游戏过程中，小明所处的最大坐标值。异常情况下输出：12345</p> 
+<h2><a id="1_40"></a>用例1</h2> 
+<p>输入</p> 
+<pre><code>2
+1
+-5 1
+</code></pre> 
+<p>输出</p> 
+<pre><code>0
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>总共2个指令，幸运数为1，按照指令行进，依次如下游戏开始前，站在坐标轴原点，此时坐标值为0；</p> 
+ <p>指令为-5，后退5步，此时坐标值为-5；</p> 
+ <p>指令为1，正好等于幸运数，前进1+1=2步，此时坐标值为-3；</p> 
+ <p>整个游戏过程中，小明所处的坐标值依次为[0, -5, -3]，最大坐标值为0。</p> 
+</blockquote> 
+<h2><a id="2_66"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>5
+-5
+-5 1 6 0 -7
+</code></pre> 
+<p>输出</p> 
+<pre><code>1
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>总共5个指令，幸运数为-5，依照指令行进，依次如下：</p> 
+ <p>游戏开始前，站在坐标轴原点，此时坐标值为0，</p> 
+ <p>指令为-5，正好等于幸运数，后退5+1=6步，此时坐标值为-6；</p> 
+ <p>指令为1，前进1步，此时坐标值为-5；</p> 
+ <p>指令为6，前进6步，此时坐标值为1；</p> 
+ <p>指令为0，既不前进，也不后退，此时坐标值为1；</p> 
+ <p>指令为-7，后退7步，此时坐标值为-6。</p> 
+ <p>整个游戏过程中，小明所处的坐标值依次为：</p> 
+ <p>[0, -6, -5, 1, 1, -6]，最大坐标值为1。</p> 
+</blockquote> 
+<h2><a id="_101"></a>解题思路</h2> 
+<p>本题就模拟计算,主要注意幸运数字是0的情况.</p> 
+<h2><a id="C_105"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 创建一个新的扫描器实例</span>
+    string line<span class="token punctuation">;</span>
+    
+    <span class="token comment">// 读取用户输入的整数n和l</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> lucky <span class="token operator">=</span> <span class="token function">stoi</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 检查输入的整数n和l是否在指定的范围内</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> n <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token string">"12345"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化位置变量p和最大位置变量mp</span>
+    <span class="token keyword">int</span> p <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> mp <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取用户输入的整数cmd</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    stringstream <span class="token function">ss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> cmds<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> cmd<span class="token punctuation">;</span>
+        ss <span class="token operator">&gt;&gt;</span> cmd<span class="token punctuation">;</span>
+        cmds<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>cmd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 对于每一个输入的整数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> cmd <span class="token operator">=</span> cmds<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查输入的整数cmd是否在指定的范围内</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> cmd <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> <span class="token string">"12345"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果输入的整数cmd等于l</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">==</span> lucky<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果cmd大于0，那么位置p增加cmd+1</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                p <span class="token operator">+=</span> cmd <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 否则，位置p减少cmd-1</span>
+                p <span class="token operator">+=</span> cmd <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果输入的整数cmd不等于l，那么位置p增加cmd</span>
+            p <span class="token operator">+=</span> cmd<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 更新最大位置变量mp</span>
+        mp <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>mp<span class="token punctuation">,</span> p<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 打印最大位置变量mp</span>
+    cout <span class="token operator">&lt;&lt;</span> mp <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_178"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个新的扫描器实例</span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取用户输入的整数n和l</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> lucky <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查输入的整数n和l是否在指定的范围内</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> n <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化位置变量p和最大位置变量mp</span>
+        <span class="token keyword">int</span> p <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> mp <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取用户输入的整数cmd</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cmds <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 对于每一个输入的整数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> cmd <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>cmds<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 检查输入的整数cmd是否在指定的范围内</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> cmd <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 如果输入的整数cmd等于l</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">==</span> lucky<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果cmd大于0，那么位置p增加cmd+1</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    p <span class="token operator">+=</span> cmd <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 否则，位置p减少cmd-1</span>
+                    p <span class="token operator">+=</span> cmd <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果输入的整数cmd不等于l，那么位置p增加cmd</span>
+                p <span class="token operator">+=</span> cmd<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 更新最大位置变量mp</span>
+            mp <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>mp<span class="token punctuation">,</span> p<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 打印最大位置变量mp</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>mp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_237"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建一个新的扫描器实例</span>
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+readline<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取用户输入的整数n和l</span>
+    <span class="token keyword">let</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> lucky <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 检查输入的整数n和l是否在指定的范围内</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> n <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化位置变量p和最大位置变量mp</span>
+    <span class="token keyword">let</span> p <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> mp <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 读取用户输入的整数cmd</span>
+    <span class="token keyword">let</span> cmds <span class="token operator">=</span> input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 对于每一个输入的整数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">let</span> cmd <span class="token operator">=</span> cmds<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查输入的整数cmd是否在指定的范围内</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> cmd <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            process<span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果输入的整数cmd等于l</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">==</span> lucky<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果cmd大于0，那么位置p增加cmd+1</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                p <span class="token operator">+=</span> cmd <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 否则，位置p减少cmd-1</span>
+                p <span class="token operator">+=</span> cmd <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果输入的整数cmd不等于l，那么位置p增加cmd</span>
+            p <span class="token operator">+=</span> cmd<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 更新最大位置变量mp</span>
+        mp <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>mp<span class="token punctuation">,</span> p<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 打印最大位置变量mp</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>mp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h2><a id="Python_303"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 创建一个新的扫描器实例</span>
+<span class="token keyword">import</span> sys
+
+<span class="token comment"># 读取用户输入的整数n和l</span>
+n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+lucky <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 检查输入的整数n和l是否在指定的范围内</span>
+<span class="token keyword">if</span> n <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token keyword">or</span> n <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token keyword">or</span> lucky <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token keyword">or</span> lucky <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span>
+    sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化位置变量p和最大位置变量mp</span>
+p <span class="token operator">=</span> <span class="token number">0</span>
+mp <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token comment"># 读取用户输入的整数cmd</span>
+cmds <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 对于每一个输入的整数</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    cmd <span class="token operator">=</span> cmds<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+
+    <span class="token comment"># 检查输入的整数cmd是否在指定的范围内</span>
+    <span class="token keyword">if</span> cmd <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token keyword">or</span> cmd <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span>
+        sys<span class="token punctuation">.</span>exit<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 如果输入的整数cmd等于l</span>
+    <span class="token keyword">if</span> cmd <span class="token operator">==</span> lucky<span class="token punctuation">:</span>
+        <span class="token comment"># 如果cmd大于0，那么位置p增加cmd+1</span>
+        <span class="token keyword">if</span> cmd <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            p <span class="token operator">+=</span> cmd <span class="token operator">+</span> <span class="token number">1</span>
+        <span class="token keyword">elif</span> cmd <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token comment"># 否则，位置p减少cmd-1</span>
+            p <span class="token operator">+=</span> cmd <span class="token operator">-</span> <span class="token number">1</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果输入的整数cmd不等于l，那么位置p增加cmd</span>
+        p <span class="token operator">+=</span> cmd
+    <span class="token comment"># 更新最大位置变量mp</span>
+    mp <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>mp<span class="token punctuation">,</span> p<span class="token punctuation">)</span>
+
+<span class="token comment"># 打印最大位置变量mp</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>mp<span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_351"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> n<span class="token punctuation">,</span> lucky<span class="token punctuation">;</span>
+    
+    <span class="token comment">// 读取指令的总个数n和幸运数lucky</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>lucky<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 检查n和lucky的值是否在指定范围内</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">&lt;</span> <span class="token number">1</span> <span class="token operator">||</span> n <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> lucky <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"12345\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> pos <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 当前位置</span>
+    <span class="token keyword">int</span> maxPos <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 记录最大位置</span>
+
+    <span class="token comment">// 遍历所有指令</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> cmd<span class="token punctuation">;</span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>cmd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查指令值是否在指定范围内</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token operator">-</span><span class="token number">100</span> <span class="token operator">||</span> cmd <span class="token operator">&gt;</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"12345\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果指令值等于幸运数</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">==</span> lucky<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 根据指令正负决定如何处理步数</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                pos <span class="token operator">+=</span> cmd <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>cmd <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                pos <span class="token operator">+=</span> cmd <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 正常处理指令</span>
+            pos <span class="token operator">+=</span> cmd<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 更新最大位置</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pos <span class="token operator">&gt;</span> maxPos<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            maxPos <span class="token operator">=</span> pos<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最大位置</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> maxPos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="_415"></a>完整用例</h4> 
+<h3><a id="1_416"></a>用例1</h3> 
+<pre><code class="prism language-input1">9
+-3
+3 -3 -6 -3 -3 3 -3 -3 -3
+</code></pre> 
+<h3><a id="2_424"></a>用例2</h3> 
+<pre><code class="prism language-input2">20
+10
+5 10 -3 -10 5 10 1 2 3 -4 5 6 7 8 9 10 -1 -2 -3 -10
+</code></pre> 
+<h3><a id="3_432"></a>用例3</h3> 
+<pre><code class="prism language-input3">15
+0
+-1 0 1 2 3 4 5 6 7 8 9 10 11 12 13
+</code></pre> 
+<h3><a id="4_440"></a>用例4</h3> 
+<pre><code class="prism language-input4">12
+5
+1 2 3 4 -1 -2 -3 -4 1 2 3 4
+</code></pre> 
+<h3><a id="5_448"></a>用例5</h3> 
+<pre><code class="prism language-input5">10
+2
+3 4 5 6 7 8 9 10 11 12
+</code></pre> 
+<h3><a id="6_456"></a>用例6</h3> 
+<pre><code class="prism language-input6">20
+-2
+-2 -2 -3 -4 -5 -6 -7 -8 -9 -10 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10
+</code></pre> 
+<h3><a id="7_464"></a>用例7</h3> 
+<pre><code class="prism language-input7">7
+7
+1 7 -3 7 2 7 -1
+</code></pre> 
+<h3><a id="8_472"></a>用例8</h3> 
+<pre><code class="prism language-input8">4
+8
+9 6 5 -7
+</code></pre> 
+<h3><a id="9_480"></a>用例9</h3> 
+<pre><code class="prism language-input9">6
+-5
+-5 -6 0 -5 -7 -8
+</code></pre> 
+<h3><a id="10_488"></a>用例10</h3> 
+<pre><code class="prism language-input10">5
+0
+0 0 0 0 0
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_5" rel="nofollow">题目描述</a></li><li><a href="#_28" rel="nofollow">输入描述</a></li><li><a href="#_36" rel="nofollow">输出描述</a></li><li><a href="#1_40" rel="nofollow">用例1</a></li><li><a href="#2_66" rel="nofollow">用例2</a></li><li><a href="#_101" rel="nofollow">解题思路</a></li><li><a href="#C_105" rel="nofollow">C++</a></li><li><a href="#Java_178" rel="nofollow">Java</a></li><li><a href="#javaScript_237" rel="nofollow">javaScript</a></li><li><a href="#Python_303" rel="nofollow">Python</a></li><li><a href="#C_351" rel="nofollow">C语言</a></li><li><ul><li><ul><li><a href="#_415" rel="nofollow">完整用例</a></li></ul> 
+   </li><li><a href="#1_416" rel="nofollow">用例1</a></li><li><a href="#2_424" rel="nofollow">用例2</a></li><li><a href="#3_432" rel="nofollow">用例3</a></li><li><a href="#4_440" rel="nofollow">用例4</a></li><li><a href="#5_448" rel="nofollow">用例5</a></li><li><a href="#6_456" rel="nofollow">用例6</a></li><li><a href="#7_464" rel="nofollow">用例7</a></li><li><a href="#8_472" rel="nofollow">用例8</a></li><li><a href="#9_480" rel="nofollow">用例9</a></li><li><a href="#10_488" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/aad8017ecfdf926acfe723e9ca8bda7a.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

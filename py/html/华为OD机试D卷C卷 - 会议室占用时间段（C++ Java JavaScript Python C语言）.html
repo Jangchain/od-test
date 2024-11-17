@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_4"></a>题目描述</h2> 
+<p>现有若干个会议，所有会议共享一个会议室，用数组表示各个会议的开始时间和结束时间，格式为：</p> 
+<pre><code>[[会议1开始时间, 会议1结束时间], [会议2开始时间, 会议2结束时间]]
+</code></pre> 
+<p>请计算会议室占用时间段。</p> 
+<h2><a id="_14"></a>输入描述</h2> 
+<p>[[会议1开始时间, 会议1结束时间], [会议2开始时间, 会议2结束时间]]</p> 
+<p>备注：</p> 
+<ul><li>会议室个数范围：[1, 100]</li><li>会议室时间段：[1, 24]</li></ul> 
+<h2><a id="_23"></a>输出描述</h2> 
+<p>输出格式预输入一致,具体请看用例。</p> 
+<pre><code>[[会议开始时间, 会议结束时间], [会议开始时间, 会议结束时间]]
+</code></pre> 
+<h2><a id="1_33"></a>用例1</h2> 
+<p>输入：</p> 
+<pre><code>[[1,4],[2,5],[7,9],[14,18]]
+</code></pre> 
+<p>输出：</p> 
+<pre><code>[[1,5],[7,9],[14,18]]
+</code></pre> 
+<p>说明：</p> 
+<blockquote> 
+ <p>时/间段[1,4]和[2,5]重叠，合并为[1,5]</p> 
+</blockquote> 
+<h2><a id="2_55"></a>用例2</h2> 
+<p>输入：</p> 
+<pre><code>[[1,4],[4,5]]
+</code></pre> 
+<p>输出：</p> 
+<pre><code>[[1,5]]
+</code></pre> 
+<p>说明：</p> 
+<blockquote> 
+ <p>时间段[1,4]和[4,5]连续</p> 
+</blockquote> 
+<h2><a id="_69"></a>解题思路</h2> 
+<p>本题为lettocodo模式，不需要处理输入,只需要实现函数节课。</p> 
+<p>格式为：</p> 
+<pre><code class="prism language-c"><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">merge</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> roomTimes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+</code></pre> 
+<ol><li> <p>使用排序算法，根据每个会议时间段的开始时间（即每个内部数组的第一个元素）对<code>roomTimes</code>数组进行排序。</p> </li><li> <p>创建一个数组，用于存储合并后的会议时间段。</p> </li><li> <p>将排序后的第一个会议时间段作为当前会议时间段，并将其添加到合并列表中。</p> </li><li> <p>从第二个会议时间段开始，遍历<code>roomTimes</code>数组中的每个会议时间段。</p> </li><li> <p>对于每个遍历到的会议时间段，比较其开始时间与当前会议时间段的结束时间：</p> 
+  <ul><li>如果当前会议时间段的结束时间大于等于遍历到的会议时间段的开始时间，则说明两个会议时间段有重叠。此时，需要更新当前会议时间段的结束时间为两个时间段中较晚的结束时间，以此来合并会议时间段。</li><li>如果当前会议时间段的结束时间小于遍历到的会议时间段的开始时间，则说明两个会议时间段没有重叠。此时，将遍历到的会议时间段设置为新的当前会议时间段，并将其添加到合并列表中。</li></ul> </li><li> <p>继续步骤6的过程，直到遍历完所有会议时间段。</p> </li></ol> 
+<h2><a id="C_95"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+<span class="token comment">// 定义用于存储会议时间段的结构体</span>
+<span class="token keyword">struct</span> <span class="token class-name">Meeting</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> start<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> end<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于按会议开始时间排序</span>
+bool <span class="token function">compareMeetings</span><span class="token punctuation">(</span><span class="token keyword">const</span> Meeting <span class="token operator">&amp;</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> Meeting <span class="token operator">&amp;</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">return</span> a<span class="token punctuation">.</span>start <span class="token operator">&lt;</span> b<span class="token punctuation">.</span>start<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 合并会议时间段的函数</span>
+std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>Meeting<span class="token operator">&gt;</span> <span class="token function">merge</span><span class="token punctuation">(</span>std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>Meeting<span class="token operator">&gt;</span> <span class="token operator">&amp;</span>meetings<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果会议列表为空或只有一个会议，则不需要合并，直接返回</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>meetings<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> meetings<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token comment">// 使用标准库中的sort函数，根据会议开始时间对会议进行排序</span>
+    std<span class="token operator">::</span><span class="token function">sort</span><span class="token punctuation">(</span>meetings<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> meetings<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> compareMeetings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个新的向量存储合并后的会议时间段</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>Meeting<span class="token operator">&gt;</span> merged<span class="token punctuation">;</span>
+    <span class="token comment">// 将第一个会议添加到合并后的列表中</span>
+    merged<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>meetings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 遍历所有会议</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span> <span class="token operator">&amp;</span>nextMeeting <span class="token operator">:</span> meetings<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 引用合并列表中的最后一个会议</span>
+        Meeting <span class="token operator">&amp;</span>lastMerged <span class="token operator">=</span> merged<span class="token punctuation">.</span><span class="token function">back</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 如果当前会议的开始时间小于等于最后一个合并会议的结束时间，则合并</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nextMeeting<span class="token punctuation">.</span>start <span class="token operator">&lt;=</span> lastMerged<span class="token punctuation">.</span>end<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 更新最后一个合并会议的结束时间为当前会议和最后一个合并会议中较晚的结束时间</span>
+            lastMerged<span class="token punctuation">.</span>end <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">max</span><span class="token punctuation">(</span>lastMerged<span class="token punctuation">.</span>end<span class="token punctuation">,</span> nextMeeting<span class="token punctuation">.</span>end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果没有重叠，则将当前会议添加到合并列表中</span>
+            merged<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>nextMeeting<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 返回合并后的会议列表</span>
+    <span class="token keyword">return</span> merged<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    std<span class="token operator">::</span>string input<span class="token punctuation">;</span>
+    std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>std<span class="token operator">::</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取一行输入</span>
+
+    <span class="token comment">// 移除输入字符串中的所有方括号</span>
+    input<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">remove</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token char">'['</span><span class="token punctuation">)</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    input<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">remove</span><span class="token punctuation">(</span>input<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token char">']'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> input<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 使用字符串流分割输入字符串，获取会议时间</span>
+    std<span class="token operator">::</span>istringstream <span class="token function">iss</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>Meeting<span class="token operator">&gt;</span> meetings<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>string start<span class="token punctuation">,</span> end<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>iss<span class="token punctuation">,</span> start<span class="token punctuation">,</span> <span class="token char">','</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> std<span class="token operator">::</span><span class="token function">getline</span><span class="token punctuation">(</span>iss<span class="token punctuation">,</span> end<span class="token punctuation">,</span> <span class="token char">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        meetings<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span><span class="token punctuation">,</span> std<span class="token operator">::</span><span class="token function">stoi</span><span class="token punctuation">(</span>end<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 合并会议时间段</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>Meeting<span class="token operator">&gt;</span> mergedMeetings <span class="token operator">=</span> <span class="token function">merge</span><span class="token punctuation">(</span>meetings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出合并后的会议时间段</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"["</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> mergedMeetings<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"["</span> <span class="token operator">&lt;&lt;</span> mergedMeetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>start <span class="token operator">&lt;&lt;</span> <span class="token string">","</span> <span class="token operator">&lt;&lt;</span> mergedMeetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>end <span class="token operator">&lt;&lt;</span> <span class="token string">"]"</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> mergedMeetings<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"]"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_181"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">ArrayList</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Arrays</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Comparator</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">List</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        input <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">replaceAll</span><span class="token punctuation">(</span><span class="token string">"\\["</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">replaceAll</span><span class="token punctuation">(</span><span class="token string">"\\]"</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> inputArray <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> meetings <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>inputArray<span class="token punctuation">.</span>length <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputArray<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> start <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>inputArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> end <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>inputArray<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            meetings<span class="token punctuation">[</span>i <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">{<!-- --></span>start<span class="token punctuation">,</span> end<span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> mergedMeetings <span class="token operator">=</span> <span class="token function">merge</span><span class="token punctuation">(</span>meetings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"["</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> mergedMeetings<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> time <span class="token operator">=</span> mergedMeetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"["</span> <span class="token operator">+</span> time<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">","</span> <span class="token operator">+</span> time<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token string">"]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> mergedMeetings<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"]"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token function">merge</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span> roomTimes<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+
+        <span class="token comment">// 使用Arrays.sort方法和Comparator来按照会议的开始时间对会议进行排序</span>
+        <span class="token class-name">Arrays</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>roomTimes<span class="token punctuation">,</span> <span class="token class-name">Comparator</span><span class="token punctuation">.</span><span class="token function">comparingInt</span><span class="token punctuation">(</span>a <span class="token operator">-&gt;</span> a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 创建一个ArrayList来存储合并后的会议时间段</span>
+        <span class="token class-name">List</span><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> merged <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 初始化当前会议时间段为排序后的第一个会议时间段</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> currentMeeting <span class="token operator">=</span> roomTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将当前会议时间段添加到合并后的列表中</span>
+        merged<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>currentMeeting<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历剩余的会议时间段</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> roomTimes<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 获取下一个会议时间段</span>
+            <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> nextMeeting <span class="token operator">=</span> roomTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 如果当前会议的结束时间大于等于下一个会议的开始时间，说明两个会议时间段有重叠</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>currentMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> nextMeeting<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 将当前会议的结束时间更新为两个会议结束时间的较大者，实现合并</span>
+                currentMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>currentMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> nextMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果没有重叠，则将下一个会议时间段设置为当前会议时间段，并添加到合并后的列表中</span>
+                currentMeeting <span class="token operator">=</span> nextMeeting<span class="token punctuation">;</span>
+                merged<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>currentMeeting<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 将合并后的会议时间段列表转换为二维数组并返回</span>
+        <span class="token keyword">return</span> merged<span class="token punctuation">.</span><span class="token function">toArray</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>merged<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre> 
+<h2><a id="javaScript_252"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块，用于从命令行读取输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span> <span class="token comment">// 标准输入流</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout <span class="token comment">// 标准输出流</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 当从命令行接收到一行输入时触发回调函数</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 使用正则表达式移除输入字符串中的所有方括号</span>
+  input <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">\[</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">\]</span><span class="token regex-delimiter">/</span><span class="token regex-flags">g</span></span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 根据逗号分割字符串，并将分割后的字符串数组转换为数字数组</span>
+  <span class="token keyword">const</span> inputArray <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 初始化会议时间数组</span>
+  <span class="token keyword">const</span> meetings <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历输入的数字数组，每两个数字组成一个会议时间，添加到会议时间数组中</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> inputArray<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i <span class="token operator">+=</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> start <span class="token operator">=</span> inputArray<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 会议开始时间</span>
+    <span class="token keyword">const</span> end <span class="token operator">=</span> inputArray<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 会议结束时间</span>
+    meetings<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token punctuation">[</span>start<span class="token punctuation">,</span> end<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将会议时间添加到数组中</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 调用merge函数合并会议时间</span>
+  <span class="token keyword">const</span> mergedMeetings <span class="token operator">=</span> <span class="token function">merge</span><span class="token punctuation">(</span>meetings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 输出合并后的会议时间数组，转换为JSON字符串格式</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span>mergedMeetings<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// 关闭readline接口实例</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 定义merge函数，用于合并会议时间</span>
+<span class="token keyword">function</span> <span class="token function">merge</span><span class="token punctuation">(</span><span class="token parameter">roomTimes</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+
+  <span class="token comment">// 对会议时间数组进行排序，按照会议的开始时间从小到大排序</span>
+  roomTimes<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> a<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> b<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 初始化合并后的会议时间数组，起始为排序后的第一个会议时间</span>
+  <span class="token keyword">const</span> merged <span class="token operator">=</span> <span class="token punctuation">[</span>roomTimes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 遍历剩余的会议时间</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> roomTimes<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 获取合并数组中的最后一个会议时间</span>
+    <span class="token keyword">const</span> currentMeeting <span class="token operator">=</span> merged<span class="token punctuation">[</span>merged<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 获取当前遍历到的会议时间</span>
+    <span class="token keyword">const</span> nextMeeting <span class="token operator">=</span> roomTimes<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 如果当前会议的结束时间大于等于下一个会议的开始时间，则合并这两个会议</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>currentMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> nextMeeting<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 更新当前会议的结束时间为两个会议结束时间的较大值</span>
+      currentMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span>currentMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> nextMeeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+      <span class="token comment">// 如果没有重叠，则将下一个会议添加到合并数组中</span>
+      merged<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>nextMeeting<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 返回合并后的会议时间数组</span>
+  <span class="token keyword">return</span> merged<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_321"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入必要的库</span>
+<span class="token keyword">import</span> re
+
+<span class="token keyword">def</span> <span class="token function">merge_meetings</span><span class="token punctuation">(</span>meetings<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    合并会议时间段
+    
+    :param meetings: 二维列表，表示会议的开始和结束时间
+    :return: 合并后的会议时间段列表
+    """</span>
+    <span class="token comment"># 按照会议的开始时间对会议进行排序</span>
+    meetings<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>key<span class="token operator">=</span><span class="token keyword">lambda</span> x<span class="token punctuation">:</span> x<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># 创建一个列表来存储合并后的会议时间段</span>
+    merged <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    <span class="token comment"># 初始化当前会议时间段为排序后的第一个会议时间段</span>
+    current_meeting <span class="token operator">=</span> meetings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    <span class="token comment"># 将当前会议时间段添加到合并后的列表中</span>
+    merged<span class="token punctuation">.</span>append<span class="token punctuation">(</span>current_meeting<span class="token punctuation">)</span>
+    
+    <span class="token comment"># 遍历剩余的会议时间段</span>
+    <span class="token keyword">for</span> next_meeting <span class="token keyword">in</span> meetings<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果当前会议的结束时间大于等于下一个会议的开始时间，说明两个会议时间段有重叠</span>
+        <span class="token keyword">if</span> current_meeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">&gt;=</span> next_meeting<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+            <span class="token comment"># 将当前会议的结束时间更新为两个会议结束时间的较大者，实现合并</span>
+            current_meeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token builtin">max</span><span class="token punctuation">(</span>current_meeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> next_meeting<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果没有重叠，则将下一个会议时间段设置为当前会议时间段，并添加到合并后的列表中</span>
+            current_meeting <span class="token operator">=</span> next_meeting
+            merged<span class="token punctuation">.</span>append<span class="token punctuation">(</span>current_meeting<span class="token punctuation">)</span>
+    
+    <span class="token comment"># 返回合并后的会议时间段列表</span>
+    <span class="token keyword">return</span> merged
+
+<span class="token comment"># 读取输入字符串</span>
+input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 使用正则表达式去除字符串中的中括号</span>
+input_str <span class="token operator">=</span> re<span class="token punctuation">.</span>sub<span class="token punctuation">(</span><span class="token string">r"[\[\]]"</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">,</span> input_str<span class="token punctuation">)</span>
+<span class="token comment"># 按照逗号分割字符串，得到会议时间的字符串列表</span>
+input_array <span class="token operator">=</span> input_str<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span>
+<span class="token comment"># 将字符串列表转换为会议时间的二维列表</span>
+meetings <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">(</span>input_array<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">int</span><span class="token punctuation">(</span>input_array<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>input_array<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+<span class="token comment"># 调用函数合并会议时间段</span>
+merged_meetings <span class="token operator">=</span> merge_meetings<span class="token punctuation">(</span>meetings<span class="token punctuation">)</span>
+<span class="token comment"># 打印合并后的会议时间段</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"["</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">""</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> i<span class="token punctuation">,</span> time <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>merged_meetings<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"[</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>time<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">,</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>time<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">]"</span></span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">""</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> i <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>merged_meetings<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">""</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"]"</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_380"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token comment">// 定义用于存储会议时间段的结构体</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> start<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> end<span class="token punctuation">;</span>
+<span class="token punctuation">}</span> Meeting<span class="token punctuation">;</span>
+
+<span class="token comment">// 比较函数，用于按会议开始时间排序</span>
+<span class="token keyword">int</span> <span class="token function">compareMeetings</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>b<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    Meeting <span class="token operator">*</span>meetingA <span class="token operator">=</span> <span class="token punctuation">(</span>Meeting <span class="token operator">*</span><span class="token punctuation">)</span>a<span class="token punctuation">;</span>
+    Meeting <span class="token operator">*</span>meetingB <span class="token operator">=</span> <span class="token punctuation">(</span>Meeting <span class="token operator">*</span><span class="token punctuation">)</span>b<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> meetingA<span class="token operator">-&gt;</span>start <span class="token operator">-</span> meetingB<span class="token operator">-&gt;</span>start<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 合并会议时间段的函数</span>
+Meeting <span class="token operator">*</span><span class="token function">merge</span><span class="token punctuation">(</span>Meeting <span class="token operator">*</span>meetings<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>returnSize<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>size <span class="token operator">&lt;=</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token operator">*</span>returnSize <span class="token operator">=</span> size<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> meetings<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 使用qsort函数，根据会议开始时间对会议进行排序</span>
+    <span class="token function">qsort</span><span class="token punctuation">(</span>meetings<span class="token punctuation">,</span> size<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Meeting<span class="token punctuation">)</span><span class="token punctuation">,</span> compareMeetings<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建一个新的数组存储合并后的会议时间段</span>
+    Meeting <span class="token operator">*</span>merged <span class="token operator">=</span> <span class="token punctuation">(</span>Meeting <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>size <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>Meeting<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> mergedSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    merged<span class="token punctuation">[</span>mergedSize<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> meetings<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 将第一个会议添加到合并后的数组中</span>
+
+    <span class="token comment">// 遍历所有会议</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前会议的开始时间小于等于最后一个合并会议的结束时间，则合并</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>meetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>start <span class="token operator">&lt;=</span> merged<span class="token punctuation">[</span>mergedSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>end<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 更新最后一个合并会议的结束时间为当前会议和最后一个合并会议中较晚的结束时间</span>
+            merged<span class="token punctuation">[</span>mergedSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>end <span class="token operator">=</span> <span class="token punctuation">(</span>meetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>end <span class="token operator">&gt;</span> merged<span class="token punctuation">[</span>mergedSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>end<span class="token punctuation">)</span> <span class="token operator">?</span> meetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>end <span class="token operator">:</span> merged<span class="token punctuation">[</span>mergedSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>end<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果没有重叠，则将当前会议添加到合并数组中</span>
+            merged<span class="token punctuation">[</span>mergedSize<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> meetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token operator">*</span>returnSize <span class="token operator">=</span> mergedSize<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> merged<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+    <span class="token comment">// 移除输入字符串中的所有方括号</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>p <span class="token operator">=</span> input<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">*</span>p<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">*</span>p <span class="token operator">==</span> <span class="token char">'['</span> <span class="token operator">||</span> <span class="token operator">*</span>p <span class="token operator">==</span> <span class="token char">']'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token operator">*</span>p <span class="token operator">=</span> <span class="token char">' '</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        p<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 分割输入字符串，获取会议时间</span>
+    Meeting meetings<span class="token punctuation">[</span><span class="token number">512</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  
+    <span class="token keyword">int</span> size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">", "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        meetings<span class="token punctuation">[</span>size<span class="token punctuation">]</span><span class="token punctuation">.</span>start <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">", "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        meetings<span class="token punctuation">[</span>size<span class="token punctuation">]</span><span class="token punctuation">.</span>end <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">", "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        size<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 合并会议时间段</span>
+    <span class="token keyword">int</span> mergedSize<span class="token punctuation">;</span>
+    Meeting <span class="token operator">*</span>mergedMeetings <span class="token operator">=</span> <span class="token function">merge</span><span class="token punctuation">(</span>meetings<span class="token punctuation">,</span> size<span class="token punctuation">,</span> <span class="token operator">&amp;</span>mergedSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 输出合并后的会议时间段</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"["</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> mergedSize<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[%d,%d]"</span><span class="token punctuation">,</span> mergedMeetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>start<span class="token punctuation">,</span> mergedMeetings<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>end<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> mergedSize <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"]\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">free</span><span class="token punctuation">(</span>mergedMeetings<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 释放动态分配的内存</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_475"></a>完整用例</h2> 
+<h3><a id="1_477"></a>用例1</h3> 
+<pre><code class="prism language-input1">[[1,3],[2,5]]
+</code></pre> 
+<h3><a id="2_483"></a>用例2</h3> 
+<pre><code class="prism language-input2">[[1,2],[3,4]]
+</code></pre> 
+<h3><a id="3_489"></a>用例3</h3> 
+<pre><code class="prism language-input3">[[1,2],[2,3],[3,4]]
+</code></pre> 
+<h3><a id="4_495"></a>用例4</h3> 
+<pre><code class="prism language-input4">[[1,4],[5,6],[7,10]]
+</code></pre> 
+<h3><a id="5_501"></a>用例5</h3> 
+<pre><code class="prism language-input5">[[1,4],[2,3],[5,8]]
+</code></pre> 
+<h3><a id="6_507"></a>用例6</h3> 
+<pre><code class="prism language-input6">[[1,3],[4,6],[5,7]]
+</code></pre> 
+<h3><a id="7_513"></a>用例7</h3> 
+<pre><code class="prism language-input7">[[1,4],[2,3],[6,9],[7,10],[11,12]]
+</code></pre> 
+<h3><a id="8_519"></a>用例8</h3> 
+<pre><code class="prism language-input8">[[1,2],[3,4],[5,6],[7,8],[9,10]]
+</code></pre> 
+<h3><a id="9_525"></a>用例9</h3> 
+<pre><code class="prism language-input9">[[1,3],[2,4],[3,5],[4,6]]
+</code></pre> 
+<h3><a id="10_531"></a>用例10</h3> 
+<pre><code class="prism language-input10">[[1,4],[5,7],[6,9]]
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_14" rel="nofollow">输入描述</a></li><li><a href="#_23" rel="nofollow">输出描述</a></li><li><a href="#1_33" rel="nofollow">用例1</a></li><li><a href="#2_55" rel="nofollow">用例2</a></li><li><a href="#_69" rel="nofollow">解题思路</a></li><li><a href="#C_95" rel="nofollow">C++</a></li><li><a href="#Java_181" rel="nofollow">Java</a></li><li><a href="#javaScript_252" rel="nofollow">javaScript</a></li><li><a href="#Python_321" rel="nofollow">Python</a></li><li><a href="#C_380" rel="nofollow">C语言</a></li><li><a href="#_475" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_477" rel="nofollow">用例1</a></li><li><a href="#2_483" rel="nofollow">用例2</a></li><li><a href="#3_489" rel="nofollow">用例3</a></li><li><a href="#4_495" rel="nofollow">用例4</a></li><li><a href="#5_501" rel="nofollow">用例5</a></li><li><a href="#6_507" rel="nofollow">用例6</a></li><li><a href="#7_513" rel="nofollow">用例7</a></li><li><a href="#8_519" rel="nofollow">用例8</a></li><li><a href="#9_525" rel="nofollow">用例9</a></li><li><a href="#10_531" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/5c9c145e037b49e0c0f8305d4d8e2dbc.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_4"></a>题目描述</h4> 
+<p>新来的老师给班里的同学排一个队。</p> 
+<p>每个学生有一个影力值。</p> 
+<p>一些学生是刺头，不会听老师的话，自己选位置，非刺头同学在剩下的位置按照能力值从小到大排。</p> 
+<p>对于非刺头同学，如果发现他前面有能力值比自己高的同学，他不满程度就增加，增加的数量等于前面能力值比他大的同学的个数。</p> 
+<p>刺头不会产生不满。</p> 
+<p>如果整个班级累计的不满程度超过k，那么老师就没有办法教这个班级了。</p> 
+<h4><a id="_18"></a>输入描述</h4> 
+<p>输入有三行：</p> 
+<p>第一行为n,m,k,空格隔开，分别表示班级总人数，刺头人数，最大不满程度k。</p> 
+<p>第二行为刺头所在位置(从0开始，即排队数组的下标，比如1代表队伍中第2个同学是刺头)，位置的数组也是排序的。</p> 
+<p>第三行有n个数，空格隔开，表示老师排好的队中每个人的能力值，其中非刺头同学一定按照能力值从小到大排好序的。</p> 
+<h4><a id="_28"></a>输出描述</h4> 
+<p>0 表示老师可以继续教这个班级</p> 
+<p>1 表示老师无法继续教这个班级</p> 
+<h4><a id="_34"></a>备注</h4> 
+<ul><li>n 范围是[1,100000]</li><li>m 范围是 [1,n]</li><li>k 范国是[1,1000000000]</li><li>每位同学的能力值范围是[1000,100000]</li></ul> 
+<h4><a id="_41"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>4 2 3<br>0 1<br>1810 1809 1801 1802</td></tr><tr><td>输出</td><td>1</td></tr><tr><td>说明</td><td>刺头在0,1位置，2号同学不满程度2(前面两个刺头能力值都比他大)，3号同学不满程度2，总不满程度4，大于3。输出不能教这班(1)。</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>4 2 4<br>0 1<br>1810 1809 1801 1802</td></tr><tr><td>输出</td><td>0</td></tr><tr><td>说明</td><td>同前，4不大于4，输出能教这个班 (0)</td></tr></tbody></table> 
+<h4><a id="_47"></a>解题思路：</h4> 
+<p>解题思路：</p> 
+<ol><li>首先，从输入中解析出总人数、刺头人数、最大不满程度、刺头位置和每个同学的能力值。</li><li>初始化一个布尔数组，用于标记刺头同学的位置。</li><li>初始化一个变量用于存储总的不满程度，以及一个集合用于存储刺头同学的能力值。</li><li>遍历所有同学的能力值，对于刺头同学，将其能力值添加到刺头能力值集合中；对于非刺头同学，计算其不满程度，即刺头能力值集合中小于等于该同学能力值的个数。</li><li>最后，判断总的不满程度是否超过最大不满程度，如果超过则输出1，表示老师无法教这个班级；否则输出0，表示老师可以继续教这个班级。</li></ol> 
+<h4><a id="java_60"></a>java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">TreeSet</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+
+   <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+       <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+       <span class="token comment">// 读取班级总人数，刺头人数和最大不满程度</span>
+       <span class="token keyword">int</span> totalStudents <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token keyword">int</span> numPricks <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token keyword">int</span> maxUnhappiness <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+       <span class="token comment">// 存储刺头同学的位置</span>
+       <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> isPrick <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>totalStudents<span class="token punctuation">]</span><span class="token punctuation">;</span>
+       <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numPricks<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+           isPrick<span class="token punctuation">[</span>sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+       <span class="token punctuation">}</span>
+
+       <span class="token comment">// 初始化不满程度和刺头同学能力值列表</span>
+       <span class="token keyword">int</span> unhappiness <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+       <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> prickAbilities <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">TreeSet</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+       <span class="token comment">// 获取所有同学能力值</span>
+       <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> totalStudents<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+           <span class="token keyword">int</span> ability <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+           <span class="token comment">// 如果是刺头学生，则放到刺头列表中去</span>
+           <span class="token keyword">if</span> <span class="token punctuation">(</span>isPrick<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+               prickAbilities<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>ability<span class="token punctuation">)</span><span class="token punctuation">;</span>
+           <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+               <span class="token comment">// 如果不是刺头，计算不满程度，</span>
+               <span class="token comment">// 获取 prickAbilities 集合中小于等于 ability 的元素个数</span>
+               <span class="token keyword">int</span> numGreater <span class="token operator">=</span> prickAbilities<span class="token punctuation">.</span><span class="token function">headSet</span><span class="token punctuation">(</span>ability<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+               <span class="token comment">// 总数减去小于他的就是不满程度</span>
+               unhappiness <span class="token operator">+=</span> prickAbilities<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> numGreater<span class="token punctuation">;</span>
+           <span class="token punctuation">}</span>
+       <span class="token punctuation">}</span>
+
+       <span class="token comment">// 输出结果：如果不满程度超过最大值，则输出1，否则输出0</span>
+       <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>unhappiness <span class="token operator">&gt;</span> maxUnhappiness <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h4><a id="C_108"></a>C++</h4> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;set&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从控制台读取输入</span>
+    <span class="token keyword">int</span> total_students<span class="token punctuation">,</span> num_pricks<span class="token punctuation">,</span> max_unhappiness<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> total_students <span class="token operator">&gt;&gt;</span> num_pricks <span class="token operator">&gt;&gt;</span> max_unhappiness<span class="token punctuation">;</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">prick_positions</span><span class="token punctuation">(</span>num_pricks<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> num_pricks<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> prick_positions<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">abilities</span><span class="token punctuation">(</span>total_students<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> total_students<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        std<span class="token operator">::</span>cin <span class="token operator">&gt;&gt;</span> abilities<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 存储刺头同学的位置</span>
+    std<span class="token operator">::</span>vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token function">is_prick</span><span class="token punctuation">(</span>total_students<span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> position <span class="token operator">:</span> prick_positions<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        is_prick<span class="token punctuation">[</span>position<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化不满程度和刺头同学能力值列表</span>
+    <span class="token keyword">int</span> unhappiness <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>set<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> prick_abilities<span class="token punctuation">;</span>
+
+    <span class="token comment">// 获取所有同学能力值</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> total_students<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> ability <span class="token operator">=</span> abilities<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果是刺头学生，则放到刺头列表中去</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>is_prick<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            prick_abilities<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>ability<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果不是刺头，计算不满程度</span>
+            <span class="token keyword">int</span> num_greater <span class="token operator">=</span> std<span class="token operator">::</span><span class="token function">distance</span><span class="token punctuation">(</span>prick_abilities<span class="token punctuation">.</span><span class="token function">lower_bound</span><span class="token punctuation">(</span>ability<span class="token punctuation">)</span><span class="token punctuation">,</span> prick_abilities<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 总数减去小于他的就是不满程度</span>
+            unhappiness <span class="token operator">+=</span> num_greater<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出结果：如果不满程度超过最大值，则输出1，否则输出0</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>unhappiness <span class="token operator">&gt;</span> max_unhappiness <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+
+</code></pre> 
+<h4><a id="python_163"></a>python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 从控制台读取输入</span>
+input_lines <span class="token operator">=</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">.</span>readlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 解析输入</span>
+total_students<span class="token punctuation">,</span> num_pricks<span class="token punctuation">,</span> max_unhappiness <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> input_lines<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+prick_positions <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> input_lines<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+abilities <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> input_lines<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 存储刺头同学的位置</span>
+is_prick <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> total_students
+<span class="token keyword">for</span> position <span class="token keyword">in</span> prick_positions<span class="token punctuation">:</span>
+    is_prick<span class="token punctuation">[</span>position<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+
+<span class="token comment"># 初始化不满程度和刺头同学能力值列表</span>
+unhappiness <span class="token operator">=</span> <span class="token number">0</span>
+prick_abilities <span class="token operator">=</span> <span class="token builtin">set</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 获取所有同学能力值</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>total_students<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ability <span class="token operator">=</span> abilities<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    <span class="token comment"># 如果是刺头学生，则放到刺头列表中去</span>
+    <span class="token keyword">if</span> is_prick<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        prick_abilities<span class="token punctuation">.</span>add<span class="token punctuation">(</span>ability<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 如果不是刺头，计算不满程度</span>
+        num_greater <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span><span class="token punctuation">[</span>x <span class="token keyword">for</span> x <span class="token keyword">in</span> prick_abilities <span class="token keyword">if</span> x <span class="token operator">&lt;=</span> ability<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token comment"># 总数减去小于他的就是不满程度</span>
+        unhappiness <span class="token operator">+=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>prick_abilities<span class="token punctuation">)</span> <span class="token operator">-</span> num_greater
+
+<span class="token comment"># 输出结果：如果不满程度超过最大值，则输出1，否则输出0</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token number">1</span> <span class="token keyword">if</span> unhappiness <span class="token operator">&gt;</span> max_unhappiness <span class="token keyword">else</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+</code></pre> 
+<h4><a id="javaScript_201"></a>javaScript</h4> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 从控制台读取输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> <span class="token punctuation">[</span>totalStudents<span class="token punctuation">,</span> numPricks<span class="token punctuation">,</span> maxUnhappiness<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">prickPositionsInput</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> prickPositions <span class="token operator">=</span> prickPositionsInput<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 存储刺头同学的位置</span>
+        <span class="token keyword">const</span> isPrick <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>totalStudents<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        prickPositions<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">position</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+            isPrick<span class="token punctuation">[</span>position<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">abilitiesInput</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">const</span> abilities <span class="token operator">=</span> abilitiesInput<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 初始化不满程度和刺头同学能力值列表</span>
+            <span class="token keyword">let</span> unhappiness <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">const</span> prickAbilities <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Set</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 获取所有同学能力值</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> totalStudents<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">const</span> ability <span class="token operator">=</span> abilities<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                <span class="token comment">// 如果是刺头学生，则放到刺头列表中去</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>isPrick<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    prickAbilities<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>ability<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 如果不是刺头，计算不满程度</span>
+                    <span class="token keyword">const</span> numGreater <span class="token operator">=</span> Array<span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">(</span>prickAbilities<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">x</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> x <span class="token operator">&lt;=</span> ability<span class="token punctuation">)</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+                    <span class="token comment">// 总数减去小于他的就是不满程度</span>
+                    unhappiness <span class="token operator">+=</span> prickAbilities<span class="token punctuation">.</span>size <span class="token operator">-</span> numGreater<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 输出结果：如果不满程度超过最大值，则输出1，否则输出0</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>unhappiness <span class="token operator">&gt;</span> maxUnhappiness <span class="token operator">?</span> <span class="token number">1</span> <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_4" rel="nofollow">题目描述</a></li><li><a href="#_18" rel="nofollow">输入描述</a></li><li><a href="#_28" rel="nofollow">输出描述</a></li><li><a href="#_34" rel="nofollow">备注</a></li><li><a href="#_41" rel="nofollow">用例</a></li><li><a href="#_47" rel="nofollow">解题思路：</a></li><li><a href="#java_60" rel="nofollow">java</a></li><li><a href="#C_108" rel="nofollow">C++</a></li><li><a href="#python_163" rel="nofollow">python</a></li><li><a href="#javaScript_201" rel="nofollow">javaScript</a></li><li><a href="#_260" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_261" rel="nofollow">用例1</a></li><li><a href="#2_269" rel="nofollow">用例2</a></li><li><a href="#3_277" rel="nofollow">用例3</a></li><li><a href="#4_285" rel="nofollow">用例4</a></li><li><a href="#5_293" rel="nofollow">用例5</a></li><li><a href="#6_301" rel="nofollow">用例6</a></li><li><a href="#7_309" rel="nofollow">用例7</a></li><li><a href="#8_317" rel="nofollow">用例8</a></li><li><a href="#9_325" rel="nofollow">用例9</a></li><li><a href="#10_333" rel="nofollow">用例10</a></li></ul> 
+    </li><li><a href="#_342" rel="nofollow">完整用</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p> 
+<h4><a id="_260"></a>完整用例</h4> 
+<h5><a id="1_261"></a>用例1</h5> 
+<pre><code class="prism language-input1">5 2 3
+0 3
+1000 2000 3000 4000 5000
+</code></pre> 
+<h5><a id="2_269"></a>用例2</h5> 
+<pre><code class="prism language-input2">5 2 1
+0 3
+1000 2000 3000 4000 5000
+</code></pre> 
+<h5><a id="3_277"></a>用例3</h5> 
+<pre><code class="prism language-input3">4 1 2
+1
+1000 2000 3000 4000
+</code></pre> 
+<h5><a id="4_285"></a>用例4</h5> 
+<pre><code class="prism language-input4">4 1 1
+1
+1000 2000 3000 4000
+</code></pre> 
+<h5><a id="5_293"></a>用例5</h5> 
+<pre><code class="prism language-input5">1 1 1
+0
+2
+</code></pre> 
+<h5><a id="6_301"></a>用例6</h5> 
+<pre><code class="prism language-input6">10 3 10
+1 3 5
+1 1 1 1 1 1 1 1 1 1
+</code></pre> 
+<h5><a id="7_309"></a>用例7</h5> 
+<pre><code class="prism language-input7">4 2 3
+0 1
+1810 1809 1801 1802
+</code></pre> 
+<h5><a id="8_317"></a>用例8</h5> 
+<pre><code class="prism language-input8">4 2 4
+0 1
+1810 1809 1801 1802
+</code></pre> 
+<h5><a id="9_325"></a>用例9</h5> 
+<pre><code class="prism language-input9">5 1 2
+0
+1801 1802 1803 1804 1805
+</code></pre> 
+<h5><a id="10_333"></a>用例10</h5> 
+<pre><code class="prism language-input10">5 1 5
+0
+1801 1802 1803 1804 1805
+</code></pre> 
+<h4><a id="_342"></a>完整用</h4>
+                </div>
+</body>
+</html>

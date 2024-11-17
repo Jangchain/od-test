@@ -1,0 +1,561 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_6"></a>题目描述</h2> 
+<p>将一个csv格式的数据文件中包含有单元格引用的内容替换为对应单元格内容的实际值。<br> Comma seprated values（CSV）逗号分隔值，csv格式的数据文件使用逗号作为分隔符将各单位的内容进行分隔。</p> 
+<h2><a id="_11"></a>输入描述</h2> 
+<ol><li>输入只有一行数据，用逗号分隔每个单元格，行尾没有逗号。最多26个单元格，对应编号A-Z。</li><li>每个单元格的内容包含字母和数字，以及使用&lt;&gt;分隔的单元格引用，例如：表示引用第一个单元的值。</li><li>每个单元格的内容，在替换前和替换后均不超过100个字符。</li><li>引用单元格的位置不受限制，运行排在后面的单元格被排在前面的单元格引用。</li><li>不存在循环引用的情况，比如下面这种场景是不存在的：<br> A单元格：aCd<b>8u<br> B单元格：kAydzqo</b></li><li>不存在多重&lt;&gt;的情况，一个单元格只能引用一个其他单元格。比如下面这种场景是不存在的：<br> A单元格：aCd8u<br> B单元格：kAydzqo<br> C单元格：y&lt;<b>&gt;d</b></li></ol> 
+<h2><a id="_25"></a>输出描述</h2> 
+<p>输出所有单元格展开的内容，单元格之间用逗号分隔。处理过程中出现错误时，输出字符串“-1”表示出错。</p> 
+<h2><a id="1_29"></a>示例1</h2> 
+<p>输入</p> 
+<pre><code>1,2&lt;A&gt;00
+</code></pre> 
+<p>输出</p> 
+<pre><code>1，2100
+</code></pre> 
+<p>说明<br> 第二个单元中有对A单元的引用，A单元格的值为1，替换时，将A单元的内容替代的位置，并和其他内容合并。</p> 
+<h2><a id="2_45"></a>示例2</h2> 
+<p>输入</p> 
+<pre><code>&lt;B&gt;12,1
+</code></pre> 
+<p>输出</p> 
+<pre><code>112，1
+</code></pre> 
+<p>说明<br> 第一个单元中有对B单元的引用，B单元格的值为1，替换时，将第二个数据单元的内容替代<b>的位置，并和其他内容合并。</b></p> 
+<h2><a id="3_61"></a>示例3</h2> 
+<p>输入</p> 
+<pre><code>&lt;B&lt;12,1
+</code></pre> 
+<p>输出</p> 
+<pre><code>-1
+</code></pre> 
+<p>说明<br> 第一个单元中有错误的单元格引用方式，输出-1</p> 
+<h2><a id="C_81"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span> </span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span>   </span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span>    </span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span>   </span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span>  </span>
+
+using namespace std<span class="token punctuation">;</span>  
+
+<span class="token comment">// 全局变量，用于存储单元格的值、标记单元格是否正在处理中以及是否已处理完成</span>
+vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> cellValues<span class="token punctuation">;</span>
+vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> isProcessing<span class="token punctuation">;</span>
+vector<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> hasProcessed<span class="token punctuation">;</span>
+
+<span class="token comment">// 定义processCell函数，用于处理单元格内的数据，包括处理引用和检测循环引用</span>
+bool <span class="token function">processCell</span><span class="token punctuation">(</span><span class="token keyword">int</span> cellIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果该单元格已处理过，直接返回true</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>hasProcessed<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> true<span class="token punctuation">;</span>
+    <span class="token comment">// 如果该单元格正在处理中，则存在循环引用，返回false</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+
+    <span class="token comment">// 标记该单元格为正在处理状态</span>
+    isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+
+    ostringstream processedValue<span class="token punctuation">;</span> <span class="token comment">// 创建一个字符串流，用于拼接处理后的单元格值</span>
+    string currentCellValue <span class="token operator">=</span> cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 获取当前单元格的值</span>
+    <span class="token keyword">int</span> cellLength <span class="token operator">=</span> currentCellValue<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 获取单元格值的长度</span>
+
+    <span class="token comment">// 遍历单元格值中的每个字符</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> charIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> charIndex <span class="token operator">&lt;</span> cellLength<span class="token punctuation">;</span> <span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果检测到引用格式（例如&lt;A&gt;）</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentCellValue<span class="token punctuation">[</span>charIndex<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'&lt;'</span> <span class="token operator">&amp;&amp;</span> charIndex <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">&lt;</span> cellLength <span class="token operator">&amp;&amp;</span> currentCellValue<span class="token punctuation">[</span>charIndex <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'&gt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">char</span> referencedCellId <span class="token operator">=</span> currentCellValue<span class="token punctuation">[</span>charIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 获取被引用的单元格标识符</span>
+            <span class="token keyword">int</span> referencedIndex <span class="token operator">=</span> referencedCellId <span class="token operator">-</span> <span class="token char">'A'</span><span class="token punctuation">;</span> <span class="token comment">// 将单元格标识符转换为索引</span>
+
+            <span class="token comment">// 检查引用的有效性</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>referencedCellId <span class="token operator">&lt;</span> <span class="token char">'A'</span> <span class="token operator">||</span> referencedCellId <span class="token operator">&gt;</span> <span class="token char">'Z'</span> <span class="token operator">||</span> referencedIndex <span class="token operator">==</span> cellIndex <span class="token operator">||</span> referencedIndex <span class="token operator">&gt;=</span> cellValues<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">processCell</span><span class="token punctuation">(</span>referencedIndex<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 将引用的单元格值添加到处理后的值中</span>
+            processedValue <span class="token operator">&lt;&lt;</span> cellValues<span class="token punctuation">[</span>referencedIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            charIndex <span class="token operator">+=</span> <span class="token number">3</span><span class="token punctuation">;</span> <span class="token comment">// 跳过引用格式，继续处理下一个字符</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果当前字符不是引用格式，直接添加到处理后的值中</span>
+            processedValue <span class="token operator">&lt;&lt;</span> currentCellValue<span class="token punctuation">[</span>charIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            charIndex<span class="token operator">++</span><span class="token punctuation">;</span> <span class="token comment">// 移动到下一个字符</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 更新当前单元格的值为处理后的值</span>
+    cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> processedValue<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 标记该单元格为不再处理中</span>
+    isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> false<span class="token punctuation">;</span>
+    <span class="token comment">// 标记该单元格为已处理完成</span>
+    hasProcessed<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> true<span class="token punctuation">;</span>
+
+    <span class="token comment">// 检查处理后的单元格值是否超过100个字符或包含非字母数字字符</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">all_of</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">char</span> c<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token function">isalnum</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 检查字符是否为字母或数字</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> false<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> true<span class="token punctuation">;</span> <span class="token comment">// 返回处理成功</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string line<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从标准输入读取一行数据</span>
+    istringstream <span class="token function">input</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 使用字符串流解析读取的数据</span>
+
+    string cell<span class="token punctuation">;</span>
+    <span class="token comment">// 使用逗号分隔符读取单元格值，并添加到cellValues向量中</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> cell<span class="token punctuation">,</span> <span class="token char">','</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cellValues<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>cell<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果单元格数量超过26个，输出-1并结束程序</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">26</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cout <span class="token operator">&lt;&lt;</span> <span class="token string">"-1"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 初始化isProcessing和hasProcessed向量的大小和初始值</span>
+    isProcessing<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    hasProcessed<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> false<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    ostringstream result<span class="token punctuation">;</span> <span class="token comment">// 创建一个字符串流</span>
+        <span class="token comment">// 用于存储最终结果</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> cellIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> cellIndex <span class="token operator">&lt;</span> cellValues<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> cellIndex<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 处理每个单元格，如果处理失败则输出-1并结束程序</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">processCell</span><span class="token punctuation">(</span>cellIndex<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            cout <span class="token operator">&lt;&lt;</span> <span class="token string">"-1"</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 在结果中添加处理后的单元格值，单元格之间用逗号分隔</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cellIndex <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> result <span class="token operator">&lt;&lt;</span> <span class="token string">","</span><span class="token punctuation">;</span>
+        result <span class="token operator">&lt;&lt;</span> cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出处理后的所有单元格值</span>
+    cout <span class="token operator">&lt;&lt;</span> result<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 程序正常结束</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_192"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">StringJoiner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 存储单元格的值</span>
+    <span class="token keyword">static</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> cellValues<span class="token punctuation">;</span>
+    <span class="token comment">// 标记单元格是否正在被处理，用于检测循环引用</span>
+    <span class="token keyword">static</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> isProcessing<span class="token punctuation">;</span>
+    <span class="token comment">// 标记单元格是否已处理完成</span>
+    <span class="token keyword">static</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> hasProcessed<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> inputScanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一行输入，并以逗号分隔，初始化单元格值数组</span>
+        cellValues <span class="token operator">=</span> inputScanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果单元格数量超过26，则直接返回-1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">26</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"-1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 初始化isProcessing和hasProcessed数组</span>
+        isProcessing <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>cellValues<span class="token punctuation">.</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        hasProcessed <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span>cellValues<span class="token punctuation">.</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">StringJoiner</span> resultJoiner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringJoiner</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> cellIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> cellIndex <span class="token operator">&lt;</span> cellValues<span class="token punctuation">.</span>length<span class="token punctuation">;</span> cellIndex<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 对每个单元格进行处理，如果处理失败则返回-1</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">processCell</span><span class="token punctuation">(</span>cellIndex<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"-1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 将处理后的单元格值加入结果中</span>
+            resultJoiner<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 输出最终处理后的单元格值</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>resultJoiner<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 处理单元格，处理引用和检查循环引用</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">boolean</span> <span class="token function">processCell</span><span class="token punctuation">(</span><span class="token keyword">int</span> cellIndex<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果当前单元格已处理，直接返回true</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>hasProcessed<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果当前单元格正在处理中，则存在循环引用，返回false</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>   
+
+        <span class="token comment">// 标记当前单元格为正在处理</span>
+        isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">StringBuilder</span> processedValue <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span> currentCellValue <span class="token operator">=</span> cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> cellLength <span class="token operator">=</span> currentCellValue<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历当前单元格的内容，查找并处理引用</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> charIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> charIndex <span class="token operator">&lt;</span> cellLength<span class="token punctuation">;</span> <span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果找到引用格式的内容</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>currentCellValue<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>charIndex<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token char">'&lt;'</span> <span class="token operator">&amp;&amp;</span> charIndex <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">&lt;</span> cellLength <span class="token operator">&amp;&amp;</span> currentCellValue<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>charIndex <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token char">'&gt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">char</span> referencedCellId <span class="token operator">=</span> currentCellValue<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>charIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">int</span> referencedIndex <span class="token operator">=</span> referencedCellId <span class="token operator">-</span> <span class="token char">'A'</span><span class="token punctuation">;</span>
+
+                <span class="token comment">// 检查引用的有效性，如果无效则返回false</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>referencedCellId <span class="token operator">&lt;</span> <span class="token char">'A'</span> <span class="token operator">||</span> referencedCellId <span class="token operator">&gt;</span> <span class="token char">'Z'</span> <span class="token operator">||</span> referencedIndex <span class="token operator">==</span> cellIndex <span class="token operator">||</span> referencedIndex <span class="token operator">&gt;=</span> cellValues<span class="token punctuation">.</span>length <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">processCell</span><span class="token punctuation">(</span>referencedIndex<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+
+                <span class="token comment">// 替换引用为实际值</span>
+                processedValue<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>referencedIndex<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                charIndex <span class="token operator">+=</span> <span class="token number">3</span><span class="token punctuation">;</span> <span class="token comment">// 跳过引用的字符</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 如果不是引用，则直接添加字符</span>
+                processedValue<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>currentCellValue<span class="token punctuation">.</span><span class="token function">charAt</span><span class="token punctuation">(</span>charIndex<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                charIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 更新单元格的值为处理后的内容</span>
+        cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> processedValue<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新状态，标记当前单元格为已处理</span>
+        isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        hasProcessed<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 检查处理后的单元格内容是否符合要求（长度不超过100，且只包含字母和数字）</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> <span class="token operator">!</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">matches</span><span class="token punctuation">(</span><span class="token string">"^[a-zA-Z0-9]+$"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_287"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 引入readline模块用于处理命令行输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 存储单元格的值</span>
+<span class="token keyword">let</span> cellValues<span class="token punctuation">;</span>
+<span class="token comment">// 标记单元格是否正在被处理，用于检测循环引用</span>
+<span class="token keyword">let</span> isProcessing<span class="token punctuation">;</span>
+<span class="token comment">// 标记单元格是否已处理完成</span>
+<span class="token keyword">let</span> hasProcessed<span class="token punctuation">;</span>
+
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    cellValues <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 如果单元格数量超过26，则直接返回-1并退出程序</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">26</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"-1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    isProcessing <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    hasProcessed <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">let</span> results <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> cellIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> cellIndex <span class="token operator">&lt;</span> cellValues<span class="token punctuation">.</span>length<span class="token punctuation">;</span> cellIndex<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 对每个单元格进行处理，如果处理失败则返回-1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">processCell</span><span class="token punctuation">(</span>cellIndex<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"-1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 将处理后的单元格值加入结果中</span>
+        results<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 输出最终处理后的单元格值</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>results<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+<span class="token comment">// 处理单元格，处理引用和检查循环引用</span>
+<span class="token keyword">function</span> <span class="token function">processCell</span><span class="token punctuation">(</span><span class="token parameter">cellIndex</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 如果当前单元格已处理，直接返回true</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>hasProcessed<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token comment">// 如果当前单元格正在处理中，则存在循环引用，返回false</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 标记当前单元格为正在处理</span>
+    isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">let</span> processedValue <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> currentCellValue <span class="token operator">=</span> cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> charIndex <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> charIndex <span class="token operator">&lt;</span> currentCellValue<span class="token punctuation">.</span>length<span class="token punctuation">;</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 如果找到引用格式的内容</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentCellValue<span class="token punctuation">[</span>charIndex<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token string">'&lt;'</span> <span class="token operator">&amp;&amp;</span> charIndex <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">&lt;</span> currentCellValue<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> currentCellValue<span class="token punctuation">[</span>charIndex <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token string">'&gt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">let</span> referencedCellId <span class="token operator">=</span> currentCellValue<span class="token punctuation">[</span>charIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token keyword">let</span> referencedIndex <span class="token operator">=</span> referencedCellId<span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token string">'A'</span><span class="token punctuation">.</span><span class="token function">charCodeAt</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token comment">// 检查引用的有效性，如果无效则返回false</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>referencedCellId <span class="token operator">&lt;</span> <span class="token string">'A'</span> <span class="token operator">||</span> referencedCellId <span class="token operator">&gt;</span> <span class="token string">'Z'</span> <span class="token operator">||</span> referencedIndex <span class="token operator">===</span> cellIndex <span class="token operator">||</span> referencedIndex <span class="token operator">&gt;=</span> cellValues<span class="token punctuation">.</span>length <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">processCell</span><span class="token punctuation">(</span>referencedIndex<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 替换引用为实际值</span>
+            processedValue <span class="token operator">+=</span> cellValues<span class="token punctuation">[</span>referencedIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            charIndex <span class="token operator">+=</span> <span class="token number">3</span><span class="token punctuation">;</span> <span class="token comment">// 跳过引用的字符</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 如果不是引用，则直接添加字符</span>
+            processedValue <span class="token operator">+=</span> currentCellValue<span class="token punctuation">[</span>charIndex<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            charIndex<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 更新单元格的值为处理后的内容</span>
+    cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> processedValue<span class="token punctuation">;</span>
+    <span class="token comment">// 更新状态，标记当前单元格为已处理</span>
+    isProcessing<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    hasProcessed<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 检查处理后的单元格内容是否符合要求（长度不超过100，且只包含字母和数字）</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> <span class="token operator">!</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">^[a-zA-Z0-9]+$</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">.</span><span class="token function">test</span><span class="token punctuation">(</span>cellValues<span class="token punctuation">[</span>cellIndex<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+ 
+</code></pre> 
+<h2><a id="Python_388"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 导入正则表达式库，用于后续的字符串匹配</span>
+<span class="token keyword">import</span> re
+
+<span class="token comment"># 初始化单元格值、是否正在处理、是否已处理的列表</span>
+cell_values <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+is_processing <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+has_processed <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+<span class="token keyword">def</span> <span class="token function">process_cell</span><span class="token punctuation">(</span>cell_index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    处理单个单元格，解析引用，并检查是否存在循环引用。
+    :param cell_index: 当前单元格的索引
+    :return: 如果处理成功返回True，如果存在循环引用或处理失败返回False
+    """</span>
+    <span class="token comment"># 如果当前单元格已处理，直接返回True</span>
+    <span class="token keyword">if</span> has_processed<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token comment"># 如果当前单元格正在处理中，表示存在循环引用，返回False</span>
+    <span class="token keyword">if</span> is_processing<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+    
+    <span class="token comment"># 标记当前单元格为正在处理</span>
+    is_processing<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+    processed_value <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 初始化处理后的单元格值列表</span>
+    current_cell_value <span class="token operator">=</span> cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span>  <span class="token comment"># 获取当前单元格的值</span>
+    
+    char_index <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token comment"># 遍历当前单元格的值</span>
+    <span class="token keyword">while</span> char_index <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>current_cell_value<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 检查是否匹配引用格式</span>
+        <span class="token keyword">if</span> current_cell_value<span class="token punctuation">[</span>char_index<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'&lt;'</span> <span class="token keyword">and</span> char_index <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">&lt;</span> <span class="token builtin">len</span><span class="token punctuation">(</span>current_cell_value<span class="token punctuation">)</span> <span class="token keyword">and</span> current_cell_value<span class="token punctuation">[</span>char_index <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'&gt;'</span><span class="token punctuation">:</span>
+            referenced_cell_id <span class="token operator">=</span> current_cell_value<span class="token punctuation">[</span>char_index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span>
+            referenced_index <span class="token operator">=</span> <span class="token builtin">ord</span><span class="token punctuation">(</span>referenced_cell_id<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token builtin">ord</span><span class="token punctuation">(</span><span class="token string">'A'</span><span class="token punctuation">)</span>
+            
+            <span class="token comment"># 检查引用的有效性</span>
+            <span class="token keyword">if</span> referenced_cell_id <span class="token operator">&lt;</span> <span class="token string">'A'</span> <span class="token keyword">or</span> referenced_cell_id <span class="token operator">&gt;</span> <span class="token string">'Z'</span> <span class="token keyword">or</span> referenced_index <span class="token operator">==</span> cell_index <span class="token keyword">or</span> referenced_index <span class="token operator">&gt;=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token keyword">not</span> process_cell<span class="token punctuation">(</span>referenced_index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">return</span> <span class="token boolean">False</span>
+            
+            <span class="token comment"># 将引用的单元格值加入到处理后的值中</span>
+            processed_value<span class="token punctuation">.</span>append<span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>referenced_index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            char_index <span class="token operator">+=</span> <span class="token number">3</span>  <span class="token comment"># 跳过引用格式</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 如果不是引用格式，直接添加字符</span>
+            processed_value<span class="token punctuation">.</span>append<span class="token punctuation">(</span>current_cell_value<span class="token punctuation">[</span>char_index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+            char_index <span class="token operator">+=</span> <span class="token number">1</span>
+    
+    <span class="token comment"># 更新当前单元格的值为处理后的值</span>
+    cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>processed_value<span class="token punctuation">)</span>
+    <span class="token comment"># 更新处理状态</span>
+    is_processing<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">False</span>
+    has_processed<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">True</span>
+    
+    <span class="token comment"># 检查处理后的值是否超过100个字符或包含非字母数字字符</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token keyword">or</span> <span class="token keyword">not</span> re<span class="token punctuation">.</span><span class="token keyword">match</span><span class="token punctuation">(</span><span class="token string">"^[a-zA-Z0-9]+$"</span><span class="token punctuation">,</span> cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span>
+    
+    <span class="token keyword">return</span> <span class="token boolean">True</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    <span class="token comment"># 读取输入，分割为单元格的初始值</span>
+    cell_values <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">)</span>
+    
+    <span class="token comment"># 如果单元格数量超过26个，直接输出-1</span>
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">26</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"-1"</span><span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token comment"># 初始化处理状态列表</span>
+        is_processing <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">)</span>
+        has_processed <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token boolean">False</span><span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">)</span>
+        
+        result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 初始化最终结果列表</span>
+        <span class="token keyword">for</span> cell_index <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># 对每个单元格进行处理</span>
+            <span class="token keyword">if</span> <span class="token keyword">not</span> process_cell<span class="token punctuation">(</span>cell_index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"-1"</span><span class="token punctuation">)</span>
+                <span class="token keyword">break</span>
+            result<span class="token punctuation">.</span>append<span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            <span class="token comment"># 所有单元格处理成功，输出处理后的单元格值，用逗号连接</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_472"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;ctype.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_CELLS</span> <span class="token expression"><span class="token number">26</span> </span><span class="token comment">// 定义最大单元格数量，因为一个英文字母代表一个单元格</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LENGTH</span> <span class="token expression"><span class="token number">101</span> </span><span class="token comment">// 定义单元格内容的最大长度</span></span>
+
+<span class="token comment">// 检查字符串是否只包含字母和数字</span>
+<span class="token keyword">int</span> <span class="token function">is_alnum_string</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>str<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">*</span>str<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isalnum</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span><span class="token punctuation">)</span><span class="token operator">*</span>str<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果发现非字母数字字符，返回0</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 全部字符检查通过，返回1</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">char</span> cell_values<span class="token punctuation">[</span>MAX_CELLS<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_LENGTH<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储所有单元格的值</span>
+<span class="token keyword">int</span> is_processing<span class="token punctuation">[</span>MAX_CELLS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 标记单元格是否正在处理中，防止循环引用</span>
+<span class="token keyword">int</span> has_processed<span class="token punctuation">[</span>MAX_CELLS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 标记单元格是否已经处理完成</span>
+
+<span class="token comment">// 处理单元格函数，cell_index是当前处理的单元格索引，cell_count是单元格总数</span>
+<span class="token keyword">int</span> <span class="token function">process_cell</span><span class="token punctuation">(</span><span class="token keyword">int</span> cell_index<span class="token punctuation">,</span> <span class="token keyword">int</span> cell_count<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>has_processed<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 如果已处理过，直接返回成功</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>is_processing<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 如果正在处理中，则表示有循环引用，返回失败</span>
+
+    is_processing<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记为正在处理</span>
+    <span class="token keyword">char</span> processed_value<span class="token punctuation">[</span>MAX_LENGTH <span class="token operator">*</span> MAX_CELLS<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span> <span class="token comment">// 存储处理后的单元格内容</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>current_cell_value <span class="token operator">=</span> cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 当前单元格的原始内容</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> char_index <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> char_index <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>current_cell_value<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>current_cell_value<span class="token punctuation">[</span>char_index<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'&lt;'</span> <span class="token operator">&amp;&amp;</span> char_index <span class="token operator">+</span> <span class="token number">2</span> <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>current_cell_value<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> current_cell_value<span class="token punctuation">[</span>char_index <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'&gt;'</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 检测到单元格引用格式</span>
+            <span class="token keyword">char</span> referenced_cell_id <span class="token operator">=</span> current_cell_value<span class="token punctuation">[</span>char_index <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 获取被引用的单元格标识</span>
+            <span class="token keyword">int</span> referenced_index <span class="token operator">=</span> referenced_cell_id <span class="token operator">-</span> <span class="token char">'A'</span><span class="token punctuation">;</span> <span class="token comment">// 计算被引用单元格的索引</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>referenced_cell_id <span class="token operator">&lt;</span> <span class="token char">'A'</span> <span class="token operator">||</span> referenced_cell_id <span class="token operator">&gt;</span> <span class="token char">'Z'</span> <span class="token operator">||</span> referenced_index <span class="token operator">==</span> cell_index <span class="token operator">||</span> referenced_index <span class="token operator">&gt;=</span> cell_count <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">process_cell</span><span class="token punctuation">(</span>referenced_index<span class="token punctuation">,</span> cell_count<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 检查引用有效性，如果无效或处理失败，则返回失败</span>
+                <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token function">strcat</span><span class="token punctuation">(</span>processed_value<span class="token punctuation">,</span> cell_values<span class="token punctuation">[</span>referenced_index<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将引用的单元格值添加到处理结果中</span>
+            char_index <span class="token operator">+=</span> <span class="token number">3</span><span class="token punctuation">;</span> <span class="token comment">// 跳过引用格式的三个字符</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 非引用内容，直接添加到处理结果中</span>
+            <span class="token keyword">char</span> temp<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span>current_cell_value<span class="token punctuation">[</span>char_index<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token char">'\0'</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+            <span class="token function">strcat</span><span class="token punctuation">(</span>processed_value<span class="token punctuation">,</span> temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            char_index<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">,</span> processed_value<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 更新单元格内容为处理后的值</span>
+    is_processing<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 取消正在处理的标记</span>
+    has_processed<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记为已处理</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strlen</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token number">100</span> <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">is_alnum_string</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>cell_index<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 检查处理后的单元格内容是否符合长度和字符类型的要求，不符合则返回失败</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 处理成功</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+     
+
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span>MAX_LENGTH <span class="token operator">*</span> MAX_CELLS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储输入的字符串</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+     
+
+    input<span class="token punctuation">[</span><span class="token function">strcspn</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 去除输入字符串的换行符</span>
+    <span class="token keyword">int</span> cell_count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 单元格数量计数器</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 使用逗号分隔输入的单元格值</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>cell_count <span class="token operator">&gt;=</span> MAX_CELLS<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果单元格数量超过最大值</span>
+                        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 直接退出程序</span>
+        <span class="token punctuation">}</span>
+        <span class="token function">strcpy</span><span class="token punctuation">(</span>cell_values<span class="token punctuation">[</span>cell_count<span class="token operator">++</span><span class="token punctuation">]</span><span class="token punctuation">,</span> token<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 将分割得到的单元格内容复制到数组中，并增加单元格计数</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 继续分割下一个单元格内容</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> cell_count<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">process_cell</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> cell_count<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 逐个处理单元格</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-1\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 如果处理中出现错误，打印-1并退出</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> cell_count<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 所有单元格处理完成后，按顺序打印出来</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">","</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 除了第一个单元格外，每个单元格前打印逗号分隔</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> cell_values<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印单元格内容</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印完成后换行</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 程序正常结束</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_573"></a>完整用例</h2> 
+<h3><a id="1_574"></a>用例1</h3> 
+<pre><code class="prism language-input1">0&lt;G&gt;,1,2&lt;A&gt;,3,4&lt;C&gt;,5,6&lt;B&gt;
+</code></pre> 
+<h3><a id="2_580"></a>用例2</h3> 
+<pre><code class="prism language-input2">0&lt;B&gt;,1&lt;C&gt;,2&lt;D&gt;,3&lt;E&gt;,4&lt;F&gt;,5,6&lt;A&gt;&lt;B&gt;&lt;C&gt;&lt;D&gt;&lt;E&gt;
+</code></pre> 
+<h3><a id="3_586"></a>用例3</h3> 
+<pre><code class="prism language-input3">0&lt;G&gt;,1&lt;C&gt;&lt;D&gt;,2&lt;E&gt;,3&lt;F&gt;,4,5,6&lt;B&gt;
+</code></pre> 
+<h3><a id="4_592"></a>用例4</h3> 
+<pre><code class="prism language-input4">01&lt;D&gt;23&lt;B&gt;45&lt;C&gt;6,B,C,D
+</code></pre> 
+<h3><a id="5_598"></a>用例5</h3> 
+<pre><code class="prism language-input5">0,1&lt;B&gt;,2&lt;C&gt;,3&lt;D&gt;,4,5
+</code></pre> 
+<h3><a id="6_604"></a>用例6</h3> 
+<pre><code class="prism language-input6">0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30
+</code></pre> 
+<h3><a id="7_610"></a>用例7</h3> 
+<pre><code class="prism language-input7">0,1,2$,3,4,5
+</code></pre> 
+<h3><a id="8_616"></a>用例8</h3> 
+<pre><code class="prism language-input8">&lt;B&gt;,&lt;C&gt;,&lt;D&gt;,&lt;E&gt;,&lt;F&gt;,&lt;G&gt;,&lt;H&gt;,&lt;I&gt;,&lt;J&gt;,&lt;K&gt;,&lt;L&gt;,&lt;M&gt;,&lt;N&gt;,&lt;O&gt;,&lt;P&gt;,&lt;Q&gt;,&lt;R&gt;,&lt;S&gt;,&lt;T&gt;,&lt;U&gt;,&lt;V&gt;,&lt;W&gt;,&lt;X&gt;,&lt;Y&gt;,Z0123456789Z0123456789Z0123456789Z0123456789Z0123456789Z0123456789Z0123456789Z0123456789Z0123456789Z0123456789
+</code></pre> 
+<h3><a id="9_622"></a>用例9</h3> 
+<pre><code class="prism language-input9">0,1,2&lt;AB&gt;,3,4,5
+</code></pre> 
+<h3><a id="10_628"></a>用例10</h3> 
+<pre><code class="prism language-input10">0,1,2&lt;Z&gt;,3,4,5
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_6" rel="nofollow">题目描述</a></li><li><a href="#_11" rel="nofollow">输入描述</a></li><li><a href="#_25" rel="nofollow">输出描述</a></li><li><a href="#1_29" rel="nofollow">示例1</a></li><li><a href="#2_45" rel="nofollow">示例2</a></li><li><a href="#3_61" rel="nofollow">示例3</a></li><li><a href="#C_81" rel="nofollow">C++</a></li><li><a href="#Java_192" rel="nofollow">Java</a></li><li><a href="#javaScript_287" rel="nofollow">javaScript</a></li><li><a href="#Python_388" rel="nofollow">Python</a></li><li><a href="#C_472" rel="nofollow">C语言</a></li><li><a href="#_573" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_574" rel="nofollow">用例1</a></li><li><a href="#2_580" rel="nofollow">用例2</a></li><li><a href="#3_586" rel="nofollow">用例3</a></li><li><a href="#4_592" rel="nofollow">用例4</a></li><li><a href="#5_598" rel="nofollow">用例5</a></li><li><a href="#6_604" rel="nofollow">用例6</a></li><li><a href="#7_610" rel="nofollow">用例7</a></li><li><a href="#8_616" rel="nofollow">用例8</a></li><li><a href="#9_622" rel="nofollow">用例9</a></li><li><a href="#10_628" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/8ed1d0675e43a760481d6f2555aab8dc.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

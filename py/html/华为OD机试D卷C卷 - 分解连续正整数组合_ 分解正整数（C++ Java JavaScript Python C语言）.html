@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_1"></a>题目描述</h2> 
+<p>给定一个正整数 n，如果能够分解为 m（m &gt; 1）个连续正整数之和，请输出所有分解中，m最小的分解。</p> 
+<p>如果给定整数无法分解为连续正整数，则输出字符串"N"。</p> 
+<h2><a id="_9"></a>输入描述</h2> 
+<p>输入数据为一整数，范围为 (1, 2^30]</p> 
+<h2><a id="_13"></a>输出描述</h2> 
+<p>比如输入为：</p> 
+<blockquote> 
+ <p>21</p> 
+</blockquote> 
+<p>输出：</p> 
+<blockquote> 
+ <p>21=10+11</p> 
+</blockquote> 
+<h2><a id="_23"></a>用例</h2> 
+<table><thead><tr><th>输入</th><th>21</th></tr></thead><tbody><tr><td>输出</td><td>21=10+11</td></tr><tr><td>说明</td><td>21可以分解的连续正整数组合的形式有多种：<br>21=1+2+3+4+5+6<br>21=6+7+8<br>21=10+11<br>其中 21=10+11，是最短的分解序列。</td></tr></tbody></table> 
+<h2><a id="_32"></a>解题思路</h2> 
+<p>解题思路：</p> 
+<ol><li>问题转化为寻找一个起始整数x和连续整数的个数m，使得x到x+m-1的和等于n。</li><li>连续整数求和可以用等差数列求和公式表示：m<em>x + m</em>(m-1)/2 = n。</li><li>通过调整m的值，尝试找到一个合适的x，使得上述等式成立。x必须是整数，即(n - m*(m-1)/2) % m == 0。</li><li>由于题目要求m最小，因此从m=2开始逐渐增加m的值，直到m*(m+1)/2 &gt; n为止。</li><li>如果找到了符合条件的x和m，就构建输出字符串并返回；如果没有找到，则返回"N"。</li></ol> 
+<p>数学知识：</p> 
+<ul><li>等差数列求和公式：S = n*(a1+an)/2，其中n是项数，a1是首项，an是末项。</li><li>在本题中，连续整数构成等差数列，首项是x，末项是x+m-1，项数是m，因此公式变为S = m*(2*x+m-1)/2。</li><li>通过等式变形，可以求得x的值，进而判断是否存在符合条件的连续整数序列。</li></ul> 
+<h2><a id="C_48"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span>  </span>
+
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token comment">// 寻找连续整数和的分解</span>
+string <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span><span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从2开始尝试每个可能的m值，m代表连续整数的个数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> m <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span> <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 判断是否存在一个起始整数x，使得从x开始的m个连续整数之和等于n</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">%</span> m <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算起始整数x</span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> <span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">/</span> m<span class="token punctuation">;</span>
+            <span class="token comment">// 构建输出字符串</span>
+            string result <span class="token operator">=</span> <span class="token function">to_string</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">"="</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">+=</span> <span class="token function">to_string</span><span class="token punctuation">(</span>x <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 在每个整数后面添加加号，除了最后一个整数</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    result <span class="token operator">+=</span> <span class="token string">"+"</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 返回构建好的字符串</span>
+            <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果没有找到符合条件的连续整数序列，返回"N"</span>
+    <span class="token keyword">return</span> <span class="token string">"N"</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取一个整数n</span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> n<span class="token punctuation">;</span>
+    
+    <span class="token comment">// 调用函数并输出结果</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+    
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_93"></a>Java</h2> 
+<pre><code class="prism language-java"> 
+
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 创建一个扫描器来读取控制台输入</span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 读取一个整数n</span>
+        <span class="token keyword">int</span> n <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 关闭扫描器</span>
+        scanner<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">// 调用findMinConsecutiveNumbersSum方法来寻找连续整数和的分解</span>
+        <span class="token class-name">String</span> result <span class="token operator">=</span> <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 输出结果</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span><span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 从2开始尝试每个可能的m值，m代表连续整数的个数</span>
+        <span class="token comment">// 当m*(m+1)/2（连续整数求和公式）大于n时，停止循环</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> m <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span> <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> m<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 判断是否存在一个起始整数x，使得从x开始的m个连续整数之和等于n</span>
+            <span class="token comment">// 即找到一个x使得x+(x+1)+...+(x+m-1)=n</span>
+            <span class="token comment">// 连续整数求和公式可以转换为等差数列求和公式：m*x + m*(m-1)/2 = n</span>
+            <span class="token comment">// 解这个方程，得到x = (n - m*(m-1)/2) / m</span>
+            <span class="token comment">// 如果x是整数，说明找到了一个符合条件的连续整数序列</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">%</span> m <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 计算起始整数x</span>
+                <span class="token keyword">int</span> x <span class="token operator">=</span> <span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">/</span> m<span class="token punctuation">;</span>
+                <span class="token comment">// 使用StringBuilder来构建输出字符串</span>
+                <span class="token class-name">StringBuilder</span> sb <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringBuilder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 首先添加n=</span>
+                sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 然后添加连续整数序列</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>x <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 在每个整数后面添加加号，除了最后一个整数</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        sb<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span><span class="token string">"+"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+                <span class="token comment">// 返回构建好的字符串</span>
+                <span class="token keyword">return</span> sb<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 如果没有找到符合条件的连续整数序列，返回"N"</span>
+        <span class="token keyword">return</span> <span class="token string">"N"</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_150"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建readline接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">answer</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> n <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>answer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 寻找连续整数和的分解</span>
+<span class="token keyword">function</span> <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span><span class="token parameter">n</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从2开始尝试每个可能的m值，m代表连续整数的个数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> m <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span> <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> m<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 判断是否存在一个起始整数x，使得从x开始的m个连续整数之和等于n</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">%</span> m <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算起始整数x</span>
+            <span class="token keyword">let</span> x <span class="token operator">=</span> <span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">/</span> m<span class="token punctuation">;</span>
+            <span class="token comment">// 构建输出字符串</span>
+            <span class="token keyword">let</span> result <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${<!-- --></span>n<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">=</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                result <span class="token operator">+=</span> <span class="token punctuation">(</span>x <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 在每个整数后面添加加号，除了最后一个整数</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    result <span class="token operator">+=</span> <span class="token string">'+'</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token comment">// 返回构建好的字符串</span>
+            <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果没有找到符合条件的连续整数序列，返回"N"</span>
+    <span class="token keyword">return</span> <span class="token string">'N'</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_197"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token comment"># 寻找连续整数和的分解</span>
+<span class="token keyword">def</span> <span class="token function">find_min_consecutive_numbers_sum</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 从2开始尝试每个可能的m值，m代表连续整数的个数</span>
+    <span class="token keyword">for</span> m <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 当m*(m+1)/2（连续整数求和公式）大于n时，停止循环</span>
+        <span class="token keyword">if</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span> <span class="token operator">&gt;</span> n<span class="token punctuation">:</span>
+            <span class="token keyword">break</span>
+        <span class="token comment"># 判断是否存在一个起始整数x，使得从x开始的m个连续整数之和等于n</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">%</span> m <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token comment"># 计算起始整数x</span>
+            x <span class="token operator">=</span> <span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">//</span> m
+            <span class="token comment"># 构建输出字符串</span>
+            result <span class="token operator">=</span> <span class="token string-interpolation"><span class="token string">f"</span><span class="token interpolation"><span class="token punctuation">{<!-- --></span>n<span class="token punctuation">}</span></span><span class="token string">="</span></span>
+            result <span class="token operator">+=</span> <span class="token string">'+'</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>x <span class="token operator">+</span> i<span class="token punctuation">)</span> <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>m<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token comment"># 返回构建好的字符串</span>
+            <span class="token keyword">return</span> result
+    <span class="token comment"># 如果没有找到符合条件的连续整数序列，返回"N"</span>
+    <span class="token keyword">return</span> <span class="token string">"N"</span>
+
+<span class="token comment"># 读取一个整数n</span>
+n <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 调用函数并输出结果</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>find_min_consecutive_numbers_sum<span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_224"></a>C语言</h2> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+
+<span class="token comment">// 寻找连续整数和的分解</span>
+<span class="token keyword">void</span> <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span><span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 从2开始尝试每个可能的m值，m代表连续整数的个数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> m <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span> <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>m<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 判断是否存在一个起始整数x，使得从x开始的m个连续整数之和等于n</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">%</span> m <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 计算起始整数x</span>
+            <span class="token keyword">int</span> x <span class="token operator">=</span> <span class="token punctuation">(</span>n <span class="token operator">-</span> m <span class="token operator">*</span> <span class="token punctuation">(</span>m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">/</span> m<span class="token punctuation">;</span>
+            <span class="token comment">// 输出结果</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d="</span><span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> x <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 在每个整数后面添加加号，除了最后一个整数</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> m <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"+"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 找到一个解后返回</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment">// 如果没有找到符合条件的连续整数序列，输出"N"</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"N"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 读取一个整数n</span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 调用函数并输出结果</span>
+    <span class="token function">findMinConsecutiveNumbersSum</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_266"></a>完整用例</h2> 
+<h3><a id="1_268"></a>用例1</h3> 
+<pre><code class="prism language-input1">15
+</code></pre> 
+<h3><a id="2_274"></a>用例2</h3> 
+<pre><code class="prism language-input2">9
+</code></pre> 
+<h3><a id="3_280"></a>用例3</h3> 
+<pre><code class="prism language-input3">1024
+</code></pre> 
+<h3><a id="4_286"></a>用例4</h3> 
+<pre><code class="prism language-input4">100
+</code></pre> 
+<h3><a id="5_292"></a>用例5</h3> 
+<pre><code class="prism language-input5">99
+</code></pre> 
+<h3><a id="6_298"></a>用例6</h3> 
+<pre><code class="prism language-input6">35
+</code></pre> 
+<h3><a id="7_304"></a>用例7</h3> 
+<pre><code class="prism language-input7">28
+</code></pre> 
+<h3><a id="8_310"></a>用例8</h3> 
+<pre><code class="prism language-input8">27
+</code></pre> 
+<h3><a id="9_316"></a>用例9</h3> 
+<pre><code class="prism language-input9">199
+</code></pre> 
+<h3><a id="10_322"></a>用例10</h3> 
+<pre><code class="prism language-input10">1
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_9" rel="nofollow">输入描述</a></li><li><a href="#_13" rel="nofollow">输出描述</a></li><li><a href="#_23" rel="nofollow">用例</a></li><li><a href="#_32" rel="nofollow">解题思路</a></li><li><a href="#C_48" rel="nofollow">C++</a></li><li><a href="#Java_93" rel="nofollow">Java</a></li><li><a href="#javaScript_150" rel="nofollow">javaScript</a></li><li><a href="#Python_197" rel="nofollow">Python</a></li><li><a href="#C_224" rel="nofollow">C语言</a></li><li><a href="#_266" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_268" rel="nofollow">用例1</a></li><li><a href="#2_274" rel="nofollow">用例2</a></li><li><a href="#3_280" rel="nofollow">用例3</a></li><li><a href="#4_286" rel="nofollow">用例4</a></li><li><a href="#5_292" rel="nofollow">用例5</a></li><li><a href="#6_298" rel="nofollow">用例6</a></li><li><a href="#7_304" rel="nofollow">用例7</a></li><li><a href="#8_310" rel="nofollow">用例8</a></li><li><a href="#9_316" rel="nofollow">用例9</a></li><li><a href="#10_322" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/9ed1a61203fa8090ad61d95d5feb1e33.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_2"></a>题目描述</h2> 
+<p>一个应用启动时，会有多个初始化任务需要执行，并且任务之间有依赖关系，例如A任务依赖B任务，那么必须在B任务执行完成之后，才能开始执行A任务。</p> 
+<p>现在给出多条任务依赖关系的规则，请输入任务的顺序执行序列，规则采用贪婪策略，即一个任务如果没有依赖的任务，则立刻开始执行，如果同时有多个任务要执行，则根据任务名称字母顺序排序。</p> 
+<p>例如：B任务依赖A任务，C任务依赖A任务，D任务依赖B任务和C任务，同时，D任务还依赖E任务。那么执行任务的顺序由先到后是：</p> 
+<pre><code>A任务，E任务，B任务，C任务，D任务
+</code></pre> 
+<p>这里A和E任务都是没有依赖的，立即执行。</p> 
+<h2><a id="_18"></a>输入描述</h2> 
+<p>输入参数每个元素都表示任意两个任务之间的依赖关系，输入参数中符号"-&gt;"表示依赖方向，例如：</p> 
+<blockquote> 
+ <p>A-&gt;B：表示A依赖B</p> 
+</blockquote> 
+<p>多个依赖之间用单个空格分隔</p> 
+<h2><a id="_30"></a>输出描述</h2> 
+<p>输出排序后的启动任务列表，多个任务之间用单个空格分隔</p> 
+<h2><a id="_34"></a>用例</h2> 
+<p>输入</p> 
+<pre><code class="prism language-c">A<span class="token operator">-&gt;</span>B C<span class="token operator">-&gt;</span>B
+</code></pre> 
+<p>输出</p> 
+<pre><code>B A C
+</code></pre> 
+<h2><a id="_50"></a>解题思路</h2> 
+<ol><li>构建图的邻接表和计算每个任务的入度。邻接表<code>graph</code>用于表示任务间的依赖关系，而入度表<code>inDegree</code>用于记录每个任务依赖的任务数量。</li><li>遍历输入的依赖关系，更新邻接表和入度表。对于每个依赖<code>A-&gt;B</code>，将<code>B</code>添加到<code>A</code>的邻接列表中，并将<code>B</code>的入度加1。同时，确保每个任务至少在入度表中出现一次，如果任务没有依赖，则其入度为0。</li><li>使用一个队列（或列表）来收集入度为0的任务，即可以立即执行的任务。</li><li>按照字母顺序执行入度为0的任务，并在执行过程中更新其它任务的入度。对于每个执行的任务，检查它的所有后继任务，将每个后继任务的入度减1。如果后继任务的入度减为0，则将其加入到下一轮执行的队列中。</li><li>重复步骤4，直到没有任务可以执行。</li></ol> 
+<p>用例<code>A-&gt;B C-&gt;B</code>模拟计算过程：</p> 
+<ul><li>输入：<code>A-&gt;B C-&gt;B</code></li><li>分割输入，得到依赖关系：<code>A</code>依赖于<code>B</code>，<code>C</code>依赖于<code>B</code>。</li><li>构建邻接表和入度表： 
+  <ul><li>邻接表：<code>B -&gt; [A, C]</code>（<code>B</code>完成后，可以执行<code>A</code>和<code>C</code>）</li><li>入度表：<code>A: 1, C: 1, B: 0</code>（<code>A</code>和<code>C</code>各有1个依赖，<code>B</code>没有依赖）</li></ul> </li><li>由于<code>B</code>的入度为0，它可以立即执行。执行<code>B</code>，更新队列。</li><li>执行<code>B</code>后，更新<code>A</code>和<code>C</code>的入度，它们的入度都变为0，可以执行。将<code>A</code>和<code>C</code>加入执行队列。</li><li>根据字母顺序，先执行<code>A</code>，然后执行<code>C</code>。</li><li>最终输出的执行顺序为：<code>B A C</code>。</li></ul> 
+<h2><a id="C_72"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;map&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;algorithm&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 使用map和queue实现拓扑排序</span>
+
+string <span class="token function">findOrder</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span><span class="token operator">&amp;</span> dependencies<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;&gt;</span> graph<span class="token punctuation">;</span> <span class="token comment">// 任务图，映射每个任务到它依赖的任务列表</span>
+    map<span class="token operator">&lt;</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> inDegree<span class="token punctuation">;</span> <span class="token comment">// 存储每个任务的入度（依赖它的任务数量）</span>
+    
+    <span class="token comment">// 构建图和计算入度</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> dep <span class="token operator">:</span> dependencies<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">auto</span> pos <span class="token operator">=</span> dep<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">"-&gt;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        string from <span class="token operator">=</span> dep<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>pos <span class="token operator">+</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> to <span class="token operator">=</span> dep<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        graph<span class="token punctuation">[</span>from<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>to<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 添加边</span>
+        inDegree<span class="token punctuation">[</span>to<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>from<span class="token punctuation">)</span> <span class="token operator">==</span> inDegree<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> inDegree<span class="token punctuation">[</span>from<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 确保每个任务都在入度表中</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 使用queue替代ArrayList存储可以立即执行的任务（入度为0）</span>
+    queue<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> queue<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> pair <span class="token operator">:</span> inDegree<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pair<span class="token punctuation">.</span>second <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> queue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>pair<span class="token punctuation">.</span>first<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> order<span class="token punctuation">;</span> <span class="token comment">// 存储任务执行顺序</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>queue<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        string current <span class="token operator">=</span> queue<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        queue<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        order<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历当前任务的所有后继任务，并更新它们的入度</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> next <span class="token operator">:</span> graph<span class="token punctuation">[</span>current<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">--</span>inDegree<span class="token punctuation">[</span>next<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                queue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>next<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+ 
+
+    <span class="token comment">// 使用ostringstream组装返回的字符串</span>
+    ostringstream joinedOrder<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">auto</span><span class="token operator">&amp;</span> task <span class="token operator">:</span> order<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>task <span class="token operator">!=</span> <span class="token operator">&amp;</span>order<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> joinedOrder <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+        joinedOrder <span class="token operator">&lt;&lt;</span> task<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> joinedOrder<span class="token punctuation">.</span><span class="token function">str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    string input<span class="token punctuation">;</span>
+    <span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取一行输入</span>
+    istringstream <span class="token function">iss</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> dependencies<span class="token punctuation">;</span>
+    string dep<span class="token punctuation">;</span>
+
+    <span class="token comment">// 根据空格分割字符串</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>iss<span class="token punctuation">,</span> dep<span class="token punctuation">,</span> <span class="token char">' '</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        dependencies<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>dep<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 打印任务执行的顺序</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">findOrder</span><span class="token punctuation">(</span>dependencies<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_150"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 读取一行输入并按空格分割，每个部分代表一个依赖关系</span>
+        <span class="token class-name">String</span> input <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dependencies <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"\\s+"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 根据空格分割输入字符串</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">findOrder</span><span class="token punctuation">(</span>dependencies<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印任务执行的顺序</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token function">findOrder</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> dependencies<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 用于存储图的邻接表表示，键是任务，值是依赖于键的任务列表</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> graph <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 存储每个任务的入度（依赖于它的其他任务的数量）</span>
+        <span class="token class-name">Map</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">&gt;</span></span> inDegree <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">HashMap</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> dep <span class="token operator">:</span> dependencies<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 分割每个依赖关系为两部分，parts[1] -&gt; parts[0]</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> parts <span class="token operator">=</span> dep<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">"-&gt;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">String</span> from <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">to</span> <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 注意：这里与通常的表示相反，表示to依赖于from</span>
+            <span class="token comment">// 如果from不存在于图中，则添加from并初始化其任务列表</span>
+            graph<span class="token punctuation">.</span><span class="token function">putIfAbsent</span><span class="token punctuation">(</span>from<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 在from的任务列表中添加to，表示from完成后，可以进行to</span>
+            graph<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>from<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">to</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 增加to的入度</span>
+            inDegree<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span><span class="token keyword">to</span><span class="token punctuation">,</span> inDegree<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span><span class="token keyword">to</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 确保每个任务都在入度表中，如果没有其他任务依赖于它，则入度为0</span>
+            inDegree<span class="token punctuation">.</span><span class="token function">putIfAbsent</span><span class="token punctuation">(</span>from<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 使用ArrayList代替优先队列，以便在每次循环中排序</span>
+        <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> queue <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> task <span class="token operator">:</span> inDegree<span class="token punctuation">.</span><span class="token function">keySet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 收集入度为0的任务，即可以立即执行的任务</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                queue<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 使用StringJoiner构建最终的任务执行顺序字符串</span>
+        <span class="token class-name">StringJoiner</span> order <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">StringJoiner</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>queue<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 准备新队列，用于存储下一轮入度变为0的任务</span>
+            <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">String</span><span class="token punctuation">&gt;</span></span> newQueue <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> current <span class="token operator">:</span> queue<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                <span class="token comment">// 添加当前任务到执行顺序中</span>
+                order<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">// 遍历当前任务的所有后继任务</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token class-name">String</span> next <span class="token operator">:</span> graph<span class="token punctuation">.</span><span class="token function">getOrDefault</span><span class="token punctuation">(</span>current<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                    <span class="token comment">// 减少后继任务的入度</span>
+                    inDegree<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>next<span class="token punctuation">,</span> inDegree<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>next<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token comment">// 如果后继任务的入度为0，则添加到新队列中</span>
+                    <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>next<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                        newQueue<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>next<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+
+            <span class="token comment">// 更新队列为新队列，并对其排序以保证字母顺序</span>
+            queue <span class="token operator">=</span> newQueue<span class="token punctuation">;</span>
+            <span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 返回构建的任务执行顺序字符串</span>
+        <span class="token keyword">return</span> order<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_224"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 创建 readline 接口实例</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ 
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">"line"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">input</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 根据空格分割输入字符串，得到依赖关系数组</span>
+  <span class="token keyword">const</span> dependencies <span class="token operator">=</span> input<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token regex"><span class="token regex-delimiter">/</span><span class="token regex-source language-regex">\s+</span><span class="token regex-delimiter">/</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">findOrder</span><span class="token punctuation">(</span>dependencies<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 打印任务执行的顺序</span>
+  rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 关闭 readline 接口</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">findOrder</span><span class="token punctuation">(</span><span class="token parameter">dependencies</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+  <span class="token comment">// 用于存储图的邻接表表示，键是任务，值是依赖于该任务的任务列表</span>
+  <span class="token keyword">const</span> graph <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+  <span class="token comment">// 存储每个任务的入度（依赖于它的其他任务的数量）</span>
+  <span class="token keyword">const</span> inDegree <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+  dependencies<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">dep</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 分割每个依赖关系为两部分，parts[1] -&gt; parts[0]</span>
+    <span class="token keyword">const</span> parts <span class="token operator">=</span> dep<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'-&gt;'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> from <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> to <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 注意：这里与通常的表示相反，表示 to 依赖于 from</span>
+    <span class="token comment">// 如果 from 不存在于图中，则添加 from 并初始化其任务列表</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>graph<span class="token punctuation">[</span>from<span class="token punctuation">]</span><span class="token punctuation">)</span> graph<span class="token punctuation">[</span>from<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// 在 from 的任务列表中添加 to，表示 from 完成后，可以进行 to</span>
+    graph<span class="token punctuation">[</span>from<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 增加 to 的入度</span>
+    inDegree<span class="token punctuation">[</span>to<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">[</span>to<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token comment">// 确保每个任务都在入度表中，如果没有其他任务依赖于它，则入度为 0</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">[</span>from<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token keyword">undefined</span><span class="token punctuation">)</span> inDegree<span class="token punctuation">[</span>from<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// 收集入度为 0 的任务，即可以立即执行的任务</span>
+  <span class="token keyword">let</span> queue <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">keys</span><span class="token punctuation">(</span>inDegree<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token parameter">task</span> <span class="token operator">=&gt;</span> inDegree<span class="token punctuation">[</span>task<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">let</span> order <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储最终的任务执行顺序</span>
+
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>queue<span class="token punctuation">.</span>length <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 对当前可执行的任务按字典序排序</span>
+    queue<span class="token punctuation">.</span><span class="token function">sort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> newQueue <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    queue<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">current</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+      order<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>current<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// 遍历当前任务的所有后继任务，减少它们的入度</span>
+      <span class="token punctuation">(</span>graph<span class="token punctuation">[</span>current<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token parameter">next</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        inDegree<span class="token punctuation">[</span>next<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token comment">// 如果后继任务的入度为 0，则加入新队列</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>inDegree<span class="token punctuation">[</span>next<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+          newQueue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>next<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 更新队列为新队列</span>
+    queue <span class="token operator">=</span> newQueue<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// 返回构建的任务执行顺序字符串</span>
+  <span class="token keyword">return</span> order<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_296"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">def</span> <span class="token function">find_order</span><span class="token punctuation">(</span>dependencies<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    根据依赖关系计算任务执行的顺序。
+    
+    参数:
+    dependencies - 依赖关系列表，每个元素形式为 "A-&gt;B" 表示 A 依赖于 B。
+    
+    返回:
+    任务执行的顺序，以空格分隔的字符串形式。
+    """</span>
+    <span class="token comment"># 用于存储图的邻接表表示，键是任务，值是依赖于键的任务列表</span>
+    graph <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+    <span class="token comment"># 存储每个任务的入度（依赖于它的其他任务的数量）</span>
+    in_degree <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span><span class="token punctuation">}</span>
+
+    <span class="token comment"># 构建图和计算入度</span>
+    <span class="token keyword">for</span> dep <span class="token keyword">in</span> dependencies<span class="token punctuation">:</span>
+        <span class="token comment"># 分割每个依赖关系为两部分</span>
+        parts <span class="token operator">=</span> dep<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">"-&gt;"</span><span class="token punctuation">)</span>
+        from_task<span class="token punctuation">,</span> to_task <span class="token operator">=</span> parts<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> parts<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>  <span class="token comment"># 注意：这里与通常的表示相反</span>
+        <span class="token comment"># 如果 from_task 不存在于图中，则添加 from_task 并初始化其任务列表</span>
+        <span class="token keyword">if</span> from_task <span class="token keyword">not</span> <span class="token keyword">in</span> graph<span class="token punctuation">:</span>
+            graph<span class="token punctuation">[</span>from_task<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token comment"># 在 from_task 的任务列表中添加 to_task</span>
+        graph<span class="token punctuation">[</span>from_task<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>to_task<span class="token punctuation">)</span>
+        <span class="token comment"># 增加 to_task 的入度</span>
+        in_degree<span class="token punctuation">[</span>to_task<span class="token punctuation">]</span> <span class="token operator">=</span> in_degree<span class="token punctuation">.</span>get<span class="token punctuation">(</span>to_task<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span>
+        <span class="token comment"># 确保每个任务都在入度表中，如果没有其他任务依赖于它，则入度为 0</span>
+        in_degree<span class="token punctuation">[</span>from_task<span class="token punctuation">]</span> <span class="token operator">=</span> in_degree<span class="token punctuation">.</span>get<span class="token punctuation">(</span>from_task<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+    <span class="token comment"># 收集入度为 0 的任务，即可以立即执行的任务</span>
+    queue <span class="token operator">=</span> <span class="token punctuation">[</span>task <span class="token keyword">for</span> task<span class="token punctuation">,</span> degree <span class="token keyword">in</span> in_degree<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">if</span> degree <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">]</span>
+
+    order <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token comment"># 存储最终的任务执行顺序</span>
+
+    <span class="token keyword">while</span> queue<span class="token punctuation">:</span>
+        <span class="token comment"># 对当前可执行的任务按字典序排序</span>
+        queue<span class="token punctuation">.</span>sort<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        new_queue <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+        <span class="token keyword">for</span> current <span class="token keyword">in</span> queue<span class="token punctuation">:</span>
+            order<span class="token punctuation">.</span>append<span class="token punctuation">(</span>current<span class="token punctuation">)</span>
+            <span class="token comment"># 遍历当前任务的所有后继任务，减少它们的入度</span>
+            <span class="token keyword">for</span> next_task <span class="token keyword">in</span> graph<span class="token punctuation">.</span>get<span class="token punctuation">(</span>current<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                in_degree<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span> <span class="token operator">-=</span> <span class="token number">1</span>
+                <span class="token comment"># 如果后继任务的入度为 0，则加入新队列</span>
+                <span class="token keyword">if</span> in_degree<span class="token punctuation">[</span>next_task<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+                    new_queue<span class="token punctuation">.</span>append<span class="token punctuation">(</span>next_task<span class="token punctuation">)</span>
+        queue <span class="token operator">=</span> new_queue
+
+    <span class="token comment"># 返回构建的任务执行顺序字符串</span>
+    <span class="token keyword">return</span> <span class="token string">" "</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>order<span class="token punctuation">)</span>
+
+<span class="token comment"># 主函数，读取输入并处理</span>
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    input_str <span class="token operator">=</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    dependencies <span class="token operator">=</span> input_str<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>find_order<span class="token punctuation">(</span>dependencies<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre> 
+<h2><a id="C_358"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h&gt;</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_TASKS</span> <span class="token expression"><span class="token number">100</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_DEPENDENCIES</span> <span class="token expression"><span class="token number">200</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_LEN</span> <span class="token expression"><span class="token number">10</span></span></span>
+
+<span class="token comment">// 任务结构体，包括任务名称和依赖此任务的后继任务列表</span>
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> name<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> inDegree<span class="token punctuation">;</span> <span class="token comment">// 入度，即依赖此任务的其他任务数量</span>
+    <span class="token keyword">int</span> nextTasks<span class="token punctuation">[</span>MAX_DEPENDENCIES<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 存储后继任务的索引</span>
+    <span class="token keyword">int</span> nextCount<span class="token punctuation">;</span> <span class="token comment">// 后继任务的数量</span>
+<span class="token punctuation">}</span> Task<span class="token punctuation">;</span>
+
+Task tasks<span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 所有任务的数组</span>
+<span class="token keyword">int</span> taskCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 任务总数</span>
+
+<span class="token comment">// 查找或添加任务到任务数组中，并返回任务的索引</span>
+<span class="token keyword">int</span> <span class="token function">findOrAddTask</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span> name<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> taskCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcmp</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">,</span> name<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> i<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>taskCount<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">,</span> name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    tasks<span class="token punctuation">[</span>taskCount<span class="token punctuation">]</span><span class="token punctuation">.</span>inDegree <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    tasks<span class="token punctuation">[</span>taskCount<span class="token punctuation">]</span><span class="token punctuation">.</span>nextCount <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> taskCount<span class="token operator">++</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 添加依赖关系</span>
+<span class="token keyword">void</span> <span class="token function">addDependency</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span> from<span class="token punctuation">,</span> <span class="token keyword">char</span><span class="token operator">*</span> to<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> fromIndex <span class="token operator">=</span> <span class="token function">findOrAddTask</span><span class="token punctuation">(</span>from<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> toIndex <span class="token operator">=</span> <span class="token function">findOrAddTask</span><span class="token punctuation">(</span>to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    tasks<span class="token punctuation">[</span>fromIndex<span class="token punctuation">]</span><span class="token punctuation">.</span>nextTasks<span class="token punctuation">[</span>tasks<span class="token punctuation">[</span>fromIndex<span class="token punctuation">]</span><span class="token punctuation">.</span>nextCount<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> toIndex<span class="token punctuation">;</span>
+    tasks<span class="token punctuation">[</span>toIndex<span class="token punctuation">]</span><span class="token punctuation">.</span>inDegree<span class="token operator">++</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// 执行拓扑排序，并打印任务执行顺序</span>
+<span class="token keyword">void</span> <span class="token function">findOrder</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> queue<span class="token punctuation">[</span>MAX_TASKS<span class="token punctuation">]</span><span class="token punctuation">,</span> start <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> end <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// 找出所有入度为0的任务</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> taskCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>inDegree <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            queue<span class="token punctuation">[</span>end<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 拓扑排序主循环</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>start <span class="token operator">&lt;</span> end<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> current <span class="token operator">=</span> queue<span class="token punctuation">[</span>start<span class="token operator">++</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s "</span><span class="token punctuation">,</span> tasks<span class="token punctuation">[</span>current<span class="token punctuation">]</span><span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 遍历当前任务的所有后继任务</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> tasks<span class="token punctuation">[</span>current<span class="token punctuation">]</span><span class="token punctuation">.</span>nextCount<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">int</span> next <span class="token operator">=</span> tasks<span class="token punctuation">[</span>current<span class="token punctuation">]</span><span class="token punctuation">.</span>nextTasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 减少后继任务的入度，并在入度变为0时加入队列</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">--</span>tasks<span class="token punctuation">[</span>next<span class="token punctuation">]</span><span class="token punctuation">.</span>inDegree <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+                queue<span class="token punctuation">[</span>end<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> next<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">char</span> input<span class="token punctuation">[</span><span class="token number">1000</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取一行输入</span>
+
+    <span class="token keyword">char</span><span class="token operator">*</span> token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span>input<span class="token punctuation">,</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>token <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">char</span> from<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">,</span> to<span class="token punctuation">[</span>MAX_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">sscanf</span><span class="token punctuation">(</span>token<span class="token punctuation">,</span> <span class="token string">"%[^-]-&gt;%s"</span><span class="token punctuation">,</span> to<span class="token punctuation">,</span> from<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 分割每个依赖关系</span>
+        <span class="token function">addDependency</span><span class="token punctuation">(</span>from<span class="token punctuation">,</span> to<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 添加依赖关系</span>
+        token <span class="token operator">=</span> <span class="token function">strtok</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token function">findOrder</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 执行拓扑排序并打印结果</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_444"></a>完整用例</h2> 
+<h3><a id="1_446"></a>用例1</h3> 
+<pre><code class="prism language-input1">A-&gt;B B-&gt;C C-&gt;D D-&gt;E
+</code></pre> 
+<h3><a id="2_452"></a>用例2</h3> 
+<pre><code class="prism language-input2">A-&gt;B
+</code></pre> 
+<h3><a id="3_458"></a>用例3</h3> 
+<pre><code class="prism language-input3">A-&gt;B B-&gt;C C-&gt;D
+</code></pre> 
+<h3><a id="4_464"></a>用例4</h3> 
+<pre><code class="prism language-input4">A-&gt;B C-&gt;B D-&gt;A D-&gt;C
+</code></pre> 
+<h3><a id="5_470"></a>用例5</h3> 
+<pre><code class="prism language-input5">A-&gt;B C-&gt;D E-&gt;F
+</code></pre> 
+<h3><a id="6_476"></a>用例6</h3> 
+<pre><code class="prism language-input6">A-&gt;B B-&gt;C C-&gt;D D-&gt;E E-&gt;F F-&gt;G
+</code></pre> 
+<h3><a id="7_482"></a>用例7</h3> 
+<pre><code class="prism language-input7">B-&gt;A C-&gt;B D-&gt;C E-&gt;C F-&gt;A
+</code></pre> 
+<h3><a id="8_488"></a>用例8</h3> 
+<pre><code class="prism language-input8">B-&gt;A C-&gt;A E-&gt;A C-&gt;D E-&gt;D F-&gt;D
+</code></pre> 
+<h3><a id="9_494"></a>用例9</h3> 
+<pre><code class="prism language-input9">B-&gt;A B-&gt;D D-&gt;C A-&gt;D
+</code></pre> 
+<h3><a id="10_500"></a>用例10</h3> 
+<pre><code class="prism language-input10">P-&gt;Q P-&gt;R Q-&gt;S R-&gt;S S-&gt;T
+</code></pre> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/5962ead6967cc2202f3ea846a654a634.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

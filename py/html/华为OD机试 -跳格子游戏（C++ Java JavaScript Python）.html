@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h4><a id="_1"></a>题目描述</h4> 
+<p>地上共有N个格子，你需要跳完地上所有的格子，但是格子间是有强依赖关系的，跳完前一个格子后，后续的格子才会被开启，格子间的依赖关系由多组steps数组给出，steps[0]表示前一个格子，steps[1]表示steps[0]可以开启的格子:</p> 
+<p>比如[0,1]表示从跳完第0个格子以后第1个格子就开启了，比如[2,1]，[2,3]表示跳完第2个格子后第1个格子和第3个格子就被开启了。</p> 
+<p>请你计算是否能由给出的steps数组跳完所有的格子，如果可以输出yes，否则输出no。</p> 
+<p><strong>说明：</strong></p> 
+<p>1.你可以从一个格子跳到任意一个开启的格子</p> 
+<p>2.没有前置依赖条件的格子默认就是开启的</p> 
+<p>3.如果总数是N，则所有的格子编号为[0,1,2,3…N-1]连续的数组</p> 
+<h4><a id="_17"></a>输入描述</h4> 
+<p>输入一个整数N表示总共有多少个格子，接着输入多组二维数组steps表示所有格子之间的依赖关系。</p> 
+<h4><a id="_21"></a>输出描述</h4> 
+<p>如果能按照steps给定的依赖顺序跳完所有的格子输出yes，</p> 
+<p>否则输出no。</p> 
+<h4><a id="_27"></a>用例</h4> 
+<table><tbody><tr><td>输入</td><td>3<br>0 1<br>0 2</td></tr><tr><td>输出</td><td>yes</td></tr><tr><td>说明</td><td>总共有三个格子[0,1,2]，跳完0个格子后第1个格子就开启了，跳到第0个格子后第2个格子也被开启了，按照0-&gt;1-&gt;2或者0-&gt;2-&gt;1的顺序都可以跳完所有的格子</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>2<br>1 0<br>0 1</td></tr><tr><td>输出</td><td>no</td></tr><tr><td>说明</td><td>总共有2个格子，第1个格子可以开启第0格子，但是第1个格子又需要第0个格子才能开启，相互依赖，因此无法完成</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>6<br>0 1<br>0 2<br>0 3<br>0 4<br>0 5</td></tr><tr><td>输出</td><td>yes</td></tr><tr><td>说明</td><td>总共有6个格子，第0个格子可以开启第1,2,3,4,5个格子，所以跳完第0个格子之后其他格子都被开启了，之后按任何顺序可以跳完剩余的格子</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>5<br>4 3<br>0 4<br>2 1<br>3 2</td></tr><tr><td>输出</td><td>yes</td></tr><tr><td>说明</td><td>跳完第0个格子可以开启格子4，跳完格子4可以开启格子3，跳完格子3可以开启格子2，跳完格子2可以开启格子1，按照0-&gt;4-&gt;3-&gt;2-&gt;1这样就跳完所有的格子</td></tr></tbody></table> 
+<table><tbody><tr><td>输入</td><td>4<br>1 2<br>1 0</td></tr><tr><td>输出</td><td>yes</td></tr><tr><td>说明</td><td>总共4个格子[0,1,2,3]，格子1和格子3没有前置条件所以默认开启，格子1可以开启格子0和格子2，所以跳到格子1之后就可以开启所有的格子，因此可以跳完所有格子。</td></tr></tbody></table> 
+<h4><a id="C_39"></a>C++</h4> 
+<pre><code class="prism language-c">
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sstream&gt;</span></span>
+using namespace std<span class="token punctuation">;</span>
+
+<span class="token keyword">enum</span> <span class="token class-name">VisitStatus</span> <span class="token punctuation">{<!-- --></span> UNVISITED<span class="token punctuation">,</span> VISITING<span class="token punctuation">,</span> VISITED <span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 遍历状态</span>
+
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> node<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>VisitStatus<span class="token operator">&gt;</span><span class="token operator">&amp;</span> visitStatus<span class="token punctuation">,</span> vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span><span class="token operator">&amp;</span> edges<span class="token punctuation">,</span> bool<span class="token operator">&amp;</span> stepAllGrids<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    visitStatus<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> VISITING<span class="token punctuation">;</span> <span class="token comment">// 标记节点为正在遍历</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> neighbor <span class="token operator">:</span> edges<span class="token punctuation">[</span>node<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历邻居节点</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">==</span> UNVISITED<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果邻居节点未被遍历</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>neighbor<span class="token punctuation">,</span> visitStatus<span class="token punctuation">,</span> edges<span class="token punctuation">,</span> stepAllGrids<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归遍历邻居节点</span>
+
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>stepAllGrids<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已经无法跳完所有格子，直接返回</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">==</span> VISITING<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果邻居节点已被遍历但未完成遍历（即在当前遍历路径中）</span>
+            stepAllGrids <span class="token operator">=</span> false<span class="token punctuation">;</span> <span class="token comment">// 无法跳完所有格子，标志置为false</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    visitStatus<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> VISITED<span class="token punctuation">;</span> <span class="token comment">// 标记节点为遍历完成</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token comment">// 输入处理</span>
+    <span class="token keyword">int</span> N<span class="token punctuation">;</span>
+    cin <span class="token operator">&gt;&gt;</span> N<span class="token punctuation">;</span>
+    cin<span class="token punctuation">.</span><span class="token function">ignore</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 忽略换行符及其后面的100个字符</span>
+
+    <span class="token comment">// 初始化边</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">edges</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span>VisitStatus<span class="token operator">&gt;</span> <span class="token function">visitStatus</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span> UNVISITED<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    bool stepAllGrids <span class="token operator">=</span> true<span class="token punctuation">;</span>
+    string line<span class="token punctuation">;</span>
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token function">getline</span><span class="token punctuation">(</span>cin<span class="token punctuation">,</span> line<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 读到空行，停止输入</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span> a<span class="token punctuation">,</span> b<span class="token punctuation">;</span>
+        stringstream <span class="token function">ss</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        ss <span class="token operator">&gt;&gt;</span> a <span class="token operator">&gt;&gt;</span> b<span class="token punctuation">;</span> <span class="token comment">// 解析输入的两个数字</span>
+        edges<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 记录边</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N <span class="token operator">&amp;&amp;</span> stepAllGrids<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有节点</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> UNVISITED<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果节点未被遍历</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> visitStatus<span class="token punctuation">,</span> edges<span class="token punctuation">,</span> stepAllGrids<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从该节点开始遍历</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    cout <span class="token operator">&lt;&lt;</span> <span class="token punctuation">(</span>stepAllGrids <span class="token operator">?</span> <span class="token string">"yes"</span> <span class="token operator">:</span> <span class="token string">"no"</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="java_107"></a>java</h4> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">enum</span> <span class="token class-name">VisitStatus</span> <span class="token punctuation">{<!-- --></span> UNVISITED<span class="token punctuation">,</span> VISITING<span class="token punctuation">,</span> VISITED <span class="token punctuation">}</span><span class="token punctuation">;</span> <span class="token comment">// 遍历状态</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> node<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">VisitStatus</span><span class="token punctuation">&gt;</span></span> visitStatus<span class="token punctuation">,</span> <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> edges<span class="token punctuation">,</span> <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> stepAllGrids<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        visitStatus<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>node<span class="token punctuation">,</span> <span class="token class-name">VisitStatus</span><span class="token punctuation">.</span>VISITING<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 标记节点为正在遍历</span>
+
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> neighbor <span class="token operator">:</span> edges<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历邻居节点</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>neighbor<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token class-name">VisitStatus</span><span class="token punctuation">.</span>UNVISITED<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果邻居节点未被遍历</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>neighbor<span class="token punctuation">,</span> visitStatus<span class="token punctuation">,</span> edges<span class="token punctuation">,</span> stepAllGrids<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归遍历邻居节点</span>
+
+                <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>stepAllGrids<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已经无法跳完所有格子，直接返回</span>
+                    <span class="token keyword">return</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>neighbor<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token class-name">VisitStatus</span><span class="token punctuation">.</span>VISITING<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果邻居节点已被遍历但未完成遍历（即在当前遍历路径中）</span>
+                stepAllGrids<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 无法跳完所有格子，标志置为false</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        visitStatus<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>node<span class="token punctuation">,</span> <span class="token class-name">VisitStatus</span><span class="token punctuation">.</span>VISITED<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 标记节点为遍历完成</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> sc <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// 输入处理</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 忽略换行符</span>
+
+        <span class="token comment">// 初始化边</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">List</span><span class="token punctuation">&lt;</span><span class="token class-name">Integer</span><span class="token punctuation">&gt;</span><span class="token punctuation">&gt;</span></span> edges <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            edges<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">VisitStatus</span><span class="token punctuation">&gt;</span></span> visitStatus <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">ArrayList</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">(</span><span class="token class-name">Collections</span><span class="token punctuation">.</span><span class="token function">nCopies</span><span class="token punctuation">(</span><span class="token class-name">N</span><span class="token punctuation">,</span> <span class="token class-name">VisitStatus</span><span class="token punctuation">.</span>UNVISITED<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">boolean</span><span class="token punctuation">[</span><span class="token punctuation">]</span> stepAllGrids <span class="token operator">=</span> <span class="token punctuation">{<!-- --></span> <span class="token boolean">true</span> <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span><span class="token punctuation">(</span>sc<span class="token punctuation">.</span><span class="token function">hasNextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token class-name">String</span> line <span class="token operator">=</span> sc<span class="token punctuation">.</span><span class="token function">nextLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>line<span class="token punctuation">.</span><span class="token function">isEmpty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 读到空行，停止输入</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> nums <span class="token operator">=</span> line<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> a <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">int</span> b <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token function">parseInt</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            edges<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 记录边</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token class-name">N</span> <span class="token operator">&amp;&amp;</span> stepAllGrids<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历所有节点</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token class-name">VisitStatus</span><span class="token punctuation">.</span>UNVISITED<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果节点未被遍历</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> visitStatus<span class="token punctuation">,</span> edges<span class="token punctuation">,</span> stepAllGrids<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从该节点开始遍历</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span>stepAllGrids<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">?</span> <span class="token string">"yes"</span> <span class="token operator">:</span> <span class="token string">"no"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h4><a id="javaScript_175"></a>javaScript</h4> 
+<pre><code class="prism language-javascript"><span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+  input<span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+  output<span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> input <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">line</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    input<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">const</span> <span class="token constant">N</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 初始化边</span>
+    <span class="token keyword">const</span> edges <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> visitStatus <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Array</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 初始值为0，即UNVISITED</span>
+
+    <span class="token keyword">let</span> stepAllGrids <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> input<span class="token punctuation">.</span>length <span class="token operator">&amp;&amp;</span> stepAllGrids<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">const</span> <span class="token punctuation">[</span>a<span class="token punctuation">,</span> b<span class="token punctuation">]</span> <span class="token operator">=</span> input<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        edges<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token parameter">node</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        visitStatus<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token comment">// 标记节点为正在遍历</span>
+
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">let</span> neighbor <span class="token keyword">of</span> edges<span class="token punctuation">[</span>node<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 遍历邻居节点</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果邻居节点未被遍历</span>
+                <span class="token function">dfs</span><span class="token punctuation">(</span>neighbor<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 递归遍历邻居节点</span>
+
+                <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>stepAllGrids<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果已经无法跳完所有格子，直接返回</span>
+                    <span class="token keyword">return</span><span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果邻居节点已被遍历但未完成遍历（即在当前遍历路径中）</span>
+                stepAllGrids <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 无法跳完所有格子，标志置为false</span>
+                <span class="token keyword">return</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        visitStatus<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span> <span class="token comment">// 标记节点为遍历完成</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token constant">N</span> <span class="token operator">&amp;&amp;</span> stepAllGrids<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>visitStatus<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span> <span class="token comment">// 如果节点未被遍历</span>
+            <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 从该节点开始遍历</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>stepAllGrids <span class="token operator">?</span> <span class="token string">"yes"</span> <span class="token operator">:</span> <span class="token string">"no"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出结果</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre> 
+<h4><a id="python_236"></a>python</h4> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token builtin">input</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> line <span class="token keyword">in</span> sys<span class="token punctuation">.</span>stdin<span class="token punctuation">:</span>
+    <span class="token builtin">input</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>line<span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+N <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+<span class="token comment"># 初始化边</span>
+edges <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">]</span>
+visitStatus <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span> <span class="token keyword">for</span> _ <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token comment"># 初始值为0，即UNVISITED</span>
+
+stepAllGrids <span class="token operator">=</span> <span class="token boolean">True</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    a<span class="token punctuation">,</span> b <span class="token operator">=</span> <span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    edges<span class="token punctuation">[</span>b<span class="token punctuation">]</span><span class="token punctuation">.</span>append<span class="token punctuation">(</span>a<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">dfs</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">global</span> stepAllGrids
+    visitStatus<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span> <span class="token comment"># 标记节点为正在遍历</span>
+
+    <span class="token keyword">for</span> neighbor <span class="token keyword">in</span> edges<span class="token punctuation">[</span>node<span class="token punctuation">]</span><span class="token punctuation">:</span> <span class="token comment"># 遍历邻居节点</span>
+        <span class="token keyword">if</span> visitStatus<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span> <span class="token comment"># 如果邻居节点未被遍历</span>
+            dfs<span class="token punctuation">(</span>neighbor<span class="token punctuation">)</span> <span class="token comment"># 递归遍历邻居节点</span>
+
+            <span class="token keyword">if</span> <span class="token keyword">not</span> stepAllGrids<span class="token punctuation">:</span> <span class="token comment"># 如果已经无法跳完所有格子，直接返回</span>
+                <span class="token keyword">return</span>
+        <span class="token keyword">elif</span> visitStatus<span class="token punctuation">[</span>neighbor<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span> <span class="token comment"># 如果邻居节点已被遍历但未完成遍历（即在当前遍历路径中）</span>
+            stepAllGrids <span class="token operator">=</span> <span class="token boolean">False</span> <span class="token comment"># 无法跳完所有格子，标志置为false</span>
+            <span class="token keyword">return</span>
+
+    visitStatus<span class="token punctuation">[</span>node<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">2</span> <span class="token comment"># 标记节点为遍历完成</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> visitStatus<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span> <span class="token comment"># 如果节点未被遍历</span>
+        dfs<span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token comment"># 从该节点开始遍历</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"yes"</span> <span class="token keyword">if</span> stepAllGrids <span class="token keyword">else</span> <span class="token string">"no"</span><span class="token punctuation">)</span> <span class="token comment"># 输出结果</span>
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><ul><li><ul><li><a href="#_1" rel="nofollow">题目描述</a></li><li><a href="#_17" rel="nofollow">输入描述</a></li><li><a href="#_21" rel="nofollow">输出描述</a></li><li><a href="#_27" rel="nofollow">用例</a></li><li><a href="#C_39" rel="nofollow">C++</a></li><li><a href="#java_107" rel="nofollow">java</a></li><li><a href="#javaScript_175" rel="nofollow">javaScript</a></li><li><a href="#python_236" rel="nofollow">python</a></li></ul> 
+  </li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://img-blog.csdnimg.cn/img_convert/b98429f56d7b21e9abb6e238d4c69d08.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>

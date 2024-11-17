@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<div id="content_views" class="markdown_views prism-atom-one-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a id="_5"></a>题目描述</h2> 
+<p>只贪吃的猴子，来到一个果园，发现许多串香蕉排成一行，每串香蕉上有若干根香蕉。每串香蕉的根数由数组numbers给出。</p> 
+<p>猴子获取香蕉，每次都只能从行的开头或者末尾获取，并且只能获取N次，求猴子最多能获取多少根香蕉。</p> 
+<h2><a id="_11"></a>输入描述</h2> 
+<p>第一行为数组numbers的长度</p> 
+<p>第二行为数组numbers的值每个数字通过空格分开</p> 
+<p>第三行输入为N，表示获取的次数</p> 
+<p>备注：</p> 
+<ul><li>1 ≤ numbers.length ≤ 100000</li><li>1 ≤ numbers ≤ 100</li><li>1 ≤ N ≤ numbers.length</li></ul> 
+<h2><a id="_25"></a>输出描述</h2> 
+<p>按照题目要求能获取的最大数值</p> 
+<h2><a id="_29"></a>用例</h2> 
+<p>输入</p> 
+<pre><code>7
+1 2 2 7 3 6 1
+3
+</code></pre> 
+<p>输出</p> 
+<pre><code>10
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>第一次获取香蕉，无论是从行的开头或者末尾获取，得到的香蕉根数目为1, 但是，从行末尾获取能获取到最优的策略，后面可以直接得到香蕉根数目6和3。因此最终根数为1+6+3=10</p> 
+</blockquote> 
+<h2><a id="2_49"></a>用例2</h2> 
+<p>输入</p> 
+<pre><code>3
+1 2 3
+3
+</code></pre> 
+<p>输出</p> 
+<pre><code>6
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>全部获取所有的香蕉，因此最终根数为1+2+3=6</p> 
+</blockquote> 
+<h2><a id="3_69"></a>用例3</h2> 
+<p>输入</p> 
+<pre><code>4
+4 2 2 3
+2
+</code></pre> 
+<p>输出</p> 
+<pre><code>7
+</code></pre> 
+<p>说明</p> 
+<blockquote> 
+ <p>第一次获取香蕉为行的开头，第二次获取为行的末尾，因此最终根数为4+3=7</p> 
+</blockquote> 
+<h2><a id="_89"></a>题目解析</h2> 
+<p>要求从：每次都只能从行的开头或者末尾获取</p> 
+<h2><a id="1_93"></a>我们以用例1解释题目：</h2> 
+<pre><code>1 2 2 7 3 6 1
+</code></pre> 
+<p>每次都是开头或末尾：</p> 
+<p>第一次：开头和末尾都是1，</p> 
+<p>第二次：</p> 
+<p>如果我们第一次是开头，此时数字就是【2 2 7 3 6 1】，开头就是2 结尾就是1。</p> 
+<p>如果我们第一次是结尾，此时数字就是【1 2 2 7 3 6 】，开头就是1 结尾就是6。</p> 
+<p>这样我们就会发现第一次选末尾 第二次选末尾，第三次仍然选末尾，这样就是最多根。</p> 
+<h2><a id="3_113"></a>我们以用例3解释题目：</h2> 
+<pre><code>4 2 2 3
+</code></pre> 
+<p>我们一眼可以看出，第一次选开头 第二次选末尾。</p> 
+<p>从这两个例子，我们好像找不到啥规律啊，但是我们把视角转到<strong>选不到的桃子</strong>，你会发现，无论每次是选开头还是结尾，选不到的桃子永远是连续的，对不对！！！ 再转念一想，我们把数组看成一个环，选中的开头和结尾是不是也就是连续的啊。这样我们自然而然就想到了**【滑动窗口】**</p> 
+<p>试验了两种解法，<strong>一种的选中的是连续的</strong>，<strong>一种是未选中的连续（选中的就是数组-未选中的）</strong>。我觉得从未选中的角度去解题比较简单。</p> 
+<p><strong>最终就转换为：求某个连续的区间是的总和最小。</strong></p> 
+<h2><a id="_133"></a>解题思路</h2> 
+<ol><li>读取输入，包括数组长度、数组元素（每串香蕉的数量），以及猴子可以获取的次数。</li><li>计算数组中所有香蕉的总数。</li><li>如果猴子可以获取的次数等于数组长度，即猴子可以拿走所有的香蕉，直接返回总数。</li><li>**计算猴子不能拿走的连续香蕉串的最小总数。**这是通过滑动窗口实现的，窗口大小为 <code>数组长度 - N</code>。</li><li>初始化滑动窗口的和为窗口内的第一段连续香蕉串的和。</li><li>滑动窗口，每次向右移动一位，更新窗口和，并记录最小的窗口和。</li><li>猴子能获取的最大香蕉数是总和减去最小窗口和。</li></ol> 
+<h2><a id="_145"></a>模拟计算过程</h2> 
+<p>给定输入：</p> 
+<pre><code>数组长度：7
+香蕉数量：1 2 2 7 3 6 1
+猴子次数：3
+</code></pre> 
+<ol><li>计算香蕉总数：<code>1 + 2 + 2 + 7 + 3 + 6 + 1 = 22</code></li><li>窗口大小：<code>7 - 3 = 4</code></li><li>初始化窗口和：<code>1 + 2 + 2 + 7 = 12</code></li><li>滑动窗口并计算最小窗口和： 
+  <ul><li>窗口 <code>[2, 2, 7, 3]</code> 和为 <code>14</code>，最小和仍为 <code>12</code></li><li>窗口 <code>[2, 7, 3, 6]</code> 和为 <code>18</code>，最小和仍为 <code>12</code></li><li>窗口 <code>[7, 3, 6, 1]</code> 和为 <code>17</code>，最小和仍为 <code>12</code></li></ul> </li><li>猴子能获取的最大香蕉数：<code>总和 - 最小窗口和 = 22 - 12 = 10</code></li></ol> 
+<p>因此，猴子能获取的最大香蕉数为 <code>10</code>。</p> 
+<h2><a id="C_167"></a>C++</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;climits&gt;</span></span>
+
+using namespace std<span class="token punctuation">;</span>
+<span class="token comment">// 计算猴子能获取的最大香蕉数</span>
+<span class="token keyword">int</span> <span class="token function">maxBananas</span><span class="token punctuation">(</span><span class="token keyword">const</span> vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> numbers<span class="token punctuation">,</span> <span class="token keyword">int</span> N<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> total <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数组总和为0</span>
+    <span class="token comment">// 计算数组中所有香蕉的总数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> number <span class="token operator">:</span> numbers<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        total <span class="token operator">+=</span> number<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果N等于数组长度，猴子可以拿走所有的香蕉</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>N <span class="token operator">==</span> numbers<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> total<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> minWindowSum <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span> <span class="token comment">// 初始化最小窗口和为最大整数值</span>
+    <span class="token keyword">int</span> currentWindowSum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化当前窗口和为0</span>
+    <span class="token keyword">int</span> windowSize <span class="token operator">=</span> numbers<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> N<span class="token punctuation">;</span> <span class="token comment">// 计算窗口大小</span>
+
+    <span class="token comment">// 初始化窗口的和</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> windowSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    minWindowSum <span class="token operator">=</span> currentWindowSum<span class="token punctuation">;</span> <span class="token comment">// 将当前窗口和赋值给最小窗口和</span>
+
+    <span class="token comment">// 通过滑动窗口计算最小窗口和</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> windowSize<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numbers<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 窗口滑动，加上新进入窗口的元素，减去离开窗口的元素</span>
+        currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numbers<span class="token punctuation">[</span>i <span class="token operator">-</span> windowSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新最小窗口和</span>
+        minWindowSum <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>minWindowSum<span class="token punctuation">,</span> currentWindowSum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 猴子能获取的最大香蕉数是总和减去最小窗口和</span>
+    <span class="token keyword">return</span> total <span class="token operator">-</span> minWindowSum<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> len<span class="token punctuation">;</span> <span class="token comment">// 读取数组长度</span>
+    cin <span class="token operator">&gt;&gt;</span> len<span class="token punctuation">;</span>
+    vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">numbers</span><span class="token punctuation">(</span>len<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 创建数组存储每串香蕉的数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> len<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        cin <span class="token operator">&gt;&gt;</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 循环读取每串香蕉的数量</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">int</span> N<span class="token punctuation">;</span> <span class="token comment">// 读取猴子可以获取的次数</span>
+    cin <span class="token operator">&gt;&gt;</span> N<span class="token punctuation">;</span>
+    cout <span class="token operator">&lt;&lt;</span> <span class="token function">maxBananas</span><span class="token punctuation">(</span>numbers<span class="token punctuation">,</span> N<span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span> <span class="token comment">// 输出猴子能获取的最大香蕉数</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Java_224"></a>Java</h2> 
+<pre><code class="prism language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Scanner</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Main</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token class-name">Scanner</span> scanner <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Scanner</span><span class="token punctuation">(</span><span class="token class-name">System</span><span class="token punctuation">.</span>in<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> len <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取数组长度</span>
+        <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> numbers <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">int</span><span class="token punctuation">[</span>len<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建数组存储每串香蕉的数量</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> len<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 循环读取每串香蕉的数量</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span> <span class="token class-name">N</span> <span class="token operator">=</span> scanner<span class="token punctuation">.</span><span class="token function">nextInt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 读取猴子可以获取的次数</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token function">maxBananas</span><span class="token punctuation">(</span>numbers<span class="token punctuation">,</span> <span class="token class-name">N</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出猴子能获取的最大香蕉数</span>
+     <span class="token punctuation">}</span>
+
+    <span class="token comment">// 定义方法计算猴子能获取的最大香蕉数</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">maxBananas</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> numbers<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token class-name">N</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">int</span> total <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数组总和为0</span>
+        <span class="token comment">// 计算数组中所有香蕉的总数</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> number <span class="token operator">:</span> numbers<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            total <span class="token operator">+=</span> number<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 如果N等于数组长度，猴子可以拿走所有的香蕉</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">N</span> <span class="token operator">==</span> numbers<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token keyword">return</span> total<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">int</span> minWindowSum <span class="token operator">=</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最小窗口和为最大整数值</span>
+        <span class="token keyword">int</span> currentWindowSum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化当前窗口和为0</span>
+        <span class="token keyword">int</span> windowSize <span class="token operator">=</span> numbers<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token class-name">N</span><span class="token punctuation">;</span> <span class="token comment">// 计算窗口大小</span>
+
+        <span class="token comment">// 初始化窗口的和</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> windowSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        minWindowSum <span class="token operator">=</span> currentWindowSum<span class="token punctuation">;</span> <span class="token comment">// 将当前窗口和赋值给最小窗口和</span>
+
+        <span class="token comment">// 通过滑动窗口计算最小窗口和</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> windowSize<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numbers<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token comment">// 窗口滑动，加上新进入窗口的元素，减去离开窗口的元素</span>
+            currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numbers<span class="token punctuation">[</span>i <span class="token operator">-</span> windowSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            <span class="token comment">// 更新最小窗口和</span>
+            minWindowSum <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>minWindowSum<span class="token punctuation">,</span> currentWindowSum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// 猴子能获取的最大香蕉数是总和减去最小窗口和</span>
+        <span class="token keyword">return</span> total <span class="token operator">-</span> minWindowSum<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="javaScript_278"></a>javaScript</h2> 
+<pre><code class="prism language-js"><span class="token comment">// 使用Node.js的readline模块来处理输入</span>
+<span class="token keyword">const</span> readline <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'readline'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> rl <span class="token operator">=</span> readline<span class="token punctuation">.</span><span class="token function">createInterface</span><span class="token punctuation">(</span><span class="token punctuation">{<!-- --></span>
+    <span class="token literal-property property">input</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdin<span class="token punctuation">,</span>
+    <span class="token literal-property property">output</span><span class="token operator">:</span> process<span class="token punctuation">.</span>stdout
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取输入</span>
+rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">len</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+    len <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span>len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter">numbers</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+        numbers <span class="token operator">=</span> numbers<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span>Number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rl<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'line'</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token parameter"><span class="token constant">N</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{<!-- --></span>
+            <span class="token constant">N</span> <span class="token operator">=</span> <span class="token function">parseInt</span><span class="token punctuation">(</span><span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">maxBananas</span><span class="token punctuation">(</span>numbers<span class="token punctuation">,</span> <span class="token constant">N</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出猴子能获取的最大香蕉数</span>
+            rl<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 计算猴子能获取的最大香蕉数</span>
+<span class="token keyword">function</span> <span class="token function">maxBananas</span><span class="token punctuation">(</span><span class="token parameter">numbers<span class="token punctuation">,</span> <span class="token constant">N</span></span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">let</span> total <span class="token operator">=</span> numbers<span class="token punctuation">.</span><span class="token function">reduce</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">acc<span class="token punctuation">,</span> val</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> acc <span class="token operator">+</span> val<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 计算数组中所有香蕉的总数</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token constant">N</span> <span class="token operator">===</span> numbers<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> total<span class="token punctuation">;</span> <span class="token comment">// 如果N等于数组长度，猴子可以拿走所有的香蕉</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">let</span> minWindowSum <span class="token operator">=</span> <span class="token number">Infinity</span><span class="token punctuation">;</span> <span class="token comment">// 初始化最小窗口和为无穷大</span>
+    <span class="token keyword">let</span> currentWindowSum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化当前窗口和为0</span>
+    <span class="token keyword">let</span> windowSize <span class="token operator">=</span> numbers<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token constant">N</span><span class="token punctuation">;</span> <span class="token comment">// 计算窗口大小</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> windowSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    minWindowSum <span class="token operator">=</span> currentWindowSum<span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> windowSize<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numbers<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numbers<span class="token punctuation">[</span>i <span class="token operator">-</span> windowSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        minWindowSum <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>minWindowSum<span class="token punctuation">,</span> currentWindowSum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> total <span class="token operator">-</span> minWindowSum<span class="token punctuation">;</span> <span class="token comment">// 猴子能获取的最大香蕉数是总和减去最小窗口和</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="Python_329"></a>Python</h2> 
+<pre><code class="prism language-python"><span class="token keyword">import</span> sys
+
+<span class="token comment"># 计算猴子能获取的最大香蕉数的函数</span>
+<span class="token keyword">def</span> <span class="token function">max_bananas</span><span class="token punctuation">(</span>numbers<span class="token punctuation">,</span> N<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 计算数组中所有香蕉的总数</span>
+    total <span class="token operator">=</span> <span class="token builtin">sum</span><span class="token punctuation">(</span>numbers<span class="token punctuation">)</span>
+
+    <span class="token comment"># 如果N等于数组长度，猴子可以拿走所有的香蕉</span>
+    <span class="token keyword">if</span> N <span class="token operator">==</span> <span class="token builtin">len</span><span class="token punctuation">(</span>numbers<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> total
+
+    <span class="token comment"># 初始化最小窗口和为无穷大</span>
+    min_window_sum <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span><span class="token string">'inf'</span><span class="token punctuation">)</span>
+    <span class="token comment"># 初始化当前窗口和为0</span>
+    current_window_sum <span class="token operator">=</span> <span class="token number">0</span>
+    <span class="token comment"># 计算窗口大小</span>
+    window_size <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>numbers<span class="token punctuation">)</span> <span class="token operator">-</span> N
+
+    <span class="token comment"># 初始化当前窗口的和</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>window_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        current_window_sum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    min_window_sum <span class="token operator">=</span> current_window_sum
+
+    <span class="token comment"># 通过滑动窗口计算最小窗口和</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>window_size<span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>numbers<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># 窗口滑动，加上新进入窗口的元素，减去离开窗口的元素</span>
+        current_window_sum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numbers<span class="token punctuation">[</span>i <span class="token operator">-</span> window_size<span class="token punctuation">]</span>
+        <span class="token comment"># 更新最小窗口和</span>
+        min_window_sum <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span>min_window_sum<span class="token punctuation">,</span> current_window_sum<span class="token punctuation">)</span>
+
+    <span class="token comment"># 猴子能获取的最大香蕉数是总和减去最小窗口和</span>
+    <span class="token keyword">return</span> total <span class="token operator">-</span> min_window_sum
+
+ 
+<span class="token comment"># 读取数组长度</span>
+array_length <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取数组，将输入的字符串分割并转换为整数列表</span>
+numbers <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 读取猴子可以获取的次数</span>
+N <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">input</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 输出猴子能获取的最大香蕉数</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>max_bananas<span class="token punctuation">(</span>numbers<span class="token punctuation">,</span> N<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+ 
+</code></pre> 
+<h2><a id="C_380"></a>C语言</h2> 
+<pre><code class="prism language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h&gt;</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;limits.h&gt;</span></span>
+
+<span class="token comment">// 计算猴子能获取的最大香蕉数</span>
+<span class="token keyword">int</span> <span class="token function">maxBananas</span><span class="token punctuation">(</span><span class="token keyword">int</span> numbers<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">int</span> len<span class="token punctuation">,</span> <span class="token keyword">int</span> N<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> total <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化数组总和为0</span>
+    <span class="token comment">// 计算数组中所有香蕉的总数</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> len<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        total <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 如果N等于数组长度，猴子可以拿走所有的香蕉</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>N <span class="token operator">==</span> len<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token keyword">return</span> total<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">int</span> minWindowSum <span class="token operator">=</span> INT_MAX<span class="token punctuation">;</span> <span class="token comment">// 初始化最小窗口和为最大整数值</span>
+    <span class="token keyword">int</span> currentWindowSum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">// 初始化当前窗口和为0</span>
+    <span class="token keyword">int</span> windowSize <span class="token operator">=</span> len <span class="token operator">-</span> N<span class="token punctuation">;</span> <span class="token comment">// 计算窗口大小</span>
+
+    <span class="token comment">// 初始化窗口的和</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> windowSize<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    minWindowSum <span class="token operator">=</span> currentWindowSum<span class="token punctuation">;</span> <span class="token comment">// 将当前窗口和赋值给最小窗口和</span>
+
+    <span class="token comment">// 通过滑动窗口计算最小窗口和</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> windowSize<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> len<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token comment">// 窗口滑动，加上新进入窗口的元素，减去离开窗口的元素</span>
+        currentWindowSum <span class="token operator">+=</span> numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> numbers<span class="token punctuation">[</span>i <span class="token operator">-</span> windowSize<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token comment">// 更新最小窗口和</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>currentWindowSum <span class="token operator">&lt;</span> minWindowSum<span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+            minWindowSum <span class="token operator">=</span> currentWindowSum<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// 猴子能获取的最大香蕉数是总和减去最小窗口和</span>
+    <span class="token keyword">return</span> total <span class="token operator">-</span> minWindowSum<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+    <span class="token keyword">int</span> len<span class="token punctuation">;</span> <span class="token comment">// 读取数组长度</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> numbers<span class="token punctuation">[</span>len<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// 创建数组存储每串香蕉的数量</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> len<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{<!-- --></span>
+        <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>numbers<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 循环读取每串香蕉的数量</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">int</span> N<span class="token punctuation">;</span> <span class="token comment">// 读取猴子可以获取的次数</span>
+    <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\n"</span><span class="token punctuation">,</span> <span class="token function">maxBananas</span><span class="token punctuation">(</span>numbers<span class="token punctuation">,</span> len<span class="token punctuation">,</span> N<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 输出猴子能获取的最大香蕉数</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre> 
+<h2><a id="_437"></a>完整用例</h2> 
+<h3><a id="1_439"></a>用例1</h3> 
+<pre><code class="prism language-input1">5
+2 4 5 1 3
+2
+</code></pre> 
+<h3><a id="2_447"></a>用例2</h3> 
+<pre><code class="prism language-input2">6
+1 3 2 5 4 2
+3
+</code></pre> 
+<h3><a id="3_455"></a>用例3</h3> 
+<pre><code class="prism language-input3">4
+5 1 2 3
+2
+</code></pre> 
+<h3><a id="4_463"></a>用例4</h3> 
+<pre><code class="prism language-input4">8
+3 2 7 1 2 6 4 5
+4
+</code></pre> 
+<h3><a id="5_471"></a>用例5</h3> 
+<pre><code class="prism language-input5">10
+1 2 3 4 5 6 7 8 9 10
+5
+</code></pre> 
+<h3><a id="6_479"></a>用例6</h3> 
+<pre><code class="prism language-input6">7
+10 20 30 40 50 60 70
+3
+</code></pre> 
+<h3><a id="7_487"></a>用例7</h3> 
+<pre><code class="prism language-input7">3
+3 2 1
+2
+</code></pre> 
+<h3><a id="8_495"></a>用例8</h3> 
+<pre><code class="prism language-input8">9
+1 3 5 7 9 11 13 15 17
+5
+</code></pre> 
+<h3><a id="9_503"></a>用例9</h3> 
+<pre><code class="prism language-input9">6
+6 7 8 1 2 3
+4
+</code></pre> 
+<h3><a id="10_511"></a>用例10</h3> 
+<pre><code class="prism language-input10">5
+4 1 2 3 4
+3
+</code></pre> 
+<p></p> 
+<div class="toc"> 
+ <h4>文章目录</h4> 
+ <ul><li><a href="#_5" rel="nofollow">题目描述</a></li><li><a href="#_11" rel="nofollow">输入描述</a></li><li><a href="#_25" rel="nofollow">输出描述</a></li><li><a href="#_29" rel="nofollow">用例</a></li><li><a href="#2_49" rel="nofollow">用例2</a></li><li><a href="#3_69" rel="nofollow">用例3</a></li><li><a href="#_89" rel="nofollow">题目解析</a></li><li><a href="#1_93" rel="nofollow">我们以用例1解释题目：</a></li><li><a href="#3_113" rel="nofollow">我们以用例3解释题目：</a></li><li><a href="#_133" rel="nofollow">解题思路</a></li><li><a href="#_145" rel="nofollow">模拟计算过程</a></li><li><a href="#C_167" rel="nofollow">C++</a></li><li><a href="#Java_224" rel="nofollow">Java</a></li><li><a href="#javaScript_278" rel="nofollow">javaScript</a></li><li><a href="#Python_329" rel="nofollow">Python</a></li><li><a href="#C_380" rel="nofollow">C语言</a></li><li><a href="#_437" rel="nofollow">完整用例</a></li><li><ul><li><a href="#1_439" rel="nofollow">用例1</a></li><li><a href="#2_447" rel="nofollow">用例2</a></li><li><a href="#3_455" rel="nofollow">用例3</a></li><li><a href="#4_463" rel="nofollow">用例4</a></li><li><a href="#5_471" rel="nofollow">用例5</a></li><li><a href="#6_479" rel="nofollow">用例6</a></li><li><a href="#7_487" rel="nofollow">用例7</a></li><li><a href="#8_495" rel="nofollow">用例8</a></li><li><a href="#9_503" rel="nofollow">用例9</a></li><li><a href="#10_511" rel="nofollow">用例10</a></li></ul> 
+ </li></ul> 
+</div> 
+<p></p> 
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/461819e11ecbf3cc56c4b7bc54297515.png" alt="fengmian"></p>
+                </div>
+</body>
+</html>
